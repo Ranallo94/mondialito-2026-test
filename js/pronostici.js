@@ -856,4 +856,5 @@ function _fmtData(iso) {
   if (!iso) return '';
   try {
     return new Date(iso).toLocaleDateString('it-IT', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit', timeZone:'Europe/Rome' });
-  } catch { return
+  } catch { return iso; }
+}
