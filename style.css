@@ -868,6 +868,32 @@ select.field-input option { background: var(--bg-card2); }
 .speciali-section  { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; }
 .section-desc      { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5; }
 .cannon-inputs     { display: flex; flex-direction: column; gap: 12px; }
+.autocomplete-wrap { position: relative; }
+.autocomplete-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0; right: 0;
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  z-index: 200;
+  max-height: 260px;
+  overflow-y: auto;
+}
+.ac-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background .1s;
+}
+.ac-item:hover, .ac-item.active { background: rgba(255,255,255,.07); }
+.ac-name { color: var(--text); font-weight: 500; }
+.ac-team { color: var(--oro); font-size: 12px; font-weight: 700; margin-left: 8px; flex-shrink: 0; }
 .gironi-posiz-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 .girone-posiz-card { background: var(--bg-card2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; }
 .girone-posiz-header { font-size: 13px; font-weight: 700; color: var(--oro); margin-bottom: 10px; }
