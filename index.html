@@ -117,8 +117,8 @@
         <span class="nav-label">Classifica</span>
       </button>
       <button class="nav-item" data-page="live">
-        <span class="nav-icon">⚽</span>
-        <span class="nav-label">Live</span>
+        <span class="nav-icon">📊</span>
+        <span class="nav-label">Risultati</span>
         <span class="nav-badge" id="nav-live-badge" style="display:none">LIVE</span>
       </button>
       <button class="nav-item" data-page="pronostici">
@@ -158,28 +158,37 @@
         </div>
       </div>
 
-      <!-- ── PAGINA: LIVE ── -->
+      <!-- ── PAGINA: RISULTATI ── -->
       <div id="page-live" class="page">
         <div class="page-header">
-          <h2 class="page-title">⚽ Partite Live</h2>
+          <h2 class="page-title">📊 Risultati</h2>
           <span id="live-updated" class="page-subtitle"></span>
         </div>
 
-        <div id="live-oggi" class="section-block">
-          <h3 class="section-title">Oggi</h3>
-          <div id="live-partite-oggi">
-            <div class="loading-state"><div class="spinner"></div><p>Caricamento partite…</p></div>
+        <!-- Partite in corso (solo se ci sono) -->
+        <div id="live-in-corso" class="section-block" style="display:none">
+          <h3 class="section-title section-title-live">🔴 In corso</h3>
+          <div id="live-partite-incorso"></div>
+        </div>
+
+        <!-- Partite oggi non ancora iniziate -->
+        <div id="live-oggi" class="section-block" style="display:none">
+          <h3 class="section-title">⏰ Oggi</h3>
+          <div id="live-partite-oggi"></div>
+        </div>
+
+        <!-- Risultati per girone -->
+        <div id="live-gironi" class="section-block">
+          <h3 class="section-title">📋 Risultati per girone</h3>
+          <div id="live-gironi-container">
+            <div class="loading-state"><div class="spinner"></div><p>Caricamento…</p></div>
           </div>
         </div>
 
-        <div id="live-prossime" class="section-block">
-          <h3 class="section-title">Prossime partite</h3>
+        <!-- Prossime partite -->
+        <div id="live-prossime" class="section-block" style="display:none">
+          <h3 class="section-title">📅 Prossime partite</h3>
           <div id="live-partite-prossime"></div>
-        </div>
-
-        <div id="live-risultati" class="section-block">
-          <h3 class="section-title">Risultati recenti</h3>
-          <div id="live-partite-risultati"></div>
         </div>
       </div>
 
