@@ -1290,3 +1290,78 @@ function _raccogliDalDOM() {
   document.querySelectorAll('.score-input').forEach(input => {
     const val = parseInt(input.value);
     if (!_pronostici.gironi) _p
+    + '<thead><tr><th>#</th><th>Squadra</th><th>Girone</th><th>Pt</th><th>GD</th><th>GF</th></tr></thead>'
+    + '<tbody>';
+
+  terziData.forEach((t, i) => {
+    const sq = SQUADRE_BY_ID[t.teamId];
+    const gdStr = t.gd > 0 ? '+' + t.gd : '' + t.gd;
+    const gdCls = t.gd > 0 ? 'gd-pos' : t.gd < 0 ? 'gd-neg' : '';
+    const qualif = i < 8;
+    const rowCls = qualif ? 'qualificata' : '';
+    const hasData = t.g > 0;
+    const icon = i === 7 ? '<span class="terza-cutoff" title="Ultimo posto qualificato">✂️ </span>' : '';
+    terziHtml += '<tr class="' + rowCls + '">'
+      + '<td class="riepilogo-pos">' + icon + (i + 1) + '</td>'
+      + '<td class="riepilogo-team">' + (sq?.flag || '') + ' ' + (sq?.nome || t.teamId) + '</td>'
+      + '<td class="riepilogo-girone">Girone ' + t.lettera + '</td>'
+      + '<td class="riepilogo-pt">' + (hasData ? t.pt : '—') + '</td>'
+      + '<td class="riepilogo-gd"><span class="' + gdCls + '">' + (hasData ? gdStr : '—') + '</span></td>'
+      + '<td class="riepilogo-gf">' + (hasData ? t.gf : '—') + '</td>'
+      + '</tr>';
+  });
+
+  terziHtml += '</tbody></table>'
+    + '<div class="riepilogo-legend">'
+    + '<span class="legend-item legend-qualif">🟢 Qualificate ai sedicesimi</span>'
+    + '<span class="legend-item legend-terza">🟡 Non qualificate</span>'
+    + '</div>'
+    + '</div>';
+
+  container.innerHTML = gridHtml + terziHtml;
+}
+
+async function _salvaPronostici() {
+  const btn = document.getElementById('btn-salva-pronostici');
+  const msg = document.getElementById('pronostici-save-msg');
+  btn.disabled = true;
+  btn.textContent = 'Salvataggio...';
+  try {
+    _raccogliDalDOM();
+    await savePronostici(STATE.utente.id, _pronostici);
+    showToast('Pronostici salvati!', 'success');
+    msg.textContent = 'Salvato il ' + new Date().toLocaleString('it-IT');
+    msg.className = 'save-message save-ok';
+    msg.style.display = '';
+  } catch (e) {
+    showToast('Errore nel salvataggio. Riprova.', 'error');
+    msg.textContent = 'Errore.';
+    msg.className = 'save-message save-error';
+    msg.style.display = '';
+  } finally {
+    btn.disabled = !_pronosticiAperti;
+    btn.textContent = 'Salva i miei pronostici';
+  }
+}
+
+function _raccogliDalDOM() {
+  document.querySelectorAll('.score-input').forEach(input => {
+    const val = parseInt(input.value);
+    if (!_pronostici.gironi) _pronostici.gironi = {};
+    if (!_pronostici.gironi[input.dataset.match]) _pronostici.gironi[input.dataset.match] = {};
+    _pronostici.gironi[input.dataset.match][input.dataset.field] = isNaN(val) ? null : val;
+  });
+  ['primo','secondo','terzo'].forEach(key => {
+    const input = document.getElementById('cannon-' + key);
+    if (!input) return;
+    if (!_pronostici.capocannoniere) _pronostici.capocannoniere = {};
+    _pronostici.capocannoniere[key] = input.value.trim() || null;
+  });
+}
+
+function _fmtData(iso) {
+  if (!iso) return '';
+  try {
+    return new Date(iso).toLocaleDateString('it-IT', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit', timeZone:'Europe/Rome' });
+  } catch { return iso; }
+}
