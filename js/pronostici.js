@@ -3,6 +3,10 @@
  */
 
 import DB from '../mondialito_db.json' with { type: 'json' };
+
+// Mappa lookup squadre per ID (DB.squadre ha chiavi numeriche, ma ogni sq ha .id)
+const SQUADRE_BY_ID = {};
+Object.values(DB.squadre).forEach(sq => { SQUADRE_BY_ID[sq.id] = sq; });
 import { STATE } from './app.js';
 import { getPronostici, savePronostici, onSistemaSnapshot } from './db.js';
 import { showToast, showSpinner } from './ui.js';
@@ -279,8 +283,8 @@ function _ricalcolaSedicesimi() {
     // Aggiorna etichette squadre nel matchup
     const spans = card.querySelectorAll('.elim-team');
     if (spans.length >= 2) {
-      const casaSq  = casaId  ? DB.squadre[casaId]  : null;
-      const trasfSq = trasfId ? DB.squadre[trasfId] : null;
+      const casaSq  = casaId  ? SQUADRE_BY_ID[casaId]  : null;
+      const trasfSq = trasfId ? SQUADRE_BY_ID[trasfId] : null;
       spans[0].textContent = casaSq  ? (casaSq.flag  || '') + ' ' + casaSq.nome  : _slotLabel(bracket.casa);
       spans[1].textContent = trasfSq ? (trasfSq.flag || '') + ' ' + trasfSq.nome : _slotLabel(bracket.trasf);
     }
@@ -292,13 +296,13 @@ function _ricalcolaSedicesimi() {
     const teams = [casaId, trasfId].filter(Boolean);
     let opts = '<option value="">— Seleziona —</option>';
     teams.forEach(id => {
-      const sq = DB.squadre[id];
+      const sq = SQUADRE_BY_ID[id];
       const selected = (currVal === id) ? ' selected' : '';
-      opts += '<option value="' + id + '"' + selected + '>' + (sq?.flag || '') + ' ' + sq.nome + '</option>';
+      opts += '<option value="' + id + '"' + selected + '>' + (sq?.flag || '') + ' ' + (sq?.nome || id) + '</option>';
     });
     // Aggiungi l'opzione corrente se non è più valida (slot non ancora risolto)
     if (currVal && !teams.includes(currVal)) {
-      const sq = DB.squadre[currVal];
+      const sq = SQUADRE_BY_ID[currVal];
       if (sq) opts += '<option value="' + currVal + '" selected>' + (sq.flag || '') + ' ' + sq.nome + ' ⚠️</option>';
       // Reset se la squadra selezionata non appartiene più a questa partita
       _setElim('sedicesimi', bracket.id, 'vincitore', null);
@@ -375,7 +379,7 @@ function _renderGironi() {
       + '<h3 class="girone-title">Girone ' + lettera + '</h3>'
       + '<div class="girone-squadre">'
       + girone.squadre.map(id => {
-          const sq = DB.squadre[id];
+          const sq = SQUADRE_BY_ID[id];
           return '<span class="team-chip">' + (sq?.flag||'') + ' ' + (sq?.nome||id) + '</span>';
         }).join('')
       + '</div></div>'
@@ -390,8 +394,8 @@ function _renderGironi() {
 }
 
 function _renderPartitaGirone(p) {
-  const casa      = DB.squadre[p.casa];
-  const trasferta = DB.squadre[p.trasferta];
+  const casa      = SQUADRE_BY_ID[p.casa];
+  const trasferta = SQUADRE_BY_ID[p.trasferta];
   const saved     = _pronostici?.gironi?.[p.id] || {};
   const golCasa   = saved.gol_casa ?? '';
   const golTrasf  = saved.gol_trasferta ?? '';
@@ -481,16 +485,16 @@ function _renderMatchElim(faseId, match) {
   const vincSaved = saved.vincitore || '';
   const modSaved  = saved.modalita  || '';
   // Per i sedicesimi: menù a tendina vuoto, verrà popolato da _ricalcolaSedicesimi
-  const sqOpts = faseId === 'sedicesimi' ? '' : Object.entries(DB.squadre)
-    .map(([id, sq]) => '<option value="' + id + '"' + (vincSaved===id?' selected':'') + '>' + (sq.flag||'') + ' ' + sq.nome + '</option>')
+  const sqOpts = faseId === 'sedicesimi' ? '' : Object.values(SQUADRE_BY_ID)
+    .map(sq => '<option value="' + sq.id + '"' + (vincSaved===sq.id?' selected':'') + '>' + (sq.flag||'') + ' ' + sq.nome + '</option>')
     .join('');
   const modHtml = [['90min',"90'"],['supplementari','Suppl.'],['rigori','Rigori']].map(([v,l]) =>
     '<button type="button" class="modalita-btn' + (modSaved===v?' active':'') + '" data-fase="' + faseId + '" data-match="' + match.id + '" data-mod="' + v + '">' + l + '</button>'
   ).join('');
-  const casaLabel  = match.casa      ? (DB.squadre[match.casa]?.nome      || match.casa)      : '?';
-  const trasfLabel = match.trasferta ? (DB.squadre[match.trasferta]?.nome  || match.trasferta) : '?';
-  const casaFlag   = match.casa      ? (DB.squadre[match.casa]?.flag      || '') : '';
-  const trasfFlag  = match.trasferta ? (DB.squadre[match.trasferta]?.flag  || '') : '';
+  const casaLabel  = match.casa      ? (SQUADRE_BY_ID[match.casa]?.nome      || match.casa)      : '?';
+  const trasfLabel = match.trasferta ? (SQUADRE_BY_ID[match.trasferta]?.nome  || match.trasferta) : '?';
+  const casaFlag   = match.casa      ? (SQUADRE_BY_ID[match.casa]?.flag      || '') : '';
+  const trasfFlag  = match.trasferta ? (SQUADRE_BY_ID[match.trasferta]?.flag  || '') : '';
   const bracketInfo = faseId === 'sedicesimi'
     ? (SEDICESIMI_BRACKET.find(b => b.id === match.id) || {})
     : {};
@@ -551,7 +555,7 @@ function _renderPosizioniGironi() {
     [0,1,2,3].forEach(i => {
       const currId = savedPosiz[i] || '';
       const opts = girone.squadre.map(id => {
-        const sq = DB.squadre[id];
+        const sq = SQUADRE_BY_ID[id];
         return '<option value="' + id + '"' + (currId===id?' selected':'') + '>' + (sq?.flag||'') + ' ' + (sq?.nome||id) + '</option>';
       }).join('');
       html += '<div class="posiz-slot"><span class="posiz-num">' + (i+1) + '°</span>'
@@ -613,7 +617,7 @@ function _ricalcolaClassificaGirone(lettera) {
     if (!hasData) { miniEl.innerHTML = ''; return; }
     let rows = '';
     cl.forEach((t, i) => {
-      const sq = DB.squadre[t.id];
+      const sq = SQUADRE_BY_ID[t.id];
       const gd = (t.gd > 0 ? '+' : '') + t.gd;
       const gdCls = t.gd > 0 ? 'gd-pos' : t.gd < 0 ? 'gd-neg' : '';
       rows += '<tr class="' + (i<2?'qualificata':'') + '">'
@@ -660,7 +664,7 @@ function _renderRiepilogoGironi() {
       + '<thead><tr><th>#</th><th>Squadra</th><th>Pt</th><th>GD</th></tr></thead>'
       + '<tbody>';
     cl.forEach((t, i) => {
-      const sq = DB.squadre[t.id];
+      const sq = SQUADRE_BY_ID[t.id];
       const gdStr = t.gd > 0 ? '+' + t.gd : '' + t.gd;
       const gdCls = t.gd > 0 ? 'gd-pos' : t.gd < 0 ? 'gd-neg' : '';
       const rowCls = i < 2 ? 'qualificata' : i === 2 ? 'terza' : '';
@@ -695,7 +699,7 @@ function _renderRiepilogoGironi() {
     + '<tbody>';
 
   terziData.forEach((t, i) => {
-    const sq = DB.squadre[t.teamId];
+    const sq = SQUADRE_BY_ID[t.teamId];
     const gdStr = t.gd > 0 ? '+' + t.gd : '' + t.gd;
     const gdCls = t.gd > 0 ? 'gd-pos' : t.gd < 0 ? 'gd-neg' : '';
     const qualif = i < 8;
