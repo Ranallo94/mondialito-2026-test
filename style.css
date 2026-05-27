@@ -976,3 +976,154 @@ select.field-input option { background: var(--bg-card2); }
 .mini-team { white-space: nowrap; }
 .gd-pos   { color: var(--verde-light); }
 .gd-neg   { color: var(--rosso); }
+
+/* ══════════════════════════════════════════
+   PAGINA REGOLAMENTO
+══════════════════════════════════════════ */
+.reg-section {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.reg-section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 14px 0;
+}
+
+.reg-table-wrap {
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.reg-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.reg-table thead tr {
+  background: rgba(255,255,255,.04);
+}
+
+.reg-table th {
+  padding: 9px 14px;
+  text-align: left;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
+.reg-table th:last-child {
+  text-align: right;
+  padding-right: 16px;
+}
+
+.reg-table td {
+  padding: 12px 14px;
+  border-top: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.reg-table td:last-child {
+  text-align: right;
+  padding-right: 16px;
+  white-space: nowrap;
+}
+
+.reg-table tr.reg-row-total {
+  background: rgba(255,255,255,.03);
+}
+
+.reg-table tr.reg-row-highlight {
+  background: rgba(251,191,36,.05);
+}
+
+.reg-label {
+  display: block;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.reg-desc {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.reg-pts {
+  display: inline-block;
+  font-weight: 700;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 14px;
+}
+
+.reg-pts--s  { background: rgba(99,102,241,.15);  color: #a5b4fc; }
+.reg-pts--m  { background: rgba(34,197,94,.12);   color: #86efac; }
+.reg-pts--l  { background: rgba(251,146,60,.12);  color: #fdba74; }
+.reg-pts--xl { background: rgba(251,191,36,.15);  color: #fcd34d; }
+
+/* Spareggio */
+.reg-desc-block {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0 0 12px 0;
+}
+
+.reg-spareggio-list {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reg-spareggio-list li {
+  font-size: 14px;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.reg-spareggio-list li::marker {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* Premi */
+.reg-premi-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.reg-premio {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.reg-premio-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.reg-premio-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}

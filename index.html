@@ -129,6 +129,10 @@
         <span class="nav-icon">📊</span>
         <span class="nav-label">Il mio profilo</span>
       </button>
+      <button class="nav-item" data-page="regolamento">
+        <span class="nav-icon">📖</span>
+        <span class="nav-label">Regolamento</span>
+      </button>
       <button class="nav-item nav-admin" data-page="admin" id="nav-admin" style="display:none">
         <span class="nav-icon">⚙️</span>
         <span class="nav-label">Admin</span>
@@ -310,6 +314,174 @@
           </div>
         </div>
       </div>
+
+      <!-- ── PAGINA: REGOLAMENTO ── -->
+      <div id="page-regolamento" class="page">
+        <div class="page-header">
+          <h2 class="page-title">📖 Regolamento</h2>
+          <span class="page-subtitle">Come si calcolano i punti</span>
+        </div>
+
+        <!-- FASE A GIRONI -->
+        <div class="reg-section">
+          <h3 class="reg-section-title">⚽ Fase a gironi</h3>
+          <div class="reg-table-wrap">
+            <table class="reg-table">
+              <thead><tr><th>Pronostico</th><th>Punti</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <span class="reg-label">Segno corretto (1 / X / 2)</span>
+                    <span class="reg-desc">Indovini chi vince o se è pareggio</span>
+                  </td>
+                  <td><span class="reg-pts reg-pts--s">10 pt</span></td>
+                </tr>
+                <tr>
+                  <td>
+                    <span class="reg-label">Risultato esatto (bonus)</span>
+                    <span class="reg-desc">Indovini anche il punteggio preciso — si somma al segno</span>
+                  </td>
+                  <td><span class="reg-pts reg-pts--s">+5 pt</span></td>
+                </tr>
+                <tr class="reg-row-total">
+                  <td><span class="reg-label">Risultato esatto (totale)</span></td>
+                  <td><span class="reg-pts reg-pts--m">15 pt</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- POSIZIONI GIRONE -->
+        <div class="reg-section">
+          <h3 class="reg-section-title">📊 Posizioni finali nel girone</h3>
+          <div class="reg-table-wrap">
+            <table class="reg-table">
+              <thead><tr><th>Pronostico</th><th>Punti</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <span class="reg-label">Posizione corretta (1° / 2° / 3° / 4°)</span>
+                    <span class="reg-desc">Per ogni squadra del girone piazzata esattamente dove previsto.<br>Calcolato solo per le squadre che raggiungono i sedicesimi.</span>
+                  </td>
+                  <td><span class="reg-pts reg-pts--s">10 pt</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- FASI ELIMINATORIE -->
+        <div class="reg-section">
+          <h3 class="reg-section-title">🏟️ Fasi eliminatorie</h3>
+          <div class="info-banner info-banner--blue" style="margin-bottom:12px">
+            <span>📌</span>
+            <span>Per ogni fase indovini quali squadre ci arrivano. Il punteggio scala con l'avanzare del torneo.</span>
+          </div>
+          <div class="reg-table-wrap">
+            <table class="reg-table">
+              <thead><tr><th>Turno</th><th>Per squadra indovinata</th></tr></thead>
+              <tbody>
+                <tr><td><span class="reg-label">Sedicesimi di finale</span></td><td><span class="reg-pts reg-pts--s">5 pt</span></td></tr>
+                <tr><td><span class="reg-label">Ottavi di finale</span></td><td><span class="reg-pts reg-pts--s">10 pt</span></td></tr>
+                <tr><td><span class="reg-label">Quarti di finale</span></td><td><span class="reg-pts reg-pts--m">20 pt</span></td></tr>
+                <tr><td><span class="reg-label">Semifinali</span></td><td><span class="reg-pts reg-pts--m">30 pt</span></td></tr>
+                <tr><td><span class="reg-label">Finale (ogni finalista)</span></td><td><span class="reg-pts reg-pts--l">50 pt</span></td></tr>
+                <tr class="reg-row-highlight"><td><span class="reg-label">Vincitore del torneo</span></td><td><span class="reg-pts reg-pts--xl">70 pt</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="reg-table-wrap" style="margin-top:12px">
+            <table class="reg-table">
+              <thead><tr><th>Bonus per ogni partita eliminatoria</th><th>Punti</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <span class="reg-label">Modalità di passaggio turno corretta</span>
+                    <span class="reg-desc">Indovini se la partita si decide in 90 min, supplementari o rigori — solo se indovini anche il vincitore</span>
+                  </td>
+                  <td><span class="reg-pts reg-pts--s">+5 pt</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- CAPOCANNONIERE -->
+        <div class="reg-section">
+          <h3 class="reg-section-title">👟 Capocannoniere</h3>
+          <div class="reg-table-wrap">
+            <table class="reg-table">
+              <thead><tr><th>Pronostico</th><th>Punti</th></tr></thead>
+              <tbody>
+                <tr><td><span class="reg-label">1° classificato esatto</span></td><td><span class="reg-pts reg-pts--xl">40 pt</span></td></tr>
+                <tr><td><span class="reg-label">2° classificato esatto</span></td><td><span class="reg-pts reg-pts--l">20 pt</span></td></tr>
+                <tr><td><span class="reg-label">3° classificato esatto</span></td><td><span class="reg-pts reg-pts--m">10 pt</span></td></tr>
+                <tr>
+                  <td>
+                    <span class="reg-label">Cannoniere nella terna (posizione sbagliata)</span>
+                    <span class="reg-desc">Il giocatore è tra i primi 3 ma non esattamente dove previsto</span>
+                  </td>
+                  <td><span class="reg-pts reg-pts--s">10 pt</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="info-banner" style="margin-top:10px">
+            <span>⚠️</span>
+            <span>I giocatori selezionabili sono quelli delle pre-selezioni ufficiali. Non sono sostituibili in caso di forfait.</span>
+          </div>
+        </div>
+
+        <!-- CRITERI DI SPAREGGIO -->
+        <div class="reg-section">
+          <h3 class="reg-section-title">⚖️ Criteri di spareggio</h3>
+          <p class="reg-desc-block">In caso di parità di punteggio, la classifica viene determinata nell'ordine seguente:</p>
+          <ol class="reg-spareggio-list">
+            <li>Squadra vincente del torneo indovinata</li>
+            <li>Numero delle finaliste indovinate</li>
+            <li>Numero delle semifinaliste indovinate</li>
+            <li>Numero delle squadre ai quarti indovinate</li>
+            <li>Numero delle squadre agli ottavi indovinate</li>
+            <li>Numero di risultati esatti indovinati</li>
+            <li>Vincitore della classifica cannonieri indovinato</li>
+            <li>Numero dei posizionamenti in griglia indovinati</li>
+            <li>Numero dei cannonieri indovinati nella terna</li>
+            <li>Numero dei segni delle partite nel girone (1 / X / 2) indovinati</li>
+            <li>Numero delle modalità di passaggio turno indovinate</li>
+            <li>Smezzate</li>
+          </ol>
+        </div>
+
+        <!-- PREMI -->
+        <div class="reg-section">
+          <h3 class="reg-section-title">🏆 Premi</h3>
+          <div class="info-banner info-banner--yellow">
+            <span>📢</span>
+            <span>I premi verranno stabiliti in base al numero definitivo di partecipanti e annunciati il giorno successivo all'inizio del torneo.</span>
+          </div>
+          <div class="reg-premi-grid">
+            <div class="reg-premio">
+              <span class="reg-premio-icon">🥇</span>
+              <span class="reg-premio-label">1° classificato</span>
+            </div>
+            <div class="reg-premio">
+              <span class="reg-premio-icon">🥈</span>
+              <span class="reg-premio-label">2° classificato</span>
+            </div>
+            <div class="reg-premio">
+              <span class="reg-premio-icon">🥉</span>
+              <span class="reg-premio-label">3° classificato</span>
+            </div>
+            <div class="reg-premio">
+              <span class="reg-premio-icon">🪣</span>
+              <span class="reg-premio-label">Ultimo classificato</span>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /page-regolamento -->
 
     </main>
   </div>
