@@ -821,6 +821,76 @@ select.field-input option { background: var(--bg-card2); }
 .match-fase      { color: var(--oro); font-weight: 600; font-size: 11px; text-transform: uppercase; }
 .match-modalita  { margin-top: 6px; text-align: center; font-size: 11px; color: var(--text-muted); }
 
+/* ── SUB-TAB GIRONI ── */
+.girone-subtab-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+.girone-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.girone-tab:hover { border-color: var(--verde-light); color: var(--text); }
+.girone-tab.active { background: var(--verde); border-color: var(--verde-light); color: #fff; }
+.gtab-letter { }
+.gtab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.gtab-badge.partial { background: rgba(255,180,0,.25); color: var(--oro); }
+.gtab-badge.complete { background: rgba(0,200,100,.25); color: #4caf50; }
+.girone-panel { display: none; }
+.girone-panel.active { display: block; }
+.girone-save-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+.btn-salva-girone {
+  background: var(--verde);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 10px 22px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity .15s;
+}
+.btn-salva-girone:hover { opacity: .85; }
+.btn-salva-girone:disabled { opacity: .5; cursor: not-allowed; }
+.girone-save-msg {
+  font-size: 13px;
+  color: var(--text-muted);
+  flex: 1;
+  min-width: 0;
+}
+.girone-save-msg.gsm-ok    { color: #4caf50; font-weight: 600; }
+.girone-save-msg.gsm-error { color: #e74c3c; font-weight: 600; }
+
 /* ── PRONOSTICI FORM ADDIZIONALI ── */
 .girone-block    { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; }
 .girone-header   { margin-bottom: 12px; }
