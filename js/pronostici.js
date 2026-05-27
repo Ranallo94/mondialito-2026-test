@@ -837,25 +837,113 @@ function _aggiornaBtnSalva() {
 
 function _renderGironi() {
   const container = document.getElementById('gironi-container');
-  let html = '';
-  Object.entries(DB.gironi).forEach(([lettera, girone]) => {
-    html += '<div class="girone-block">'
-      + '<div class="girone-header">'
-      + '<h3 class="girone-title">Girone ' + lettera + '</h3>'
+  const lettere = Object.keys(DB.gironi);
+
+  // ── Barra sub-tab ────────────────────────────────────────────────────────
+  let html = '<div class="girone-subtab-bar">';
+  lettere.forEach((l, i) => {
+    html += '<button class="girone-tab' + (i===0?' active':'') + '" data-girone="' + l + '">'
+      + '<span class="gtab-letter">Girone ' + l + '</span>'
+      + '<span class="gtab-badge" id="badge-girone-' + l + '"></span>'
+      + '</button>';
+  });
+  html += '</div>';
+
+  // ── Pannelli girone ──────────────────────────────────────────────────────
+  Object.entries(DB.gironi).forEach(([lettera, girone], i) => {
+    html += '<div class="girone-panel' + (i===0?' active':'') + '" id="girone-panel-' + lettera + '">'
       + '<div class="girone-squadre">'
       + girone.squadre.map(id => {
           const sq = SQUADRE_BY_ID[id];
           return '<span class="team-chip">' + (sq?.flag||'') + ' ' + (sq?.nome||id) + '</span>';
         }).join('')
-      + '</div></div>'
+      + '</div>'
       + '<div class="partite-list">'
       + girone.partite.map(p => _renderPartitaGirone(p)).join('')
       + '</div>'
       + '<div class="girone-classifica-mini" id="classifica-girone-' + lettera + '"></div>'
+      + '<div class="girone-save-row">'
+      + '<span class="girone-save-msg" id="save-msg-girone-' + lettera + '"></span>'
+      + '<button type="button" class="btn btn-salva-girone" data-girone="' + lettera + '">💾 Salva Girone ' + lettera + '</button>'
+      + '</div>'
       + '</div>';
   });
+
   container.innerHTML = html;
   _bindSegniGirone();
+  _bindGironeTabs();
+  container.querySelectorAll('.btn-salva-girone').forEach(btn => {
+    btn.addEventListener('click', () => _salvaGirone(btn.dataset.girone));
+  });
+}
+
+function _bindGironeTabs() {
+  document.querySelectorAll('.girone-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.girone-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.girone-panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      const panel = document.getElementById('girone-panel-' + tab.dataset.girone);
+      if (panel) panel.classList.add('active');
+    });
+  });
+}
+
+function _aggiornaBadgeGirone(lettera) {
+  const girone = DB.gironi[lettera];
+  if (!girone) return;
+  let completi = 0;
+  girone.partite.forEach(p => {
+    const d = _pronostici?.gironi?.[p.id];
+    if (d?.gol_casa != null && d?.gol_trasferta != null) completi++;
+  });
+  const badge = document.getElementById('badge-girone-' + lettera);
+  if (!badge) return;
+  const tot = girone.partite.length;
+  if (completi === 0) { badge.textContent = ''; badge.className = 'gtab-badge'; }
+  else if (completi < tot) { badge.textContent = completi + '/' + tot; badge.className = 'gtab-badge partial'; }
+  else { badge.textContent = '✓'; badge.className = 'gtab-badge complete'; }
+}
+
+async function _salvaGirone(lettera) {
+  if (!_pronosticiAperti) { showToast('I pronostici sono chiusi!', 'error'); return; }
+  const girone = DB.gironi[lettera];
+  if (!girone) return;
+
+  // Validazione: ogni partita deve avere gol_casa e gol_trasferta
+  const mancanti = [];
+  girone.partite.forEach(p => {
+    const d = _pronostici?.gironi?.[p.id];
+    if (d?.gol_casa == null || d?.gol_trasferta == null) {
+      const casa  = SQUADRE_BY_ID[p.casa];
+      const trasf = SQUADRE_BY_ID[p.trasferta];
+      mancanti.push((casa?.nome || p.casa) + ' - ' + (trasf?.nome || p.trasferta));
+    }
+  });
+
+  const msg = document.getElementById('save-msg-girone-' + lettera);
+  const btn = document.querySelector('.btn-salva-girone[data-girone="' + lettera + '"]');
+
+  if (mancanti.length) {
+    if (msg) { msg.textContent = '⚠️ Partite incomplete: ' + mancanti.join(' | '); msg.className = 'girone-save-msg gsm-error'; }
+    showToast('Completa tutte le ' + girone.partite.length + ' partite del Girone ' + lettera, 'error');
+    return;
+  }
+
+  btn.disabled = true;
+  if (msg) { msg.textContent = 'Salvataggio...'; msg.className = 'girone-save-msg'; }
+  try {
+    _raccogliDalDOM();
+    await savePronostici(STATE.utente.id, _pronostici);
+    if (msg) { msg.textContent = '✅ Girone ' + lettera + ' salvato!'; msg.className = 'girone-save-msg gsm-ok'; }
+    _aggiornaBadgeGirone(lettera);
+    showToast('Girone ' + lettera + ' salvato!', 'success');
+  } catch(e) {
+    if (msg) { msg.textContent = '❌ Errore nel salvataggio.'; msg.className = 'girone-save-msg gsm-error'; }
+    showToast('Errore nel salvataggio', 'error');
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 function _renderPartitaGirone(p) {
@@ -1214,6 +1302,11 @@ function _ricalcolaClassificaGirone(lettera) {
       }
     });
   }
+  // Aggiorna il badge sul tab del girone
+  _aggiornaBadgeGirone(lettera);
+  // Ricalcola sedicesimi e riepilogo
+  _ricalcolaSedicesimi();
+  _renderRiepilogoGironi();
 }
 
 
@@ -1305,53 +1398,4 @@ function _renderRiepilogoGironi() {
 }
 
 async function _salvaPronostici() {
-  const btn = document.getElementById('btn-salva-pronostici');
-  const msg = document.getElementById('pronostici-save-msg');
-  btn.disabled = true;
-  btn.textContent = 'Salvataggio...';
-  try {
-    _raccogliDalDOM();
-    await savePronostici(STATE.utente.id, _pronostici);
-    showToast('Pronostici salvati!', 'success');
-    msg.textContent = 'Salvato il ' + new Date().toLocaleString('it-IT');
-    msg.className = 'save-message save-ok';
-    msg.style.display = '';
-  } catch (e) {
-    showToast('Errore nel salvataggio. Riprova.', 'error');
-    msg.textContent = 'Errore.';
-    msg.className = 'save-message save-error';
-    msg.style.display = '';
-  } finally {
-    btn.disabled = !_pronosticiAperti;
-    btn.textContent = 'Salva i miei pronostici';
-  }
-}
-
-function _raccogliDalDOM() {
-  document.querySelectorAll('.score-input').forEach(input => {
-    const val = parseInt(input.value);
-    if (!_pronostici.gironi) _pronostici.gironi = {};
-    if (!_pronostici.gironi[input.dataset.match]) _pronostici.gironi[input.dataset.match] = {};
-    _pronostici.gironi[input.dataset.match][input.dataset.field] = isNaN(val) ? null : val;
-  });
-  ['primo','secondo','terzo'].forEach(key => {
-    const input = document.getElementById('cannon-' + key);
-    if (!input) return;
-    if (!_pronostici.capocannoniere) _pronostici.capocannoniere = {};
-    const v = input.value.trim();
-    // Salva solo se il valore è nell'elenco ufficiale, altrimenti svuota
-    if (!v || VALORI_VALIDI_CANNON.has(v)) {
-      _pronostici.capocannoniere[key] = v || null;
-    } else {
-      input.value = '';
-      _pronostici.capocannoniere[key] = null;
-    }
-  });
-}
-
-function _fmtData(iso) {
-  if (!iso) return '';
-  try {
-    return new Date(iso).toLocaleDateString('it-IT', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit', timeZone:'Europe/Rome' });
-  } catch { return iso; }
-}
+  const btn = document.getElementById('btn-salva-prono
