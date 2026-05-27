@@ -609,6 +609,56 @@ const GIOCATORI = [
   { cognome: 'Davis', nome: 'Roderick', squadra: 'PAN' }
 ];
 
+// ── CRITERI FIFA 2026 PER PARITÀ DI PUNTI ──────────────────────────────
+// Criteri ufficiali (art. 20 Regolamento FIFA 2026):
+//  1. Punti  2. GD generale  3. GF generale
+//  4. Punti H2H  5. GD H2H  6. GF H2H
+//  7. Punti disciplinari  8. Ranking FIFA  (non implementabili su pronostici)
+
+function _calcH2H(teamIds, partite) {
+  const h2h = {};
+  teamIds.forEach(id => { h2h[id] = { pt:0, gf:0, gs:0, gd:0 }; });
+  partite.forEach(p => {
+    if (!teamIds.includes(p.casa) || !teamIds.includes(p.trasferta)) return;
+    const pr = _pronostici?.gironi?.[p.id];
+    const gc = pr?.gol_casa, gt = pr?.gol_trasferta;
+    if (gc == null || gt == null) return;
+    h2h[p.casa].gf    += gc;  h2h[p.casa].gs    += gt;  h2h[p.casa].gd    += gc - gt;
+    h2h[p.trasferta].gf += gt; h2h[p.trasferta].gs += gc; h2h[p.trasferta].gd += gt - gc;
+    if      (gc > gt) h2h[p.casa].pt += 3;
+    else if (gc < gt) h2h[p.trasferta].pt += 3;
+    else              { h2h[p.casa].pt++; h2h[p.trasferta].pt++; }
+  });
+  return h2h;
+}
+
+function _sortClassificaFIFA(classifica, partite) {
+  // Primo ordinamento per punti generali
+  classifica.sort((a, b) => b.pt - a.pt);
+  // Raggruppa le squadre a parità di punti e applica H2H internamente
+  const result = [];
+  let i = 0;
+  while (i < classifica.length) {
+    let j = i;
+    while (j < classifica.length && classifica[j].pt === classifica[i].pt) j++;
+    const gruppo = classifica.slice(i, j);
+    if (gruppo.length > 1) {
+      const h2h = _calcH2H(gruppo.map(t => t.id), partite);
+      // Ordine: H2H pt → H2H GD → H2H GF → GD generale → GF generale
+      gruppo.sort((a, b) =>
+        (h2h[b.id].pt  - h2h[a.id].pt)  ||
+        (h2h[b.id].gd  - h2h[a.id].gd)  ||
+        (h2h[b.id].gf  - h2h[a.id].gf)  ||
+        (b.gd - a.gd)                    ||
+        (b.gf - a.gf)
+      );
+    }
+    gruppo.forEach(t => result.push(t));
+    i = j;
+  }
+  return result;
+}
+
 // ── CALCOLO CLASSIFICA PURA (senza rendering) ──────────────────────────
 function _getClassificaCompleta(lettera) {
   const girone = DB.gironi[lettera];
@@ -626,8 +676,8 @@ function _getClassificaCompleta(lettera) {
     else if (gc === gt) { stats[p.casa].pt++; stats[p.trasferta].pt++; }
     else stats[p.trasferta].pt += 3;
   });
-  return girone.squadre.map(id => ({ id, ...stats[id] }))
-    .sort((a,b) => b.pt-a.pt || b.gd-a.gd || b.gf-a.gf);
+  const classifica = girone.squadre.map(id => ({ id, ...stats[id] }));
+  return _sortClassificaFIFA(classifica, girone.partite);
 }
 
 // ── DETERMINA I TERZI IN BASE ALLA TABELLA FIFA ─────────────────────────
@@ -1276,8 +1326,10 @@ function _ricalcolaClassificaGirone(lettera) {
     else if (gc === gt) { stats[p.casa].pt++; stats[p.trasferta].pt++; }
     else stats[p.trasferta].pt += 3;
   });
-  const cl = girone.squadre.map(id => ({ id, ...stats[id] }))
-    .sort((a,b) => b.pt-a.pt || b.gd-a.gd || b.gf-a.gf);
+  const cl = _sortClassificaFIFA(
+    girone.squadre.map(id => ({ id, ...stats[id] })),
+    girone.partite
+  );
   const hasData = cl.some(t => t.g > 0);
   const miniEl = document.getElementById('classifica-girone-' + lettera);
   if (miniEl) {
