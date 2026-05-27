@@ -337,6 +337,7 @@ export async function initPronostici() {
   _renderSpeciali();
   Object.keys(DB.gironi).forEach(l => _ricalcolaClassificaGirone(l));
   _ricalcolaSedicesimi();
+  _renderRiepilogoGironi();
   document.getElementById('form-pronostici').addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!_pronosticiAperti) { showToast('I pronostici sono chiusi!', 'error'); return; }
@@ -636,6 +637,94 @@ function _ricalcolaClassificaGirone(lettera) {
       }
     });
   }
+}
+
+
+// ── RIEPILOGO GIRONI ────────────────────────────────────────────────────
+function _renderRiepilogoGironi() {
+  const container = document.getElementById('riepilogo-container');
+  if (!container) return;
+
+  const lettere = Object.keys(DB.gironi);
+  const allClassifiche = {};
+  lettere.forEach(l => { allClassifiche[l] = _getClassificaCompleta(l); });
+
+  // ── Griglia classifiche per girone ──
+  let gridHtml = '<div class="riepilogo-grid">';
+  lettere.forEach(lettera => {
+    const cl = allClassifiche[lettera];
+    const hasData = cl.some(t => t.g > 0);
+    gridHtml += '<div class="riepilogo-card">'
+      + '<div class="riepilogo-card-header">Girone ' + lettera + '</div>'
+      + '<table class="riepilogo-table">'
+      + '<thead><tr><th>#</th><th>Squadra</th><th>Pt</th><th>GD</th></tr></thead>'
+      + '<tbody>';
+    cl.forEach((t, i) => {
+      const sq = DB.squadre[t.id];
+      const gdStr = t.gd > 0 ? '+' + t.gd : '' + t.gd;
+      const gdCls = t.gd > 0 ? 'gd-pos' : t.gd < 0 ? 'gd-neg' : '';
+      const rowCls = i < 2 ? 'qualificata' : i === 2 ? 'terza' : '';
+      const ptDisp = hasData ? t.pt : '—';
+      const gdDisp = hasData ? '<span class="' + gdCls + '">' + gdStr + '</span>' : '—';
+      gridHtml += '<tr class="' + rowCls + '">'
+        + '<td class="riepilogo-pos">' + (i + 1) + '</td>'
+        + '<td class="riepilogo-team">' + (sq?.flag || '') + ' ' + (sq?.nome || t.id) + '</td>'
+        + '<td class="riepilogo-pt">' + ptDisp + '</td>'
+        + '<td class="riepilogo-gd">' + gdDisp + '</td>'
+        + '</tr>';
+    });
+    gridHtml += '</tbody></table></div>';
+  });
+  gridHtml += '</div>';
+
+  // ── Classifica migliori terze ──
+  const terziData = [];
+  lettere.forEach(lettera => {
+    const cl = allClassifiche[lettera];
+    if (cl.length < 3) return;
+    const t = cl[2];
+    terziData.push({ lettera, teamId: t.id, pt: t.pt, gd: t.gd, gf: t.gf, g: t.g });
+  });
+  terziData.sort((a, b) => b.pt - a.pt || b.gd - a.gd || b.gf - a.gf);
+
+  let terziHtml = '<div class="riepilogo-terze-wrap">'
+    + '<h3 class="riepilogo-terze-title">🏅 Migliori terze classificate</h3>'
+    + '<p class="riepilogo-terze-desc">Le 8 migliori terze si qualificano per i sedicesimi. L'ordine qui determina la loro posizione nel bracket.</p>'
+    + '<table class="riepilogo-table riepilogo-terze-table">'
+    + '<thead><tr><th>#</th><th>Squadra</th><th>Girone</th><th>Pt</th><th>GD</th><th>GF</th></tr></thead>'
+    + '<tbody>';
+
+  terziData.forEach((t, i) => {
+    const sq = DB.squadre[t.teamId];
+    const gdStr = t.gd > 0 ? '+' + t.gd : '' + t.gd;
+    const gdCls = t.gd > 0 ? 'gd-pos' : t.gd < 0 ? 'gd-neg' : '';
+    const qualif = i < 8;
+    const rowCls = qualif ? 'qualificata' : '';
+    const hasData = t.g > 0;
+    const icon = i === 7 && qualif ? '<span class="terza-cutoff" title="Ultimo posto qualificato">✂️ </span>' : '';
+    terziHtml += '<tr class="' + rowCls + '">'
+      + '<td class="riepilogo-pos">' + icon + (i + 1) + '</td>'
+      + '<td class="riepilogo-team">' + (sq?.flag || '') + ' ' + (sq?.nome || t.teamId) + '</td>'
+      + '<td class="riepilogo-girone">Girone ' + t.lettera + '</td>'
+      + '<td class="riepilogo-pt">' + (hasData ? t.pt : '—') + '</td>'
+      + '<td class="riepilogo-gd"><span class="' + gdCls + '">' + (hasData ? gdStr : '—') + '</span></td>'
+      + '<td class="riepilogo-gf">' + (hasData ? t.gf : '—') + '</td>'
+      + '</tr>';
+  });
+
+  // Linea separatrice tra qualificate e non
+  if (terziData.length > 8) {
+    // Already handled with row classes above
+  }
+
+  terziHtml += '</tbody></table>'
+    + '<div class="riepilogo-legend">'
+    + '<span class="legend-item legend-qualif">🟢 Qualificate ai sedicesimi</span>'
+    + '<span class="legend-item legend-terza">🟡 Terza classificata (non qualificata)</span>'
+    + '</div>'
+    + '</div>';
+
+  container.innerHTML = gridHtml + terziHtml;
 }
 
 async function _salvaPronostici() {
