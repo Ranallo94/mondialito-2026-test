@@ -322,6 +322,7 @@ async function _initTabPartecipanti() {
 async function _initTabSistema() {
   try {
     const cfg = await getSistema();
+    await _initSparteggioTerze(cfg);
 
     // Stato pronostici
     const statusEl = document.getElementById('sistema-pronostici-status');
@@ -389,4 +390,142 @@ async function _initTabSistema() {
   } catch (e) {
     console.warn('Errore init sistema:', e);
   }
+}
+
+// ── SPAREGGIO MIGLIORI TERZE ──────────────────────────
+
+async function _initSparteggioTerze(cfg) {
+  const container = document.getElementById('spareggio-terze-container');
+  if (!container) return;
+
+  // Carica risultati reali per calcolare le terze classificate
+  let risultati = {};
+  try { risultati = await getRisultati(); } catch (e) {}
+
+  // Per ogni girone, calcola la classifica e prendi la 3ª
+  const terze = [];
+  Object.entries(DB.gironi).forEach(([lettera, girone]) => {
+    const stats = {};
+    girone.squadre.forEach(id => { stats[id] = { pt: 0, g: 0, gf: 0, gs: 0, gd: 0 }; });
+    girone.partite.forEach(p => {
+      const r = risultati?.gironi?.[p.id];
+      if (r?.gol_casa == null || r?.gol_trasferta == null) return;
+      const gc = r.gol_casa, gt = r.gol_trasferta;
+      stats[p.casa].g++;    stats[p.trasferta].g++;
+      stats[p.casa].gf    += gc; stats[p.casa].gs    += gt; stats[p.casa].gd    += gc - gt;
+      stats[p.trasferta].gf += gt; stats[p.trasferta].gs += gc; stats[p.trasferta].gd += gt - gc;
+      if (gc > gt)      stats[p.casa].pt += 3;
+      else if (gc < gt) stats[p.trasferta].pt += 3;
+      else { stats[p.casa].pt++; stats[p.trasferta].pt++; }
+    });
+    const cl = girone.squadre
+      .map(id => ({ id, lettera, ...stats[id] }))
+      .sort((a, b) => b.pt - a.pt || b.gd - a.gd || b.gf - a.gf);
+    if (cl.length >= 3) terze.push(cl[2]);
+  });
+
+  // Ordina automaticamente pt → GD → GF
+  terze.sort((a, b) => b.pt - a.pt || b.gd - a.gd || b.gf - a.gf);
+
+  // Applica override salvato (se presente e coerente)
+  const override = cfg.spareggio_terze || [];
+  let ordered = [...terze];
+  if (override.length === terze.length) {
+    const byId = Object.fromEntries(terze.map(t => [t.id, t]));
+    const fromOverride = override.map(id => byId[id]).filter(Boolean);
+    if (fromOverride.length === terze.length) ordered = fromOverride;
+  }
+
+  _renderSparteggioTerze(ordered);
+
+  document.getElementById('btn-salva-spareggio')?.addEventListener('click', async () => {
+    const items = document.querySelectorAll('.spareggio-item');
+    const newOrder = [...items].map(el => el.dataset.teamId);
+    const msgEl = document.getElementById('spareggio-save-msg');
+    if (msgEl) { msgEl.textContent = ''; msgEl.className = 'spareggio-save-msg'; }
+    try {
+      await updateSistema({ spareggio_terze: newOrder });
+      cfg.spareggio_terze = newOrder;
+      if (msgEl) { msgEl.textContent = '✓ Ordine salvato!'; msgEl.classList.add('ssm-ok'); }
+      setTimeout(() => { if (msgEl) { msgEl.textContent = ''; msgEl.className = 'spareggio-save-msg'; } }, 3000);
+    } catch (e) {
+      if (msgEl) { msgEl.textContent = '✗ Errore: ' + e.message; msgEl.classList.add('ssm-error'); }
+    }
+  });
+}
+
+function _renderSparteggioTerze(terze) {
+  const container = document.getElementById('spareggio-terze-container');
+  if (!container) return;
+
+  if (!terze.length) {
+    container.innerHTML = '<p class="text-muted">Nessun risultato disponibile — le terze classificate saranno visibili a gironi completati.</p>';
+    return;
+  }
+
+  // Individua squadre in parità perfetta (pt + GD + GF uguali a un vicino)
+  const key = t => `${t.pt}_${t.gd}_${t.gf}`;
+  const tied = new Set();
+  for (let i = 0; i < terze.length - 1; i++) {
+    if (key(terze[i]) === key(terze[i + 1])) {
+      tied.add(terze[i].id);
+      tied.add(terze[i + 1].id);
+    }
+  }
+
+  const rows = terze.map((t, i) => {
+    const sq = DB.squadre[t.id];
+    const gdStr = (t.gd >= 0 ? '+' : '') + t.gd;
+    const isTied = tied.has(t.id);
+    const qualBadge = i < 8
+      ? '<span class="sp-q" title="Qualificata">✓</span>'
+      : '<span class="sp-nq" title="Eliminata">✗</span>';
+    const noData = t.g === 0 ? '<span class="sp-nodata">nessun risultato</span>' : '';
+    return `
+      <div class="spareggio-item${isTied ? ' spareggio-tied' : ''}" data-team-id="${t.id}">
+        <div class="spareggio-pos">${qualBadge} ${i + 1}</div>
+        <div class="spareggio-team">
+          ${sq?.flag || ''} <strong>${t.id}</strong>
+          <span class="sp-nome">${sq?.nome || ''}</span>
+          <span class="sp-girone">Girone ${t.lettera}</span>
+        </div>
+        <div class="spareggio-stats">
+          <span><strong>${t.pt}</strong> pt</span>
+          <span>${gdStr} GD</span>
+          <span>${t.gf} GF</span>
+          ${noData}
+        </div>
+        <div class="spareggio-actions">
+          <button type="button" class="btn-sp btn-sp-up" title="Sposta su" ${i === 0 ? 'disabled' : ''}>▲</button>
+          <button type="button" class="btn-sp btn-sp-down" title="Sposta giù" ${i === terze.length - 1 ? 'disabled' : ''}>▼</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  container.innerHTML = `<div class="spareggio-list">${rows}</div>`;
+
+  // Bind pulsanti ▲▼ con delegazione eventi
+  container.addEventListener('click', e => {
+    const up   = e.target.closest('.btn-sp-up');
+    const down = e.target.closest('.btn-sp-down');
+    if (!up && !down) return;
+    const item = (up || down).closest('.spareggio-item');
+    const list = item.parentElement;
+    const items = [...list.querySelectorAll('.spareggio-item')];
+    const idx = items.indexOf(item);
+    if (up && idx > 0) {
+      list.insertBefore(item, items[idx - 1]);
+    } else if (down && idx < items.length - 1) {
+      list.insertBefore(items[idx + 1], item);
+    }
+    // Aggiorna posizioni, badge e stato pulsanti
+    [...list.querySelectorAll('.spareggio-item')].forEach((el, i, arr) => {
+      const q = i < 8
+        ? '<span class="sp-q" title="Qualificata">✓</span>'
+        : '<span class="sp-nq" title="Eliminata">✗</span>';
+      el.querySelector('.spareggio-pos').innerHTML = `${q} ${i + 1}`;
+      el.querySelector('.btn-sp-up').disabled   = i === 0;
+      el.querySelector('.btn-sp-down').disabled = i === arr.length - 1;
+    });
+  });
 }
