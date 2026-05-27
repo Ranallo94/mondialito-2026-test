@@ -489,7 +489,7 @@ const GIOCATORI = [
   { cognome: 'Coman', nome: 'Kingsley', squadra: 'FRA' },
   { cognome: 'Giroud', nome: 'Olivier', squadra: 'FRA' },
   { cognome: 'Rabiot', nome: 'Adrien', squadra: 'FRA' },
-  { cognome: 'Kanté', nome: 'N'Golo', squadra: 'FRA' },
+  { cognome: 'Kanté', nome: "N'Golo", squadra: 'FRA' },
   { cognome: 'Mané', nome: 'Sadio', squadra: 'SEN' },
   { cognome: 'Koulibaly', nome: 'Kalidou', squadra: 'SEN' },
   { cognome: 'Mendy', nome: 'Edouard', squadra: 'SEN' },
