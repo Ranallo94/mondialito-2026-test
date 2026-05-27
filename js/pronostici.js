@@ -1057,13 +1057,23 @@ function _normStr(s) {
   return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 }
 
+// Set globale dei valori validi per i marcatori (costruito una volta sola)
+const VALORI_VALIDI_CANNON = new Set(GIOCATORI.map(g => g.cognome + ' (' + g.squadra + ')'));
+
+function _validaCannon(input) {
+  const v = input.value.trim();
+  if (!v) return true; // campo vuoto: ok
+  if (VALORI_VALIDI_CANNON.has(v)) return true;
+  input.value = '';
+  input.classList.add('input-error');
+  setTimeout(() => input.classList.remove('input-error'), 1500);
+  return false;
+}
+
 function _bindSpeciali() {
   document.querySelectorAll('.cannon-input').forEach(input => {
     const key  = input.dataset.key;
     const drop = document.getElementById('ac-drop-' + key);
-
-    // Costruisce il set di valori validi: "Cognome (SQUADRA)"
-    const _valoriValidi = new Set(GIOCATORI.map(g => g.cognome + ' (' + g.squadra + ')'));
 
     function _salvaValore(val) {
       if (!_pronostici.capocannoniere) _pronostici.capocannoniere = {};
@@ -1076,8 +1086,7 @@ function _bindSpeciali() {
       setTimeout(() => {
         _chiudiDrop();
         const v = input.value.trim();
-        if (v && !_valoriValidi.has(v)) {
-          // Valore non valido: svuota e segnala
+        if (v && !VALORI_VALIDI_CANNON.has(v)) {
           input.value = '';
           _salvaValore(null);
           input.classList.add('input-error');
@@ -1130,11 +1139,19 @@ function _bindSpeciali() {
         const prev = active ? (active.previousElementSibling || items[items.length-1]) : items[items.length-1];
         if (active) active.classList.remove('active');
         if (prev) prev.classList.add('active');
-      } else if (e.key === 'Enter' && active) {
-        e.preventDefault();
-        input.value = active.dataset.val;
-        _salvaValore(active.dataset.val);
-        _chiudiDrop();
+      } else if (e.key === 'Enter') {
+        if (active) {
+          e.preventDefault();
+          input.value = active.dataset.val;
+          _salvaValore(active.dataset.val);
+          input.classList.remove('input-error');
+          _chiudiDrop();
+        } else if (!VALORI_VALIDI_CANNON.has(input.value.trim())) {
+          // Blocca il submit del form se il valore non è valido
+          e.preventDefault();
+          e.stopPropagation();
+          _validaEChiudi();
+        }
       } else if (e.key === 'Escape') {
         _chiudiDrop();
       }
@@ -1321,7 +1338,14 @@ function _raccogliDalDOM() {
     const input = document.getElementById('cannon-' + key);
     if (!input) return;
     if (!_pronostici.capocannoniere) _pronostici.capocannoniere = {};
-    _pronostici.capocannoniere[key] = input.value.trim() || null;
+    const v = input.value.trim();
+    // Salva solo se il valore è nell'elenco ufficiale, altrimenti svuota
+    if (!v || VALORI_VALIDI_CANNON.has(v)) {
+      _pronostici.capocannoniere[key] = v || null;
+    } else {
+      input.value = '';
+      _pronostici.capocannoniere[key] = null;
+    }
   });
 }
 
