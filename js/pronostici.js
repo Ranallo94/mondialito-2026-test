@@ -643,12 +643,7 @@ function _renderSpeciali() {
     html += '<div class="field-group"><label class="field-label">' + (i+1) + '° Capocannoniere</label>'
       + '<input type="text" class="field-input" id="cannon-' + key + '" value="' + (pCannon[key]||'') + '" placeholder="es. Mbappé" autocomplete="off"></div>';
   });
-  html += '</div></div>'
-    + '<div class="speciali-section"><h3 class="section-title">📊 Posizioni finali nei gironi</h3>'
-    + '<p class="section-desc">Le posizioni si aggiornano automaticamente dai risultati. <strong>10pt</strong> per ogni posizione corretta (solo squadre ai sedicesimi).</p>'
-    + '<div class="gironi-posiz-grid" id="gironi-posiz-container">'
-    + _renderPosizioniGironi()
-    + '</div></div>';
+  html += '</div></div>';
   container.innerHTML = html;
   _bindSpeciali();
 }
@@ -679,15 +674,6 @@ function _bindSpeciali() {
     input.addEventListener('input', () => {
       if (!_pronostici.capocannoniere) _pronostici.capocannoniere = {};
       _pronostici.capocannoniere[key] = input.value.trim() || null;
-    });
-  });
-  document.querySelectorAll('.posiz-select').forEach(sel => {
-    sel.addEventListener('change', () => {
-      const lettera = sel.dataset.girone;
-      const pos = parseInt(sel.dataset.pos);
-      if (!_pronostici.posizioni_girone) _pronostici.posizioni_girone = {};
-      if (!_pronostici.posizioni_girone[lettera]) _pronostici.posizioni_girone[lettera] = [];
-      _pronostici.posizioni_girone[lettera][pos] = sel.value || null;
     });
   });
 }
