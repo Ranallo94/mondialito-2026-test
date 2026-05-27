@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🏆 Mondialito 2026</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ══════════════════════════════════════════
+       SCHERMATA LOGIN / REGISTRAZIONE
+  ══════════════════════════════════════════ -->
+  <div id="screen-login" class="screen active">
+    <div class="login-bg">
+      <div class="login-card">
+        <div class="login-logo">🏆</div>
+        <h1 class="login-title">Mondialito 2026</h1>
+        <p class="login-subtitle">USA · Canada · Messico</p>
+
+        <!-- Tab switcher -->
+        <div class="login-tabs">
+          <button class="login-tab active" id="tab-accedi" type="button">Accedi</button>
+          <button class="login-tab" id="tab-registrati" type="button">Registrati</button>
+        </div>
+
+        <!-- FORM LOGIN -->
+        <form id="form-login" class="login-form">
+          <div class="field-group">
+            <label class="field-label">Email o nome utente</label>
+            <input id="login-email" type="text" class="field-input" placeholder="nome.cognome@mondialito.app" required>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Password</label>
+            <input id="login-password" type="password" class="field-input" placeholder="Inserisci la tua password" required>
+          </div>
+          <button type="submit" class="btn btn-primary btn-full">Entra nel Mondialito</button>
+          <p id="login-error" class="login-error" style="display:none"></p>
+        </form>
+
+        <!-- FORM REGISTRAZIONE -->
+        <form id="form-registrazione" class="login-form" style="display:none">
+          <div class="field-group">
+            <label class="field-label">Nome</label>
+            <input id="reg-nome" type="text" class="field-input" placeholder="Mario" required>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Cognome</label>
+            <input id="reg-cognome" type="text" class="field-input" placeholder="Rossi" required>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Numero di telefono</label>
+            <input id="reg-telefono" type="tel" class="field-input" placeholder="+39 333 123 4567" required>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Scegli una password</label>
+            <input id="reg-password" type="password" class="field-input" placeholder="Minimo 6 caratteri" required minlength="6">
+          </div>
+          <div class="field-group">
+            <label class="field-label">Conferma password</label>
+            <input id="reg-password2" type="password" class="field-input" placeholder="Ripeti la password" required>
+          </div>
+          <button type="submit" class="btn btn-primary btn-full">Invia richiesta di accesso</button>
+          <p id="reg-error" class="login-error" style="display:none"></p>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCHERMATA ATTESA APPROVAZIONE
+  ══════════════════════════════════════════ -->
+  <div id="screen-attesa" class="screen" style="display:none">
+    <div class="login-bg">
+      <div class="login-card login-card--attesa">
+        <div class="login-logo">⏳</div>
+        <h1 class="login-title" style="font-size:22px">Richiesta inviata!</h1>
+        <p class="login-subtitle" style="margin-bottom:20px">
+          La tua richiesta di accesso è in fase di revisione da parte degli organizzatori.
+          Riceverai conferma non appena il tuo account sarà approvato.
+        </p>
+        <div class="attesa-info">
+          <div class="attesa-row"><span class="attesa-label">Nome</span><span id="attesa-nome" class="attesa-val"></span></div>
+          <div class="attesa-row"><span class="attesa-label">Telefono</span><span id="attesa-telefono" class="attesa-val"></span></div>
+          <div class="attesa-row"><span class="attesa-label">Stato</span><span class="attesa-val attesa-pending">In attesa di approvazione</span></div>
+        </div>
+        <button id="btn-logout-attesa" class="btn btn-secondary btn-full" style="margin-top:20px">Esci</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       APP PRINCIPALE (post-login)
+  ══════════════════════════════════════════ -->
+  <div id="screen-app" class="screen" style="display:none">
+
+    <!-- HEADER -->
+    <header class="app-header">
+      <div class="header-inner">
+        <div class="header-logo">
+          <span class="header-trophy">🏆</span>
+          <span class="header-title">Mondialito <span class="header-year">2026</span></span>
+        </div>
+        <div class="header-user">
+          <span id="header-username" class="header-username"></span>
+          <button id="btn-logout" class="btn-icon" title="Esci">⇥</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- NAVIGAZIONE BOTTOM (mobile) / SIDEBAR (desktop) -->
+    <nav class="app-nav" id="app-nav">
+      <button class="nav-item active" data-page="classifica">
+        <span class="nav-icon">🏅</span>
+        <span class="nav-label">Classifica</span>
+      </button>
+      <button class="nav-item" data-page="live">
+        <span class="nav-icon">⚽</span>
+        <span class="nav-label">Live</span>
+        <span class="nav-badge" id="nav-live-badge" style="display:none">LIVE</span>
+      </button>
+      <button class="nav-item" data-page="pronostici">
+        <span class="nav-icon">📋</span>
+        <span class="nav-label">Pronostici</span>
+      </button>
+      <button class="nav-item" data-page="profilo">
+        <span class="nav-icon">📊</span>
+        <span class="nav-label">Il mio profilo</span>
+      </button>
+      <button class="nav-item nav-admin" data-page="admin" id="nav-admin" style="display:none">
+        <span class="nav-icon">⚙️</span>
+        <span class="nav-label">Admin</span>
+      </button>
+    </nav>
+
+    <!-- CONTENUTO PAGINE -->
+    <main class="app-main" id="app-main">
+
+      <!-- ── PAGINA: CLASSIFICA ── -->
+      <div id="page-classifica" class="page active">
+        <div class="page-header">
+          <h2 class="page-title">🏅 Classifica</h2>
+          <span id="classifica-updated" class="page-subtitle"></span>
+        </div>
+
+        <div id="classifica-container">
+          <!-- Generato da classifica.js -->
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Caricamento classifica…</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PAGINA: LIVE ── -->
+      <div id="page-live" class="page">
+        <div class="page-header">
+          <h2 class="page-title">⚽ Partite Live</h2>
+          <span id="live-updated" class="page-subtitle"></span>
+        </div>
+
+        <div id="live-oggi" class="section-block">
+          <h3 class="section-title">Oggi</h3>
+          <div id="live-partite-oggi">
+            <div class="loading-state"><div class="spinner"></div><p>Caricamento partite…</p></div>
+          </div>
+        </div>
+
+        <div id="live-prossime" class="section-block">
+          <h3 class="section-title">Prossime partite</h3>
+          <div id="live-partite-prossime"></div>
+        </div>
+
+        <div id="live-risultati" class="section-block">
+          <h3 class="section-title">Risultati recenti</h3>
+          <div id="live-partite-risultati"></div>
+        </div>
+      </div>
+
+      <!-- ── PAGINA: PRONOSTICI ── -->
+      <div id="page-pronostici" class="page">
+        <div class="page-header">
+          <h2 class="page-title">📋 La mia scheda pronostici</h2>
+          <span id="pronostici-status" class="page-subtitle"></span>
+        </div>
+
+        <!-- Banner torneo aperto/chiuso -->
+        <div id="pronostici-banner" class="info-banner" style="display:none"></div>
+
+        <!-- Tabs sezioni -->
+        <div class="tab-bar" id="pronostici-tabs">
+          <button class="tab active" data-tab="tab-gironi">Fase a gironi</button>
+          <button class="tab" data-tab="tab-eliminatoria">Eliminatoria</button>
+          <button class="tab" data-tab="tab-speciali">Speciali</button>
+        </div>
+
+        <form id="form-pronostici">
+
+          <!-- TAB: Gironi -->
+          <div id="tab-gironi" class="tab-content active">
+            <div id="gironi-container">
+              <!-- Generato da pronostici.js -->
+            </div>
+          </div>
+
+          <!-- TAB: Fase eliminatoria -->
+          <div id="tab-eliminatoria" class="tab-content">
+            <div class="info-banner info-banner--blue">
+              <span>📌</span>
+              <span>Pronostica le squadre che raggiungeranno ogni turno. Per ogni partita indica anche la modalità di passaggio del turno: 90 min, supplementari o rigori.</span>
+            </div>
+            <div id="eliminatoria-container">
+              <!-- Generato da pronostici.js -->
+            </div>
+          </div>
+
+          <!-- TAB: Speciali -->
+          <div id="tab-speciali" class="tab-content">
+            <div id="speciali-container">
+              <!-- Capocannonieri + posizioni girone -->
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" id="btn-salva-pronostici" class="btn btn-primary btn-full btn-lg">
+              💾 Salva i miei pronostici
+            </button>
+            <p id="pronostici-save-msg" class="save-message" style="display:none"></p>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- ── PAGINA: PROFILO ── -->
+      <div id="page-profilo" class="page">
+        <div class="page-header">
+          <h2 class="page-title">📊 Il mio profilo</h2>
+        </div>
+
+        <div id="profilo-score-card" class="score-card">
+          <!-- Generato da classifica.js -->
+        </div>
+
+        <div id="profilo-breakdown">
+          <!-- Breakdown per categoria -->
+        </div>
+
+        <div id="profilo-partite">
+          <!-- Dettaglio partita per partita -->
+        </div>
+      </div>
+
+      <!-- ── PAGINA: ADMIN ── -->
+      <div id="page-admin" class="page">
+        <div class="page-header">
+          <h2 class="page-title">⚙️ Pannello Admin</h2>
+          <span class="page-subtitle">Verifica e correggi i risultati automatici</span>
+        </div>
+
+        <div class="admin-tabs tab-bar">
+          <button class="tab active" data-tab="tab-admin-approvazioni">
+            Approvazioni <span id="approv-badge" class="nav-badge" style="display:none;position:relative;top:-1px;right:auto;margin-left:4px"></span>
+          </button>
+          <button class="tab" data-tab="tab-admin-risultati">Risultati</button>
+          <button class="tab" data-tab="tab-admin-partecipanti">Partecipanti</button>
+          <button class="tab" data-tab="tab-admin-sistema">Sistema</button>
+        </div>
+
+        <div id="tab-admin-approvazioni" class="tab-content active">
+          <div id="admin-approvazioni-container">
+            <!-- Generato da admin.js -->
+          </div>
+        </div>
+
+        <div id="tab-admin-risultati" class="tab-content">
+          <div class="info-banner info-banner--yellow">
+            <span>🤖</span>
+            <span>I risultati vengono aggiornati automaticamente da football-data.org. Usa questo pannello solo per correzioni manuali.</span>
+          </div>
+          <div id="admin-risultati-container">
+            <!-- Generato da admin.js -->
+          </div>
+        </div>
+
+        <div id="tab-admin-partecipanti" class="tab-content">
+          <div id="admin-partecipanti-container">
+            <!-- Lista partecipanti e loro stato pronostici -->
+          </div>
+        </div>
+
+        <div id="tab-admin-sistema" class="tab-content">
+          <div class="admin-sistema-grid">
+            <div class="sistema-card">
+              <h4>🔄 Sync manuale</h4>
+              <p>Forza l'aggiornamento immediato dei risultati dall'API.</p>
+              <button id="btn-sync-now" class="btn btn-secondary">Sincronizza ora</button>
+            </div>
+            <div class="sistema-card">
+              <h4>🔒 Pronostici</h4>
+              <p id="sistema-pronostici-status">—</p>
+              <button id="btn-toggle-pronostici" class="btn btn-secondary">Apri / Chiudi</button>
+            </div>
+            <div class="sistema-card">
+              <h4>📡 Stato API</h4>
+              <p id="sistema-api-status">—</p>
+              <button id="btn-check-api" class="btn btn-secondary">Verifica</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- TOAST NOTIFICATIONS -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- MODAL -->
+  <div id="modal-overlay" class="modal-overlay" style="display:none">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modal-title"></h3>
+        <button id="modal-close" class="btn-icon">✕</button>
+      </div>
+      <div id="modal-body" class="modal-body"></div>
+      <div id="modal-footer" class="modal-footer"></div>
+    </div>
+  </div>
+
+  <!-- FIREBASE SDK -->
+  <script type="module">
+    import { initializeApp }                        from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getAuth, connectAuthEmulator }          from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+    import { getFirestore, connectFirestoreEmulator } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import { getFunctions, connectFunctionsEmulator } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js';
+
+    // ── RILEVAMENTO AUTOMATICO AMBIENTE ──────────────
+    const IS_LOCAL = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+
+    // Config demo per test locale (nessuna credenziale reale necessaria)
+    const firebaseConfigLocal = {
+      apiKey:            "demo-key",
+      authDomain:        "demo-mondialito.firebaseapp.com",
+      projectId:         "demo-mondialito",
+      storageBucket:     "demo-mondialito.appspot.com",
+      messagingSenderId: "000000000000",
+      appId:             "1:000000000000:web:demo000000000000"
+    };
+
+    const firebaseConfigProd = {
+      apiKey:            "AIzaSyCd1ljtGU6CqhC-Zh_KXvyrYnY8XBotPs4",
+      authDomain:        "mondialito-2026-test.firebaseapp.com",
+      projectId:         "mondialito-2026-test",
+      storageBucket:     "mondialito-2026-test.firebasestorage.app",
+      messagingSenderId: "445492410068",
+      appId:             "1:445492410068:web:e16e18eb586de16b58ed41"
+    };
+
+    const firebaseConfig = IS_LOCAL ? firebaseConfigLocal : firebaseConfigProd;
+    const app = initializeApp(firebaseConfig);
+
+    const auth      = getAuth(app);
+    const db        = getFirestore(app);
+    const functions = getFunctions(app, 'europe-west1');
+
+    // Connetti agli emulatori se siamo in locale
+    if (IS_LOCAL) {
+      connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
+      connectFirestoreEmulator(db, 'localhost', 8080);
+      connectFunctionsEmulator(functions, 'localhost', 5001);
+      console.info('🧪 Modalità TEST — emulatori Firebase attivi');
+    }
+
+    window._firebase = { app, auth, db, functions };
+
+    // Carica l'app dopo Firebase
+    const { initApp } = await import('./js/app.js');
+    initApp();
+  </script>
+
+</body>
+</html>

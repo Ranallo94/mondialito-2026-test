@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mondialito 2026 — Report Progetto</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --verde:       #1a6b35;
+      --verde-dark:  #0d3d1e;
+      --verde-light: #2a8a47;
+      --oro:         #f0b429;
+      --oro-pale:    #fff8e7;
+      --bg:          #0a1f10;
+      --card:        #132a18;
+      --card2:       #1a3520;
+      --border:      #2a4a30;
+      --text:        #f0f4f1;
+      --muted:       #8aab8f;
+      --rosso:       #e53e3e;
+      --blu:         #3b82f6;
+      --radius:      14px;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── COPERTINA ── */
+    .cover {
+      background: linear-gradient(160deg, #051209 0%, #0d3d1e 45%, #1a6b35 100%);
+      padding: 64px 40px 56px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .cover::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 50% 80%, rgba(240,180,41,.08) 0%, transparent 70%),
+        repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(42,74,48,.3) 40px),
+        repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(42,74,48,.3) 40px);
+      pointer-events: none;
+    }
+    .cover-content { position: relative; z-index: 1; max-width: 700px; margin: 0 auto; }
+    .cover-trophy  { font-size: 64px; display: block; margin-bottom: 16px; filter: drop-shadow(0 0 20px rgba(240,180,41,.4)); }
+    .cover-title   {
+      font-size: clamp(36px, 6vw, 56px);
+      font-weight: 900;
+      letter-spacing: -2px;
+      background: linear-gradient(135deg, #f0b429 0%, #fffbe0 50%, #f0b429 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.05;
+      margin-bottom: 10px;
+    }
+    .cover-sub  { font-size: 18px; color: var(--muted); margin-bottom: 24px; font-weight: 500; }
+    .cover-meta { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+    .cover-pill {
+      background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
+      border-radius: 20px; padding: 6px 16px; font-size: 13px; font-weight: 600;
+      color: var(--text);
+    }
+    .cover-pill.gold { border-color: rgba(240,180,41,.5); color: var(--oro); }
+
+    /* ── LAYOUT ── */
+    .page { max-width: 860px; margin: 0 auto; padding: 40px 24px 80px; }
+
+    /* ── SEZIONE ── */
+    .section { margin-bottom: 44px; }
+    .section-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--oro); margin-bottom: 6px;
+    }
+    .section-title { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 20px; }
+    .section-title span { color: var(--oro); }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+    }
+    .card + .card { margin-top: 12px; }
+    .card-header {
+      padding: 14px 20px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .card-icon  { font-size: 20px; }
+    .card-title { font-size: 15px; font-weight: 700; }
+    .card-body  { padding: 20px; }
+
+    /* ── STATUS ── */
+    .status-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    @media (min-width: 600px) { .status-grid { grid-template-columns: repeat(4, 1fr); } }
+    .status-item {
+      background: var(--card2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px; text-align: center;
+    }
+    .status-item.done  { border-color: rgba(42,138,71,.5); }
+    .status-item.ready { border-color: rgba(240,180,41,.4); }
+    .status-icon  { font-size: 28px; margin-bottom: 6px; }
+    .status-label { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+    .status-state { font-size: 11px; color: var(--muted); }
+    .status-state.ok  { color: #4ade80; }
+    .status-state.wip { color: var(--oro); }
+
+    /* ── NUMERI CHIAVE ── */
+    .numeri-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    @media (min-width: 500px) { .numeri-grid { grid-template-columns: repeat(3, 1fr); } }
+    .numero-item {
+      background: var(--card2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 16px 14px; text-align: center;
+    }
+    .numero-val   { font-size: 32px; font-weight: 900; color: var(--oro); line-height: 1; margin-bottom: 4px; }
+    .numero-label { font-size: 12px; color: var(--muted); font-weight: 500; }
+
+    /* ── ARCHITETTURA ── */
+    .arch-flow {
+      display: flex; align-items: stretch; justify-content: center;
+      gap: 0; flex-wrap: wrap;
+    }
+    .arch-node {
+      flex: 1; min-width: 130px; max-width: 180px;
+      background: var(--card2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 18px 14px; text-align: center;
+      position: relative;
+    }
+    .arch-node.highlight { border-color: var(--oro); background: rgba(240,180,41,.05); }
+    .arch-node-icon  { font-size: 32px; margin-bottom: 8px; display: block; }
+    .arch-node-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+    .arch-node-desc  { font-size: 11px; color: var(--muted); line-height: 1.4; }
+    .arch-arrow {
+      display: flex; align-items: center; padding: 0 8px;
+      color: var(--border); font-size: 22px; font-weight: 300;
+      flex-shrink: 0;
+    }
+    @media (max-width: 500px) {
+      .arch-flow { flex-direction: column; align-items: stretch; }
+      .arch-arrow { transform: rotate(90deg); align-self: center; padding: 4px 0; }
+      .arch-node { max-width: none; }
+    }
+
+    /* ── PUNTEGGI ── */
+    .punteggi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    @media (min-width: 600px) { .punteggi-grid { grid-template-columns: repeat(3, 1fr); } }
+    .punteggio-item {
+      background: var(--card2); border: 1px solid var(--border);
+      border-radius: 9px; padding: 12px 14px;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    }
+    .punteggio-item.featured {
+      border-color: rgba(240,180,41,.35);
+      grid-column: 1 / -1;
+    }
+    .punteggio-left { display: flex; align-items: center; gap: 8px; }
+    .punteggio-emoji { font-size: 18px; flex-shrink: 0; }
+    .punteggio-label { font-size: 12px; color: var(--muted); font-weight: 500; }
+    .punteggio-pt    { font-size: 20px; font-weight: 800; color: var(--oro); white-space: nowrap; }
+
+    /* ── SPAREGGIO ── */
+    .spareggio-list { counter-reset: spareggio; }
+    .spareggio-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 9px 0; border-bottom: 1px solid rgba(42,74,48,.5);
+      counter-increment: spareggio;
+    }
+    .spareggio-item:last-child { border-bottom: none; }
+    .spareggio-num {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: var(--card2); border: 1px solid var(--border);
+      font-size: 12px; font-weight: 700; color: var(--muted);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .spareggio-text { font-size: 13px; }
+    .spareggio-text strong { color: var(--text); font-weight: 600; }
+    .spareggio-last { font-size: 12px; color: var(--oro); font-weight: 600; }
+
+    /* ── TIMELINE ── */
+    .timeline { position: relative; padding-left: 28px; }
+    .timeline::before {
+      content: ''; position: absolute; left: 8px; top: 0; bottom: 0;
+      width: 2px; background: var(--border);
+    }
+    .timeline-item { position: relative; margin-bottom: 20px; }
+    .timeline-item::before {
+      content: ''; position: absolute; left: -24px; top: 4px;
+      width: 12px; height: 12px; border-radius: 50%;
+      background: var(--verde); border: 2px solid var(--verde-light);
+    }
+    .timeline-item.done::before  { background: #4ade80; border-color: #22c55e; }
+    .timeline-item.next::before  { background: var(--oro); border-color: #f0b429; }
+    .timeline-item.future::before { background: var(--card2); border-color: var(--border); }
+    .timeline-date  { font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 2px; }
+    .timeline-event { font-size: 14px; font-weight: 600; }
+    .timeline-desc  { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    /* ── PROSSIMI PASSI ── */
+    .passi-list { display: flex; flex-direction: column; gap: 10px; }
+    .passo-item {
+      display: flex; align-items: flex-start; gap: 14px;
+      background: var(--card2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px 16px;
+    }
+    .passo-item.urgent { border-color: rgba(240,180,41,.4); }
+    .passo-num {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--verde); font-size: 13px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .passo-num.gold { background: var(--oro); color: #0d1b12; }
+    .passo-title { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+    .passo-desc  { font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .passo-tag   {
+      display: inline-block; font-size: 10px; font-weight: 700;
+      padding: 2px 8px; border-radius: 10px; margin-top: 5px;
+    }
+    .tag-urgente  { background: rgba(240,180,41,.15); color: var(--oro); }
+    .tag-tecnico  { background: rgba(59,130,246,.1); color: #93c5fd; }
+    .tag-ok       { background: rgba(74,222,128,.1); color: #4ade80; }
+
+    /* ── COSTO ── */
+    .costo-highlight {
+      background: linear-gradient(135deg, rgba(26,107,53,.3), rgba(42,138,71,.1));
+      border: 1px solid rgba(42,138,71,.5);
+      border-radius: var(--radius); padding: 24px;
+      text-align: center;
+    }
+    .costo-val  { font-size: 56px; font-weight: 900; color: #4ade80; line-height: 1; }
+    .costo-sub  { font-size: 14px; color: var(--muted); margin-top: 6px; }
+    .costo-note { font-size: 12px; color: var(--muted); margin-top: 10px; font-style: italic; }
+
+    /* ── FOOTER ── */
+    .footer {
+      border-top: 1px solid var(--border);
+      padding: 28px 24px;
+      text-align: center;
+      font-size: 12px; color: var(--muted);
+    }
+    .footer strong { color: var(--text); }
+
+    /* ── BADGE STATO ── */
+    .badge {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      padding: 3px 10px; border-radius: 20px; vertical-align: middle;
+    }
+    .badge-verde  { background: rgba(42,138,71,.2); color: #4ade80; border: 1px solid rgba(42,138,71,.4); }
+    .badge-oro    { background: rgba(240,180,41,.15); color: var(--oro); border: 1px solid rgba(240,180,41,.3); }
+    .badge-rosso  { background: rgba(229,62,62,.1); color: #fc8181; border: 1px solid rgba(229,62,62,.3); }
+
+    /* ── DIVIDER ── */
+    hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+
+    p { font-size: 14px; color: var(--muted); line-height: 1.7; }
+    p + p { margin-top: 10px; }
+
+    @media print {
+      body { background: #fff; color: #111; }
+      .cover { background: #0d3d1e; }
+      .card  { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- COPERTINA -->
+<div class="cover">
+  <div class="cover-content">
+    <span class="cover-trophy">🏆</span>
+    <div class="cover-title">Mondialito 2026</div>
+    <div class="cover-sub">Report di avanzamento progetto · Maggio 2026</div>
+    <div class="cover-meta">
+      <span class="cover-pill">USA · Canada · Messico</span>
+      <span class="cover-pill">11 Giu – 19 Lug 2026</span>
+      <span class="cover-pill gold">⚡ App completata</span>
+      <span class="cover-pill gold">🚀 Pronta al deploy</span>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- STATO PROGETTO -->
+  <div class="section">
+    <div class="section-label">Stato attuale</div>
+    <div class="section-title">Cosa è <span>pronto</span></div>
+    <div class="status-grid">
+      <div class="status-item done">
+        <div class="status-icon">🗃️</div>
+        <div class="status-label">Database</div>
+        <div class="status-state ok">✅ Completato</div>
+      </div>
+      <div class="status-item done">
+        <div class="status-icon">🎨</div>
+        <div class="status-label">Design &amp; UI</div>
+        <div class="status-state ok">✅ Completato</div>
+      </div>
+      <div class="status-item done">
+        <div class="status-icon">📱</div>
+        <div class="status-label">App Web</div>
+        <div class="status-state ok">✅ Completata</div>
+      </div>
+      <div class="status-item done">
+        <div class="status-icon">⚙️</div>
+        <div class="status-label">Pannello Admin</div>
+        <div class="status-state ok">✅ Completato</div>
+      </div>
+      <div class="status-item done">
+        <div class="status-icon">🤖</div>
+        <div class="status-label">Sync automatico</div>
+        <div class="status-state ok">✅ Completato</div>
+      </div>
+      <div class="status-item done">
+        <div class="status-icon">🔴</div>
+        <div class="status-label">Live scores</div>
+        <div class="status-state ok">✅ Completato</div>
+      </div>
+      <div class="status-item done">
+        <div class="status-icon">🏅</div>
+        <div class="status-label">Classifica</div>
+        <div class="status-state ok">✅ Real-time</div>
+      </div>
+      <div class="status-item ready">
+        <div class="status-icon">🔥</div>
+        <div class="status-label">Firebase Deploy</div>
+        <div class="status-state wip">⏳ Setup da fare</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NUMERI CHIAVE -->
+  <div class="section">
+    <div class="section-label">In numeri</div>
+    <div class="section-title">Il <span>Mondialito</span> in cifre</div>
+    <div class="numeri-grid">
+      <div class="numero-item">
+        <div class="numero-val">48</div>
+        <div class="numero-label">Squadre al mondiale</div>
+      </div>
+      <div class="numero-item">
+        <div class="numero-val">12</div>
+        <div class="numero-label">Gironi</div>
+      </div>
+      <div class="numero-item">
+        <div class="numero-val">72</div>
+        <div class="numero-label">Partite fase a gironi</div>
+      </div>
+      <div class="numero-item">
+        <div class="numero-val">6</div>
+        <div class="numero-label">Fasi eliminatorie</div>
+      </div>
+      <div class="numero-item">
+        <div class="numero-val">~100</div>
+        <div class="numero-label">Partecipanti</div>
+      </div>
+      <div class="numero-item">
+        <div class="numero-val">≈0 €</div>
+        <div class="numero-label">Costo mensile stimato</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COME FUNZIONA -->
+  <div class="section">
+    <div class="section-label">Architettura</div>
+    <div class="section-title">Come <span>funziona</span></div>
+    <div class="arch-flow">
+      <div class="arch-node">
+        <span class="arch-node-icon">🌐</span>
+        <div class="arch-node-title">football-data.org</div>
+        <div class="arch-node-desc">API gratuita con risultati ufficiali e dati live di ogni partita</div>
+      </div>
+      <div class="arch-arrow">›</div>
+      <div class="arch-node">
+        <span class="arch-node-icon">⚡</span>
+        <div class="arch-node-title">Cloud Functions</div>
+        <div class="arch-node-desc">Polling adattivo: ogni minuto durante le partite, ogni ora altrimenti</div>
+      </div>
+      <div class="arch-arrow">›</div>
+      <div class="arch-node highlight">
+        <span class="arch-node-icon">🔥</span>
+        <div class="arch-node-title">Firebase</div>
+        <div class="arch-node-desc">Firestore (database), Auth (login), Hosting (sito web)</div>
+      </div>
+      <div class="arch-arrow">›</div>
+      <div class="arch-node">
+        <span class="arch-node-icon">📱</span>
+        <div class="arch-node-title">App Web</div>
+        <div class="arch-node-desc">Aggiornamento live per tutti i partecipanti simultaneamente</div>
+      </div>
+    </div>
+
+    <div style="margin-top:14px">
+      <p>Il risultato di ogni partita appare nell'app entro <strong style="color:var(--text)">circa 1 minuto</strong> dal fischio finale. I punteggi di tutti i partecipanti vengono ricalcolati automaticamente e la classifica si aggiorna in tempo reale, senza nessun intervento manuale.</p>
+      <p>Gli admin possono comunque correggere eventuali errori dell'API direttamente dal pannello di controllo.</p>
+    </div>
+  </div>
+
+  <!-- COSA VEDE L'UTENTE -->
+  <div class="section">
+    <div class="section-label">Funzionalità</div>
+    <div class="section-title">Cosa <span>vede</span> ogni partecipante</div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">🏅</span>
+        <span class="card-title">Classifica</span>
+      </div>
+      <div class="card-body">
+        <p>Classifica generale in tempo reale con punteggio totale, breakdown per categoria e badge "Tu" per identificare la propria posizione. In caso di parità, i criteri di spareggio vengono applicati automaticamente.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">⚽</span>
+        <span class="card-title">Partite Live</span>
+      </div>
+      <div class="card-body">
+        <p>Risultati in diretta durante le partite, con indicazione del minuto di gioco. Sezione "Oggi", "Prossime partite" e "Risultati recenti" sempre aggiornate automaticamente.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">📋</span>
+        <span class="card-title">Scheda pronostici</span>
+      </div>
+      <div class="card-body">
+        <p>Form completo con tutte le 72 partite della fase a gironi (segno 1X2 + risultato esatto), posizioni finali di ogni girone, bracket eliminatorio con modalità di passaggio del turno (90', supplementari, rigori) e sezione capocannonieri.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">📊</span>
+        <span class="card-title">Il mio profilo</span>
+      </div>
+      <div class="card-body">
+        <p>Breakdown personale del punteggio per ogni categoria, con dettaglio partita per partita delle giocate di girone: risultato reale, pronostico inserito e punti ottenuti.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">⚙️</span>
+        <span class="card-title">Pannello Admin <span class="badge badge-oro">Solo per voi 4</span></span>
+      </div>
+      <div class="card-body">
+        <p>Verifica e correzione manuale dei risultati automatici, monitoraggio delle schede di tutti i partecipanti, apertura/chiusura dei pronostici, sync manuale e stato dell'API.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SISTEMA DI PUNTEGGIO -->
+  <div class="section">
+    <div class="section-label">Regolamento</div>
+    <div class="section-title">Sistema di <span>punteggio</span></div>
+    <div class="punteggi-grid">
+      <div class="punteggio-item">
+        <div class="punteggio-left">
+          <span class="punteggio-emoji">⚽</span>
+          <span class="punteggio-label">Segno 1X2 (girone)</span>
+        </div>
+        <span class="punteggio-pt">10 pt</span>
+      </div>
+      <div class="punteggio-item">
+        <div class="punteggio-left">
+          <span class="punteggio-emoji">🎯</span>
+          <span class="punteggio-label">Risultato esatto (bonus)</span>
+        </div>
+        <span class="punteggio-pt">+5 pt</span>
+      </div>
+      <div class="punteggio-item">
+        <div class="punteggio-left">
+          <span class="punteggio-emoji">📊</span>
+          <span class="punteggio-label">Posto in griglia</span>
+        </div>
+        <span class="punteggio-pt">10 pt</span>
+      </div>
+      <div class="punteggio-item">
+        <div class="punteggio-left">
+          <span class="punteggio-emoji">🏟️</span>
+          <span class="punteggio-label">Sedicesimi di finale</span>
+        </div>
+        <span class="punteggio-pt">5 pt</span>
+      </div>
+      <div class="punteggio-item">
+        <div class="punteggio-left">
+          <span class="punteggio-emoji">⚡</span>
+          <span class="punteggio-label">Ottavi di finale</span>
+        </div>
+        <span class="punteggio-pt">10 pt</span>
+      </div>
+      <div class="punteggio-item">
+        <div class="punteggio-left">
+          <span class="punteggio-emoji">🔥</span>
+          <span class="punteggio-label">Quarti di finale</span>
+        </div>
+        <span class="punteggio-pt">20 pt</span>
+      </div>
+      <div class="punteggio-item">
+        <div class="punteggio-left">
+          <span class="punteggio-emoji">💥</span>
+          <span class="punteggio-label">Semifinali</span>
+        </div>
+        <span class="punteggio-pt">30 pt</span>
+      </div>
+      <div class="punteggio-item">
+        <div class="punteggio-left">
+          <span class="punteggio-emoji">🏆</span>
+          <span class="punteggio-label">Finaliste (2 squadre)</span>
+        </div>
+        <span class="punteggio-pt">50 pt</span>
+      </div>
+      <div class="punteggio-item">
+        <div class="punteggio-left">
+          <span class="punteggio-emoji">🥇</span>
+          <span class="punteggio-label">Vincitore torneo</span>
+        </div>
+        <span class="punteggio-pt">70 pt</span>
+      </div>
+      <div class="punteggio-item">
+        <div class="punteggio-left">
+          <span class="punteggio-emoji">🎲</span>
+          <span class="punteggio-label">Modalità passaggio turno</span>
+        </div>
+        <span class="punteggio-pt">5 pt</span>
+      </div>
+      <div class="punteggio-item featured">
+        <div class="punteggio-left">
+          <span class="punteggio-emoji">👟</span>
+          <span class="punteggio-label">Capocannoniere: 1° / 2° / 3° classificato esatto &nbsp;·&nbsp; nella terna</span>
+        </div>
+        <span class="punteggio-pt">40 / 20 / 10 / 10 pt</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CRITERI SPAREGGIO -->
+  <div class="section">
+    <div class="section-label">Parità di punteggio</div>
+    <div class="section-title">Criteri di <span>spareggio</span></div>
+    <div class="card">
+      <div class="card-body">
+        <div class="spareggio-list">
+          <div class="spareggio-item">
+            <div class="spareggio-num">1</div>
+            <div class="spareggio-text"><strong>Vincitore torneo</strong> — chi ha indovinato il campione</div>
+          </div>
+          <div class="spareggio-item">
+            <div class="spareggio-num">2</div>
+            <div class="spareggio-text"><strong>Finaliste</strong> — numero di finaliste indovinate</div>
+          </div>
+          <div class="spareggio-item">
+            <div class="spareggio-num">3</div>
+            <div class="spareggio-text"><strong>Semifinaliste</strong> — numero di semifinaliste indovinate</div>
+          </div>
+          <div class="spareggio-item">
+            <div class="spareggio-num">4</div>
+            <div class="spareggio-text"><strong>Quarti</strong> — numero di squadre ai quarti indovinate</div>
+          </div>
+          <div class="spareggio-item">
+            <div class="spareggio-num">5</div>
+            <div class="spareggio-text"><strong>Ottavi</strong> — numero di squadre agli ottavi indovinate</div>
+          </div>
+          <div class="spareggio-item">
+            <div class="spareggio-num">6</div>
+            <div class="spareggio-text"><strong>Risultati esatti</strong> — numero di risultati esatti nella fase a gironi</div>
+          </div>
+          <div class="spareggio-item">
+            <div class="spareggio-num">7</div>
+            <div class="spareggio-text"><strong>Capocannoniere 1°</strong> — chi ha indovinato il primo marcatore</div>
+          </div>
+          <div class="spareggio-item">
+            <div class="spareggio-num">8</div>
+            <div class="spareggio-text"><strong>Posizioni in griglia</strong> — numero di posizioni corrette nei gironi</div>
+          </div>
+          <div class="spareggio-item">
+            <div class="spareggio-num">9</div>
+            <div class="spareggio-text"><strong>Terna capocannonieri</strong> — giocatori nella terna corretti (qualsiasi posizione)</div>
+          </div>
+          <div class="spareggio-item">
+            <div class="spareggio-num">10</div>
+            <div class="spareggio-text"><strong>Segni 1X2</strong> — numero di segni corretti nella fase a gironi</div>
+          </div>
+          <div class="spareggio-item">
+            <div class="spareggio-num">11</div>
+            <div class="spareggio-text"><strong>Modalità passaggio turno</strong> — numero di modalità indovinate</div>
+          </div>
+          <div class="spareggio-item" style="border-bottom:none">
+            <div class="spareggio-num" style="background:rgba(240,180,41,.15);border-color:rgba(240,180,41,.4);color:var(--oro)">✂️</div>
+            <div class="spareggio-last">Dopo tutti gli spareggi → Smezzate</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="section">
+    <div class="section-label">Calendario</div>
+    <div class="section-title"><span>Timeline</span> del torneo</div>
+    <div class="timeline">
+      <div class="timeline-item done">
+        <div class="timeline-date">Maggio 2026</div>
+        <div class="timeline-event">✅ App completata e pronta al deploy</div>
+        <div class="timeline-desc">Database, frontend, backend, Cloud Functions, pannello admin</div>
+      </div>
+      <div class="timeline-item next">
+        <div class="timeline-date">Entro il 10 Giugno 2026</div>
+        <div class="timeline-event">⏳ Setup Firebase + invito partecipanti</div>
+        <div class="timeline-desc">Deploy su Firebase Hosting, creazione account utenti, condivisione link</div>
+      </div>
+      <div class="timeline-item next">
+        <div class="timeline-date">Entro il 11 Giugno 2026 — ore 18:00</div>
+        <div class="timeline-event">🔒 Chiusura pronostici</div>
+        <div class="timeline-desc">Le schede vengono bloccate al calcio d'inizio della prima partita</div>
+      </div>
+      <div class="timeline-item future">
+        <div class="timeline-date">11 Giugno 2026</div>
+        <div class="timeline-event">🏁 Inizio Mondiale — Messico vs…</div>
+        <div class="timeline-desc">Kick-off e inizio automatico del tracking risultati</div>
+      </div>
+      <div class="timeline-item future">
+        <div class="timeline-date">11 Giugno – 3 Luglio 2026</div>
+        <div class="timeline-event">⚽ Fase a gironi</div>
+        <div class="timeline-desc">72 partite in 23 giorni — classifica in aggiornamento continuo</div>
+      </div>
+      <div class="timeline-item future">
+        <div class="timeline-date">5 – 19 Luglio 2026</div>
+        <div class="timeline-event">🏟️ Fasi eliminatorie</div>
+        <div class="timeline-desc">Sedicesimi → Ottavi → Quarti → Semifinali → Finale</div>
+      </div>
+      <div class="timeline-item future">
+        <div class="timeline-date">19 Luglio 2026</div>
+        <div class="timeline-event">🏆 Finale e proclamazione vincitore Mondialito</div>
+        <div class="timeline-desc">Classifica definitiva, spareggi automatici, smezzate se necessario</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROSSIMI PASSI -->
+  <div class="section">
+    <div class="section-label">Prossimi passi</div>
+    <div class="section-title">Cosa <span>fare</span> adesso</div>
+    <div class="passi-list">
+      <div class="passo-item urgent">
+        <div class="passo-num gold">1</div>
+        <div>
+          <div class="passo-title">Creare il progetto Firebase</div>
+          <div class="passo-desc">Vai su console.firebase.google.com, crea il progetto, abilita il piano Blaze (pay-as-you-go) e attiva Firestore + Authentication. Guida dettagliata già pronta.</div>
+          <span class="passo-tag tag-urgente">⏳ Da fare subito</span>
+        </div>
+      </div>
+      <div class="passo-item urgent">
+        <div class="passo-num gold">2</div>
+        <div>
+          <div class="passo-title">Inserire le chiavi Firebase nell'app</div>
+          <div class="passo-desc">Sostituire i placeholder in index.html con la configurazione reale del progetto. Operazione di 2 minuti.</div>
+          <span class="passo-tag tag-urgente">⏳ Da fare subito</span>
+        </div>
+      </div>
+      <div class="passo-item urgent">
+        <div class="passo-num gold">3</div>
+        <div>
+          <div class="passo-title">Registrarsi su football-data.org e ottenere la chiave API</div>
+          <div class="passo-desc">Registrazione gratuita su football-data.org — la chiave API arriva via email entro pochi minuti.</div>
+          <span class="passo-tag tag-urgente">⏳ Da fare subito</span>
+        </div>
+      </div>
+      <div class="passo-item">
+        <div class="passo-num">4</div>
+        <div>
+          <div class="passo-title">Deploy dell'app con Firebase CLI</div>
+          <div class="passo-desc">Tre comandi da terminale: npm install, cd functions &amp;&amp; npm install, firebase deploy. L'app va online in circa 2 minuti.</div>
+          <span class="passo-tag tag-tecnico">🔧 Tecnico</span>
+        </div>
+      </div>
+      <div class="passo-item">
+        <div class="passo-num">5</div>
+        <div>
+          <div class="passo-title">Creare gli account dei partecipanti</div>
+          <div class="passo-desc">Eseguire lo script setup-utenti.js con la lista di tutti i partecipanti e le loro password. Ogni utente riceve un link e le sue credenziali.</div>
+          <span class="passo-tag tag-tecnico">🔧 Tecnico</span>
+        </div>
+      </div>
+      <div class="passo-item">
+        <div class="passo-num">6</div>
+        <div>
+          <div class="passo-title">Condividere il link e raccogliere i pronostici</div>
+          <div class="passo-desc">I partecipanti compilano la scheda entro il 11 Giugno alle 18:00. Poi voi chiudete i pronostici dal pannello Admin e il torneo ha inizio.</div>
+          <span class="passo-tag tag-ok">✅ Semplice</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COSTO -->
+  <div class="section">
+    <div class="section-label">Budget</div>
+    <div class="section-title">Costo <span>stimato</span></div>
+    <div class="costo-highlight">
+      <div class="costo-val">≈ €0</div>
+      <div class="costo-sub">per l'intera durata del torneo (38 giorni, ~100 utenti)</div>
+      <div class="costo-note">
+        Firebase offre un free tier generoso: 50.000 letture/giorno, 20.000 scritture/giorno, 125k invocazioni di Cloud Functions/mese.
+        A questo volume di utilizzo resteremo abbondantemente nel livello gratuito.
+        Il piano Blaze è pay-as-you-go: si paga solo se si supera la quota gratuita.
+        Budget di sicurezza consigliato: €5 di alert su Google Cloud.
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <p style="text-align:center;font-size:13px;color:var(--muted)">
+    Per qualsiasi domanda sul setup tecnico, consulta la guida <strong style="color:var(--text)">guida-setup-firebase.md</strong> nella cartella del progetto.
+  </p>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <strong>Mondialito 2026</strong> · Report generato il
+  <script>document.write(new Date().toLocaleDateString('it-IT', {day:'2-digit',month:'long',year:'numeric'}))</script>
+  · Progetto privato · Partecipazione su invito
+</div>
+
+</body>
+</html>
