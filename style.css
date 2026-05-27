@@ -1127,3 +1127,16 @@ select.field-input option { background: var(--bg-card2); }
   font-weight: 600;
   color: var(--text-primary);
 }
+
+/* ── Sedicesimi: descrizione slot bracket ── */
+.elim-bracket-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  padding: 4px 8px;
+  background: rgba(255,255,255,.03);
+  border-radius: 6px;
+}
