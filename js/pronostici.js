@@ -263,6 +263,16 @@ function _resolveSlot(slotDef, standings, terziSlots) {
   return null;
 }
 
+// ── HELPER: vincitore di un match già pronosticato ─────────────────────────
+function _getVincitore(fase, matchId) {
+  return _pronostici?.fase_eliminatoria?.[fase]?.[matchId]?.vincitore || null;
+}
+
+// Label placeholder per uno slot bracket non ancora risolto
+function _feedPlaceholder(feed) {
+  return 'Vince ' + feed.id;
+}
+
 // ── AGGIORNA I SEDICESIMI IN BASE AI GIRONI COMPILATI ──────────────────
 function _ricalcolaSedicesimi() {
   // Calcola standings per tutti i gironi
@@ -309,6 +319,8 @@ function _ricalcolaSedicesimi() {
     }
     sel.innerHTML = opts;
   });
+  // Propaga i vincitori dei sedicesimi agli ottavi e oltre
+  _ricalcolaBracket();
 }
 
 function _slotLabel(slotDef) {
@@ -316,6 +328,53 @@ function _slotLabel(slotDef) {
   if (slotDef.t === '2') return '2° Girone ' + slotDef.g;
   if (slotDef.t === '3slot') return 'Miglior 3°';
   return '?';
+}
+
+// ── PROPAGA I VINCITORI ATTRAVERSO IL BRACKET (ottavi → quarti → SF → F) ─
+function _ricalcolaBracket() {
+  const FASI_BRACKET = [
+    { faseId: 'ottavi',     matches: ['O1','O2','O3','O4','O5','O6','O7','O8'] },
+    { faseId: 'quarti',     matches: ['Q1','Q2','Q3','Q4'] },
+    { faseId: 'semifinali', matches: ['SF1','SF2'] },
+    { faseId: 'finale',     matches: ['F'] },
+  ];
+  FASI_BRACKET.forEach(({ faseId, matches }) => {
+    matches.forEach(matchId => {
+      const card = document.querySelector('.elim-match-card[data-fase="' + faseId + '"][data-id="' + matchId + '"]');
+      if (!card) return;
+      const feeds = BRACKET_FEEDS[matchId];
+      if (!feeds) return;
+
+      const casaId  = _getVincitore(feeds.casa.fase,  feeds.casa.id);
+      const trasfId = _getVincitore(feeds.trasf.fase, feeds.trasf.id);
+      const casaSq  = casaId  ? SQUADRE_BY_ID[casaId]  : null;
+      const trasfSq = trasfId ? SQUADRE_BY_ID[trasfId] : null;
+
+      // Aggiorna etichette squadre
+      const spans = card.querySelectorAll('.elim-team');
+      if (spans.length >= 2) {
+        spans[0].textContent = casaSq  ? (casaSq.flag  || '') + ' ' + casaSq.nome  : _feedPlaceholder(feeds.casa);
+        spans[1].textContent = trasfSq ? (trasfSq.flag || '') + ' ' + trasfSq.nome : _feedPlaceholder(feeds.trasf);
+      }
+
+      // Aggiorna opzioni dropdown
+      const sel = card.querySelector('.vincitore-select');
+      if (!sel) return;
+      const currVal = sel.value;
+      const teams = [casaId, trasfId].filter(Boolean);
+      let opts = '<option value="">— Seleziona —</option>';
+      teams.forEach(id => {
+        const sq = SQUADRE_BY_ID[id];
+        const selected = (currVal === id) ? ' selected' : '';
+        opts += '<option value="' + id + '"' + selected + '>' + (sq?.flag||'') + ' ' + (sq?.nome||id) + '</option>';
+      });
+      // Se la squadra selezionata non è più valida, reset
+      if (currVal && !teams.includes(currVal)) {
+        _setElim(faseId, matchId, 'vincitore', null);
+      }
+      sel.innerHTML = opts;
+    });
+  });
 }
 
 
@@ -341,6 +400,7 @@ export async function initPronostici() {
   _renderSpeciali();
   Object.keys(DB.gironi).forEach(l => _ricalcolaClassificaGirone(l));
   _ricalcolaSedicesimi();
+  _ricalcolaBracket();
   _renderRiepilogoGironi();
   document.getElementById('form-pronostici').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -484,24 +544,44 @@ function _renderMatchElim(faseId, match) {
   const saved    = _pronostici?.fase_eliminatoria?.[faseId]?.[match.id] || {};
   const vincSaved = saved.vincitore || '';
   const modSaved  = saved.modalita  || '';
-  // Per i sedicesimi: menù a tendina vuoto, verrà popolato da _ricalcolaSedicesimi
-  const sqOpts = faseId === 'sedicesimi' ? '' : Object.values(SQUADRE_BY_ID)
-    .map(sq => '<option value="' + sq.id + '"' + (vincSaved===sq.id?' selected':'') + '>' + (sq.flag||'') + ' ' + sq.nome + '</option>')
-    .join('');
   const modHtml = [['90min',"90'"],['supplementari','Suppl.'],['rigori','Rigori']].map(([v,l]) =>
     '<button type="button" class="modalita-btn' + (modSaved===v?' active':'') + '" data-fase="' + faseId + '" data-match="' + match.id + '" data-mod="' + v + '">' + l + '</button>'
   ).join('');
-  const casaLabel  = match.casa      ? (SQUADRE_BY_ID[match.casa]?.nome      || match.casa)      : '?';
-  const trasfLabel = match.trasferta ? (SQUADRE_BY_ID[match.trasferta]?.nome  || match.trasferta) : '?';
-  const casaFlag   = match.casa      ? (SQUADRE_BY_ID[match.casa]?.flag      || '') : '';
-  const trasfFlag  = match.trasferta ? (SQUADRE_BY_ID[match.trasferta]?.flag  || '') : '';
-  const bracketInfo = faseId === 'sedicesimi'
-    ? (SEDICESIMI_BRACKET.find(b => b.id === match.id) || {})
-    : {};
-  const bracketDesc = bracketInfo.desc ? '<div class="elim-bracket-desc">' + bracketInfo.match + ' · ' + bracketInfo.desc + '</div>' : '';
+
+  // ── Determina le etichette e le opzioni del dropdown ─────────────────────
+  let casaDisplay = '?', trasfDisplay = '?', bracketDesc = '', sqOpts = '';
+
+  if (faseId === 'sedicesimi') {
+    // Sedicesimi: label da SEDICESIMI_BRACKET, opzioni popolate da _ricalcolaSedicesimi
+    const bi = SEDICESIMI_BRACKET.find(b => b.id === match.id) || {};
+    casaDisplay  = _slotLabel(bi.casa  || {});
+    trasfDisplay = _slotLabel(bi.trasf || {});
+    if (bi.desc) bracketDesc = '<div class="elim-bracket-desc">' + bi.match + ' · ' + bi.desc + '</div>';
+    // sqOpts: vuoto, verrà popolato da _ricalcolaSedicesimi
+  } else {
+    // Ottavi/Quarti/Semifinali/Finale: prende i vincitori del turno precedente
+    const feeds = BRACKET_FEEDS[match.id];
+    if (feeds) {
+      bracketDesc = '<div class="elim-bracket-desc">Vince ' + feeds.casa.id + ' vs Vince ' + feeds.trasf.id + '</div>';
+      const casaId  = _getVincitore(feeds.casa.fase,  feeds.casa.id);
+      const trasfId = _getVincitore(feeds.trasf.fase, feeds.trasf.id);
+      const casaSq  = casaId  ? SQUADRE_BY_ID[casaId]  : null;
+      const trasfSq = trasfId ? SQUADRE_BY_ID[trasfId] : null;
+      casaDisplay  = casaSq  ? (casaSq.flag  || '') + ' ' + casaSq.nome  : _feedPlaceholder(feeds.casa);
+      trasfDisplay = trasfSq ? (trasfSq.flag || '') + ' ' + trasfSq.nome : _feedPlaceholder(feeds.trasf);
+      // Opzioni: solo le 2 squadre qualificate (se note)
+      const teams = [casaId, trasfId].filter(Boolean);
+      teams.forEach(id => {
+        const sq = SQUADRE_BY_ID[id];
+        const sel = vincSaved === id ? ' selected' : '';
+        sqOpts += '<option value="' + id + '"' + sel + '>' + (sq?.flag||'') + ' ' + (sq?.nome||id) + '</option>';
+      });
+    }
+  }
+
   return '<div class="elim-match-card" data-fase="' + faseId + '" data-id="' + match.id + '">'
     + bracketDesc
-    + '<div class="elim-matchup"><span class="elim-team">' + (faseId==='sedicesimi'?_slotLabel(bracketInfo.casa||{}):(casaFlag+' '+casaLabel)) + '</span><span class="elim-vs">vs</span><span class="elim-team">' + (faseId==='sedicesimi'?_slotLabel(bracketInfo.trasf||{}):(trasfFlag+' '+trasfLabel)) + '</span></div>'
+    + '<div class="elim-matchup"><span class="elim-team">' + casaDisplay + '</span><span class="elim-vs">vs</span><span class="elim-team">' + trasfDisplay + '</span></div>'
     + '<div class="elim-pick"><label class="field-label-sm">Chi passa?</label>'
     + '<select class="field-input field-input-sm vincitore-select" data-fase="' + faseId + '" data-match="' + match.id + '"><option value="">— Seleziona —</option>' + sqOpts + '</select></div>'
     + '<div class="elim-modalita"><label class="field-label-sm">Come?</label><div class="modalita-group">' + modHtml + '</div></div></div>';
@@ -509,7 +589,10 @@ function _renderMatchElim(faseId, match) {
 
 function _bindEliminatoria() {
   document.querySelectorAll('.vincitore-select').forEach(sel => {
-    sel.addEventListener('change', () => _setElim(sel.dataset.fase, sel.dataset.match, 'vincitore', sel.value || null));
+    sel.addEventListener('change', () => {
+      _setElim(sel.dataset.fase, sel.dataset.match, 'vincitore', sel.value || null);
+      _ricalcolaBracket();
+    });
   });
   document.querySelectorAll('.modalita-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -773,5 +856,4 @@ function _fmtData(iso) {
   if (!iso) return '';
   try {
     return new Date(iso).toLocaleDateString('it-IT', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit', timeZone:'Europe/Rome' });
-  } catch { return iso; }
-}
+  } catch { return
