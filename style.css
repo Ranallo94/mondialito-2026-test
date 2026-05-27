@@ -937,3 +937,42 @@ select.field-input option { background: var(--bg-card2); }
   .fase-matches      { grid-template-columns: repeat(3, 1fr); }
   .gironi-posiz-grid { grid-template-columns: repeat(4, 1fr); }
 }
+
+/* ── MINI CLASSIFICA GIRONE ── */
+.girone-classifica-mini {
+  margin-top: 12px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  animation: fadeIn .2s ease;
+}
+.girone-mini-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.girone-mini-table thead tr {
+  background: rgba(255,255,255,.04);
+}
+.girone-mini-table th {
+  padding: 6px 8px;
+  text-align: center;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.girone-mini-table th:nth-child(2) { text-align: left; }
+.girone-mini-table td {
+  padding: 7px 8px;
+  text-align: center;
+  border-top: 1px solid var(--border);
+}
+.girone-mini-table td:nth-child(2) { text-align: left; }
+.girone-mini-table tr.qualificata  { background: rgba(74,222,128,.06); }
+.girone-mini-table tr.qualificata .mini-pos { color: var(--verde-light); font-weight: 700; }
+.mini-pt  { font-size: 14px; }
+.mini-team { white-space: nowrap; }
+.gd-pos   { color: var(--verde-light); }
+.gd-neg   { color: var(--rosso); }
