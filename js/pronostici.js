@@ -543,7 +543,7 @@ const FASI_ELIM = [
 function _getMatchesFase(id) {
   if (id === 'finale') {
     const p = DB.fase_eliminatoria?.finale?.partita || {};
-    return p.casa || p.trasferta ? [{ id: 'F', ...p }] : [];
+    return [{ id: 'F', ...p }]; // sempre visibile
   }
   const fase = DB.fase_eliminatoria?.[id]?.partite || {};
   return Object.entries(fase).map(([mid, p]) => ({ id: mid, ...p }));
@@ -585,7 +585,7 @@ function _renderMatchElim(faseId, match) {
     // Ottavi/Quarti/Semifinali/Finale: prende i vincitori del turno precedente
     const feeds = BRACKET_FEEDS[match.id];
     if (feeds) {
-      bracketDesc = '<div class="elim-bracket-desc">Vince ' + feeds.casa.id + ' vs Vince ' + feeds.trasf.id + '</div>';
+      bracketDesc = '<div class="elim-bracket-desc"><span class="bracket-match-id">' + match.id + '</span> · Vince ' + feeds.casa.id + ' vs Vince ' + feeds.trasf.id + '</div>';
       const casaId  = _getVincitore(feeds.casa.fase,  feeds.casa.id);
       const trasfId = _getVincitore(feeds.trasf.fase, feeds.trasf.id);
       const casaSq  = casaId  ? SQUADRE_BY_ID[casaId]  : null;
@@ -605,7 +605,7 @@ function _renderMatchElim(faseId, match) {
   return '<div class="elim-match-card" data-fase="' + faseId + '" data-id="' + match.id + '">'
     + bracketDesc
     + '<div class="elim-matchup"><span class="elim-team">' + casaDisplay + '</span><span class="elim-vs">vs</span><span class="elim-team">' + trasfDisplay + '</span></div>'
-    + '<div class="elim-pick"><label class="field-label-sm">Chi passa?</label>'
+    + '<div class="elim-pick"><label class="field-label-sm">' + (faseId === 'finale' ? '🏆 Campione del Mondo' : 'Chi passa?') + '</label>'
     + '<select class="field-input field-input-sm vincitore-select" data-fase="' + faseId + '" data-match="' + match.id + '"><option value="">— Seleziona —</option>' + sqOpts + '</select></div>'
     + '<div class="elim-modalita"><label class="field-label-sm">Come?</label><div class="modalita-group">' + modHtml + '</div></div></div>';
 }
