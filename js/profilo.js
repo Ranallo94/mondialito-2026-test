@@ -1,0 +1,239 @@
+/**
+ * MONDIALITO 2026 — profilo.js
+ * Pagina "Il mio profilo": punteggio personale, breakdown per categoria,
+ * dettaglio partita per partita.
+ */
+
+import DB from '../mondialito_db.json' with { type: 'json' };
+import { STATE } from './app.js';
+import { getPronostici, onRisultatiSnapshot, onClassificaSnapshot } from './db.js';
+import { calcolaPunteggio } from './punteggi.js';
+import { showSpinner } from './ui.js';
+
+let _pronostici  = null;
+let _risultati   = {};
+let _classifica  = [];
+let _unsubRis    = null;
+let _unsubClass  = null;
+
+// ── INIT ──────────────────────────────────────────────
+export async function initProfilo() {
+  showSpinner('profilo-breakdown', 'Caricamento profilo…');
+
+  // Carica pronostici dell'utente
+  try {
+    _pronostici = await getPronostici(STATE.utente.id);
+  } catch (e) {
+    console.warn('Errore caricamento pronostici:', e);
+    _pronostici = null;
+  }
+
+  // Ascolta risultati per aggiornamento live
+  _unsubRis = onRisultatiSnapshot((ris) => {
+    _risultati = ris;
+    _renderProfilo();
+  });
+
+  // Ascolta classifica per la posizione
+  _unsubClass = onClassificaSnapshot((cl) => {
+    _classifica = cl;
+    _renderProfilo();
+  });
+}
+
+// ── RENDER PRINCIPALE ─────────────────────────────────
+function _renderProfilo() {
+  if (!_pronostici) {
+    document.getElementById('profilo-breakdown').innerHTML =
+      '<div class="empty-state"><div class="empty-icon">📋</div><p>Nessun pronostico trovato. Compila la tua scheda nella sezione Pronostici.</p></div>';
+    return;
+  }
+
+  const { totale, breakdown: bd } = calcolaPunteggio(_pronostici, _risultati);
+
+  // Posizione in classifica
+  const me = _classifica.find(p => p.id === STATE.utente?.id);
+  const pos = me?._pos || '—';
+
+  // Score card (aggiorna il div già nel DOM)
+  _renderScoreCard(totale, pos);
+
+  // Breakdown per categoria
+  _renderBreakdown(bd);
+
+  // Dettaglio partite girone
+  _renderDettaglioGironi(bd);
+}
+
+// ── SCORE CARD ────────────────────────────────────────
+function _renderScoreCard(totale, pos) {
+  const card = document.getElementById('profilo-score-card');
+  if (!card) return;
+
+  const medals = { 1: '🥇', 2: '🥈', 3: '🥉' };
+  const posLabel = medals[pos] || `${pos}°`;
+
+  card.innerHTML = `
+    <div class="score-card-inner">
+      <div class="score-card-pos">${posLabel}</div>
+      <div class="score-card-info">
+        <div class="score-card-nome">${STATE.utente?.nome || ''}</div>
+        <div class="score-card-totale">${totale} <span class="score-card-pt">pt</span></div>
+      </div>
+    </div>`;
+}
+
+// ── BREAKDOWN CATEGORIE ───────────────────────────────
+function _renderBreakdown(bd) {
+  const el = document.getElementById('profilo-breakdown');
+  if (!el) return;
+
+  const categorie = [
+    {
+      label: 'Fase a gironi — Segno 1X2',
+      icon: '⚽',
+      punti: bd.gironi_segno.punti,
+      desc: `${bd.gironi_segno.corretti}/${bd.gironi_segno.totale} segni corretti`,
+    },
+    {
+      label: 'Fase a gironi — Risultato esatto',
+      icon: '🎯',
+      punti: bd.gironi_esatto.punti,
+      desc: `${bd.gironi_esatto.corretti}/${bd.gironi_esatto.totale} risultati esatti`,
+    },
+    {
+      label: 'Posto in griglia',
+      icon: '📊',
+      punti: bd.posto_griglia.punti,
+      desc: `${bd.posto_griglia.corretti} posizioni corrette (solo squadre ai sedicesimi)`,
+    },
+    {
+      label: 'Sedicesimi di finale',
+      icon: '🏟️',
+      punti: bd.sedicesimi.punti,
+      desc: `${bd.sedicesimi.corretti} squadre qualificate indovinate`,
+    },
+    {
+      label: 'Ottavi di finale',
+      icon: '⚡',
+      punti: bd.ottavi.punti,
+      desc: `${bd.ottavi.corretti} squadre indovinate`,
+    },
+    {
+      label: 'Quarti di finale',
+      icon: '🔥',
+      punti: bd.quarti.punti,
+      desc: `${bd.quarti.corretti} squadre indovinate`,
+    },
+    {
+      label: 'Semifinali',
+      icon: '💥',
+      punti: bd.semifinali.punti,
+      desc: `${bd.semifinali.corretti} squadre indovinate`,
+    },
+    {
+      label: 'Finaliste',
+      icon: '🏆',
+      punti: bd.finale.punti,
+      desc: `${bd.finale.corretti} finaliste indovinate`,
+    },
+    {
+      label: 'Vincitore torneo',
+      icon: '🥇',
+      punti: bd.vincitore.punti,
+      desc: bd.vincitore.corretto ? 'Campione indovinato! 🎉' : 'Campione non ancora noto',
+    },
+    {
+      label: 'Modalità passaggio turno',
+      icon: '🎲',
+      punti: bd.modalita.punti,
+      desc: `${bd.modalita.corretti} modalità indovinate`,
+    },
+    {
+      label: 'Capocannoniere',
+      icon: '👟',
+      punti: bd.capocannoniere.punti,
+      desc: bd.capocannoniere.dettaglio || 'Nessun punto ancora',
+    },
+  ];
+
+  const totale = categorie.reduce((s, c) => s + c.punti, 0);
+
+  el.innerHTML = `
+    <div class="breakdown-section">
+      <h3 class="section-title">📈 Dettaglio punteggio</h3>
+      <div class="breakdown-list">
+        ${categorie.map(c => `
+          <div class="breakdown-row ${c.punti > 0 ? 'breakdown-has-pts' : ''}">
+            <div class="bd-icon">${c.icon}</div>
+            <div class="bd-info">
+              <div class="bd-label">${c.label}</div>
+              <div class="bd-desc">${c.desc}</div>
+            </div>
+            <div class="bd-pts ${c.punti > 0 ? 'bd-pts-pos' : ''}">${c.punti > 0 ? '+' + c.punti : '—'}</div>
+          </div>`).join('')}
+        <div class="breakdown-row breakdown-total">
+          <div class="bd-icon">🏅</div>
+          <div class="bd-info"><div class="bd-label"><strong>Totale</strong></div></div>
+          <div class="bd-pts bd-pts-total"><strong>${totale}</strong></div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── DETTAGLIO PARTITE GIRONE ──────────────────────────
+function _renderDettaglioGironi(bd) {
+  const el = document.getElementById('profilo-partite');
+  if (!el) return;
+
+  const pGironi = _pronostici?.gironi || {};
+  const rGironi = _risultati?.gironi  || {};
+
+  let rows = '';
+  let count = 0;
+
+  Object.entries(DB.gironi).forEach(([lettera, girone]) => {
+    girone.partite.forEach(p => {
+      const r = rGironi[p.id];
+      if (!r || r.gol_casa == null) return; // non ancora giocata
+      const pr = pGironi[p.id];
+      if (!pr) return;
+
+      count++;
+      const casa  = DB.squadre[p.casa];
+      const trasf = DB.squadre[p.trasferta];
+
+      const segnoR = r.gol_casa > r.gol_trasferta ? '1' : r.gol_casa < r.gol_trasferta ? '2' : 'X';
+      const segnoP = pr.segno || '?';
+      const segnoOk = segnoP === segnoR;
+
+      const esattoOk = pr.gol_casa == r.gol_casa && pr.gol_trasferta == r.gol_trasferta;
+      const pti = (segnoOk ? 10 : 0) + (esattoOk ? 5 : 0);
+
+      rows += `
+        <div class="profilo-match-row ${segnoOk ? 'match-ok' : 'match-ko'}">
+          <div class="pm-teams">
+            ${casa?.flag || ''} ${casa?.nome || p.casa} vs ${trasf?.nome || p.trasferta} ${trasf?.flag || ''}
+          </div>
+          <div class="pm-result">
+            <span class="pm-real">${r.gol_casa}–${r.gol_trasferta}</span>
+            <span class="pm-sep">·</span>
+            <span class="pm-pron ${segnoOk ? 'ok' : 'ko'}">${pr.gol_casa ?? '?'}–${pr.gol_trasferta ?? '?'} (${segnoP})</span>
+            ${esattoOk ? '<span class="pm-esatto">🎯</span>' : ''}
+          </div>
+          <div class="pm-pts ${pti > 0 ? 'pts-pos' : ''}">${pti > 0 ? '+' + pti : '0'} pt</div>
+        </div>`;
+    });
+  });
+
+  if (!count) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">⚽</div><p>Le partite dei gironi non sono ancora iniziate.</p></div>';
+    return;
+  }
+
+  el.innerHTML = `
+    <div class="breakdown-section">
+      <h3 class="section-title">⚽ Partite giocate — girone</h3>
+      <div class="profilo-matches-list">${rows}</div>
+    </div>`;
+}

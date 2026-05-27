@@ -1,0 +1,137 @@
+/**
+ * MONDIALITO 2026 — classifica.js
+ * Leaderboard real-time con calcolo spareggio.
+ * La classifica pre-calcolata è in Firestore (aggiornata dalla Cloud Function).
+ */
+
+import { STATE } from './app.js';
+import { onClassificaSnapshot, getClassificaUpdatedAt } from './db.js';
+import { showSpinner, showEmpty, formatDate } from './ui.js';
+
+let _unsub = null;
+
+// ── INIT ──────────────────────────────────────────────
+export async function initClassifica() {
+  showSpinner('classifica-container', 'Caricamento classifica…');
+
+  // Ascolta in real-time
+  _unsub = onClassificaSnapshot((partecipanti) => {
+    renderClassifica(partecipanti);
+  });
+
+  // Timestamp aggiornamento
+  try {
+    const ts = await getClassificaUpdatedAt();
+    if (ts) {
+      document.getElementById('classifica-updated').textContent =
+        `Aggiornata: ${formatDate(ts.toISOString(), true)}`;
+    }
+  } catch (_) {}
+}
+
+// ── RENDER ────────────────────────────────────────────
+export function renderClassifica(partecipanti) {
+  const container = document.getElementById('classifica-container');
+  if (!container) return;
+
+  if (!partecipanti || !partecipanti.length) {
+    showEmpty('classifica-container', 'Classifica non ancora disponibile.', '🏅');
+    return;
+  }
+
+  // Ordina: totale DESC, poi criteri spareggio in cascata
+  const sorted = [...partecipanti].sort((a, b) => {
+    if (b.totale !== a.totale) return b.totale - a.totale;
+    const sa = a.spareggio || [];
+    const sb = b.spareggio || [];
+    for (let i = 0; i < Math.max(sa.length, sb.length); i++) {
+      if ((sb[i] || 0) !== (sa[i] || 0)) return (sb[i] || 0) - (sa[i] || 0);
+    }
+    return (a.nome || '').localeCompare(b.nome || '', 'it');
+  });
+
+  // Assegna posizioni effettive (gestisce ex-aequo)
+  let pos = 1;
+  sorted.forEach((p, i) => {
+    if (i > 0) {
+      const prev = sorted[i - 1];
+      const samePts = prev.totale === p.totale;
+      const sameSpar = JSON.stringify(prev.spareggio) === JSON.stringify(p.spareggio);
+      if (!samePts || !sameSpar) pos = i + 1;
+    }
+    p._pos = pos;
+  });
+
+  const isMe = (uid) => uid === STATE.utente?.id;
+
+  const rows = sorted.map(p => {
+    const posClass = p._pos === 1 ? 'pos-1'
+                   : p._pos === 2 ? 'pos-2'
+                   : p._pos === 3 ? 'pos-3'
+                   : p._pos === sorted.length ? 'pos-last' : '';
+    const meClass  = isMe(p.id) ? ' row-me' : '';
+    const bdHtml   = _renderBreakdownInline(p.breakdown);
+
+    return `
+      <div class="classifica-row${meClass} ${posClass}" data-uid="${p.id}">
+        <div class="row-pos">${_posLabel(p._pos)}</div>
+        <div class="row-info">
+          <span class="row-nome">${p.nome || '—'}${isMe(p.id) ? ' <span class="badge-tu">Tu</span>' : ''}</span>
+          <div class="row-breakdown">${bdHtml}</div>
+        </div>
+        <div class="row-totale">${p.totale ?? '—'}</div>
+      </div>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="classifica-list">
+      <div class="classifica-header">
+        <span>Pos.</span>
+        <span>Partecipante</span>
+        <span>Punti</span>
+      </div>
+      ${rows}
+    </div>`;
+
+  // Aggiorna profilo se è la pagina corrente
+  _aggiornaProfilo(sorted);
+}
+
+// ── PROFILO SCORE CARD ────────────────────────────────
+function _aggiornaProfilo(sorted) {
+  const me = sorted.find(p => p.id === STATE.utente?.id);
+  const card = document.getElementById('profilo-score-card');
+  if (!card || !me) return;
+
+  card.innerHTML = `
+    <div class="score-card-inner">
+      <div class="score-card-pos">${_posLabel(me._pos)}</div>
+      <div class="score-card-info">
+        <div class="score-card-nome">${me.nome}</div>
+        <div class="score-card-totale">${me.totale ?? 0} <span class="score-card-pt">pt</span></div>
+      </div>
+    </div>`;
+}
+
+// ── BREAKDOWN INLINE ──────────────────────────────────
+function _renderBreakdownInline(bd) {
+  if (!bd) return '';
+  const voci = [
+    { label: 'Gironi',     punti: (bd.gironi_segno?.punti || 0) + (bd.gironi_esatto?.punti || 0) },
+    { label: 'Griglia',    punti: bd.posto_griglia?.punti || 0 },
+    { label: 'Elim.',      punti: (bd.sedicesimi?.punti || 0) + (bd.ottavi?.punti || 0)
+                                + (bd.quarti?.punti || 0) + (bd.semifinali?.punti || 0)
+                                + (bd.finale?.punti || 0) + (bd.vincitore?.punti || 0) },
+    { label: 'Cannon.',    punti: bd.capocannoniere?.punti || 0 },
+    { label: 'Modalità',   punti: bd.modalita?.punti || 0 },
+  ].filter(v => v.punti > 0);
+
+  if (!voci.length) return '<span class="bd-empty">nessun punto ancora</span>';
+  return voci.map(v => `<span class="bd-chip">${v.label}: <strong>${v.punti}</strong></span>`).join('');
+}
+
+// ── HELPERS ───────────────────────────────────────────
+function _posLabel(pos) {
+  const medals = { 1: '🥇', 2: '🥈', 3: '🥉' };
+  return medals[pos] || `${pos}°`;
+}
