@@ -1062,12 +1062,32 @@ function _bindSpeciali() {
     const key  = input.dataset.key;
     const drop = document.getElementById('ac-drop-' + key);
 
+    // Costruisce il set di valori validi: "Cognome (SQUADRA)"
+    const _valoriValidi = new Set(GIOCATORI.map(g => g.cognome + ' (' + g.squadra + ')'));
+
     function _salvaValore(val) {
       if (!_pronostici.capocannoniere) _pronostici.capocannoniere = {};
       _pronostici.capocannoniere[key] = val || null;
     }
 
     function _chiudiDrop() { drop.innerHTML = ''; drop.style.display = 'none'; }
+
+    function _validaEChiudi() {
+      setTimeout(() => {
+        _chiudiDrop();
+        const v = input.value.trim();
+        if (v && !_valoriValidi.has(v)) {
+          // Valore non valido: svuota e segnala
+          input.value = '';
+          _salvaValore(null);
+          input.classList.add('input-error');
+          setTimeout(() => input.classList.remove('input-error'), 1500);
+          showToast('Seleziona un calciatore dall\'elenco', 'error');
+        } else {
+          _salvaValore(v || null);
+        }
+      }, 200);
+    }
 
     function _mostraSuggerimenti(query) {
       const q = _normStr(query.trim());
@@ -1088,13 +1108,14 @@ function _bindSpeciali() {
           e.preventDefault();
           input.value = item.dataset.val;
           _salvaValore(item.dataset.val);
+          input.classList.remove('input-error');
           _chiudiDrop();
         });
       });
     }
 
-    input.addEventListener('input', () => _mostraSuggerimenti(input.value));
-    input.addEventListener('blur',  () => { setTimeout(_chiudiDrop, 150); _salvaValore(input.value.trim()); });
+    input.addEventListener('input', () => { input.classList.remove('input-error'); _mostraSuggerimenti(input.value); });
+    input.addEventListener('blur',  _validaEChiudi);
     input.addEventListener('focus', () => { if (input.value.length >= 2) _mostraSuggerimenti(input.value); });
     input.addEventListener('keydown', e => {
       const items = drop.querySelectorAll('.ac-item');
