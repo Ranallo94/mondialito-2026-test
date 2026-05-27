@@ -891,6 +891,62 @@ select.field-input option { background: var(--bg-card2); }
 .girone-save-msg.gsm-ok    { color: #4caf50; font-weight: 600; }
 .girone-save-msg.gsm-error { color: #e74c3c; font-weight: 600; }
 
+/* ── SUB-TAB ELIMINATORIE ── */
+.elim-subtab-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.elim-tab {
+  padding: 8px 18px;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.elim-tab:hover { border-color: var(--oro); color: var(--text); }
+.elim-tab.active { background: var(--oro); border-color: var(--oro); color: #000; }
+.elim-panel { display: none; }
+.elim-panel.active { display: block; }
+.elim-save-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.btn-salva-fase {
+  background: var(--oro);
+  color: #000;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity .15s;
+}
+.btn-salva-fase:hover { opacity: .85; }
+.elim-save-msg {
+  font-size: 13px;
+  color: var(--text-muted);
+  flex: 1;
+  min-width: 0;
+}
+.elim-save-msg.esm-ok    { color: #4caf50; font-weight: 600; }
+.elim-save-msg.esm-error { color: #e74c3c; font-weight: 600; }
+
 /* ── PRONOSTICI FORM ADDIZIONALI ── */
 .girone-block    { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; }
 .girone-header   { margin-bottom: 12px; }
