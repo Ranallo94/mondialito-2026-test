@@ -1347,7 +1347,7 @@ function _renderRiepilogoGironi() {
       const gdDisp = hasData ? '<span class="' + gdCls + '">' + gdStr + '</span>' : '—';
       gridHtml += '<tr class="' + rowCls + '">'
         + '<td class="riepilogo-pos">' + (i + 1) + '</td>'
-        + '<td class="riepilogo-team">' + (sq?.flag || '') + ' ' + (sq?.nome || t.id) + '</td>'
+        + '<td class="riepilogo-team" title="' + (sq?.nome || t.id) + '">' + (sq?.flag || '') + ' ' + t.id + '</td>'
         + '<td class="riepilogo-pt">' + ptDisp + '</td>'
         + '<td class="riepilogo-gd">' + gdDisp + '</td>'
         + '</tr>';
@@ -1383,7 +1383,7 @@ function _renderRiepilogoGironi() {
     const icon = i === 7 && qualif ? '<span class="terza-cutoff" title="Ultimo posto qualificato">✂️ </span>' : '';
     terziHtml += '<tr class="' + rowCls + '">'
       + '<td class="riepilogo-pos">' + icon + (i + 1) + '</td>'
-      + '<td class="riepilogo-team">' + (sq?.flag || '') + ' ' + (sq?.nome || t.teamId) + '</td>'
+      + '<td class="riepilogo-team" title="' + (sq?.nome || t.teamId) + '">' + (sq?.flag || '') + ' ' + t.teamId + '</td>'
       + '<td class="riepilogo-girone">Girone ' + t.lettera + '</td>'
       + '<td class="riepilogo-pt">' + (hasData ? t.pt : '—') + '</td>'
       + '<td class="riepilogo-gd"><span class="' + gdCls + '">' + (hasData ? gdStr : '—') + '</span></td>'
