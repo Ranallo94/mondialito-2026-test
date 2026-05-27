@@ -207,6 +207,29 @@ const COMB_3I = {
 };
 const COMB_SLOT_ORDER = ['A','B','D','E','G','I','K','L'];
 
+// Mappa: matchId → {casa, trasf} del turno precedente che alimenta quella partita
+const BRACKET_FEEDS = {
+  // Ottavi ← vincitori sedicesimi
+  'O1': { casa:{fase:'sedicesimi',id:'S01'}, trasf:{fase:'sedicesimi',id:'S02'} },
+  'O2': { casa:{fase:'sedicesimi',id:'S03'}, trasf:{fase:'sedicesimi',id:'S04'} },
+  'O3': { casa:{fase:'sedicesimi',id:'S05'}, trasf:{fase:'sedicesimi',id:'S06'} },
+  'O4': { casa:{fase:'sedicesimi',id:'S07'}, trasf:{fase:'sedicesimi',id:'S08'} },
+  'O5': { casa:{fase:'sedicesimi',id:'S09'}, trasf:{fase:'sedicesimi',id:'S10'} },
+  'O6': { casa:{fase:'sedicesimi',id:'S11'}, trasf:{fase:'sedicesimi',id:'S12'} },
+  'O7': { casa:{fase:'sedicesimi',id:'S13'}, trasf:{fase:'sedicesimi',id:'S14'} },
+  'O8': { casa:{fase:'sedicesimi',id:'S15'}, trasf:{fase:'sedicesimi',id:'S16'} },
+  // Quarti ← vincitori ottavi
+  'Q1': { casa:{fase:'ottavi',id:'O1'}, trasf:{fase:'ottavi',id:'O2'} },
+  'Q2': { casa:{fase:'ottavi',id:'O3'}, trasf:{fase:'ottavi',id:'O4'} },
+  'Q3': { casa:{fase:'ottavi',id:'O5'}, trasf:{fase:'ottavi',id:'O6'} },
+  'Q4': { casa:{fase:'ottavi',id:'O7'}, trasf:{fase:'ottavi',id:'O8'} },
+  // Semifinali ← vincitori quarti
+  'SF1': { casa:{fase:'quarti',id:'Q1'}, trasf:{fase:'quarti',id:'Q2'} },
+  'SF2': { casa:{fase:'quarti',id:'Q3'}, trasf:{fase:'quarti',id:'Q4'} },
+  // Finale ← vincitori semifinali
+  'F':   { casa:{fase:'semifinali',id:'SF1'}, trasf:{fase:'semifinali',id:'SF2'} },
+};
+
 // ── CALCOLO CLASSIFICA PURA (senza rendering) ──────────────────────────
 function _getClassificaCompleta(lettera) {
   const girone = DB.gironi[lettera];
