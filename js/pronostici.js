@@ -704,7 +704,9 @@ function _ricalcolaSedicesimi() {
     // Aggiorna le opzioni del select vincitore
     const sel = card.querySelector('.vincitore-select');
     if (!sel) return;
-    const currVal = sel.value;
+    // Usa il valore salvato in _pronostici come fonte di verità, non il DOM
+    const savedVal = _pronostici?.fase_eliminatoria?.sedicesimi?.[bracket.id]?.vincitore || '';
+    const currVal = savedVal || sel.value;
     const teams = [casaId, trasfId].filter(Boolean);
     let opts = '<option value="">— Seleziona —</option>';
     teams.forEach(id => {
@@ -762,7 +764,8 @@ function _ricalcolaBracket() {
       // Aggiorna opzioni dropdown
       const sel = card.querySelector('.vincitore-select');
       if (!sel) return;
-      const currVal = sel.value;
+      const savedVal = _pronostici?.fase_eliminatoria?.[faseId]?.[matchId]?.vincitore || '';
+      const currVal = savedVal || sel.value;
       const teams = [casaId, trasfId].filter(Boolean);
       let opts = '<option value="">— Seleziona —</option>';
       teams.forEach(id => {
