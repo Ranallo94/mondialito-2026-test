@@ -781,7 +781,7 @@ function _renderGironi() {
   // ── Barra sub-tab ────────────────────────────────────────────────────────
   let html = '<div class="girone-subtab-bar">';
   lettere.forEach((l, i) => {
-    html += '<button class="girone-tab' + (i===0?' active':'') + '" data-girone="' + l + '">'
+    html += '<button type="button" class="girone-tab' + (i===0?' active':'') + '" data-girone="' + l + '">'
       + '<span class="gtab-letter">Girone ' + l + '</span>'
       + '<span class="gtab-badge" id="badge-girone-' + l + '"></span>'
       + '</button>';
@@ -970,7 +970,7 @@ function _renderEliminatoria() {
   // ── Barra sub-tab ────────────────────────────────────────────────────
   let tabBar = '<div class="elim-subtab-bar">';
   FASI_ELIM.forEach(({ id, label }, i) => {
-    tabBar += '<button class="elim-tab' + (i === 0 ? ' active' : '') + '" data-fase="' + id + '">' + label + '</button>';
+    tabBar += '<button type="button" class="elim-tab' + (i === 0 ? ' active' : '') + '" data-fase="' + id + '">' + label + '</button>';
   });
   tabBar += '</div>';
 
@@ -983,7 +983,7 @@ function _renderEliminatoria() {
     panels += '<div class="elim-panel' + (i === 0 ? ' active' : '') + '" data-fase="' + id + '">'
       + '<div class="fase-matches">' + matchesHtml + '</div>'
       + '<div class="elim-save-row">'
-      + '<button class="btn-salva-fase" data-fase="' + id + '">💾 Salva ' + label + '</button>'
+      + '<button type="button" class="btn-salva-fase" data-fase="' + id + '">💾 Salva ' + label + '</button>'
       + '<span class="elim-save-msg" id="esm-' + id + '"></span>'
       + '</div></div>';
   });
@@ -1027,13 +1027,10 @@ function _salvaFase(faseId) {
     return;
   }
 
-  // Salva su Firebase
-  const uid = firebase.auth().currentUser?.uid;
+  // Salva su Firebase tramite savePronostici
+  const uid = STATE.utente?.id;
   if (!uid) return;
-  const data = {};
-  data['fase_eliminatoria.' + faseId] = _pronostici?.fase_eliminatoria?.[faseId] || {};
-  firebase.firestore().collection('pronostici').doc(uid)
-    .set({ fase_eliminatoria: { [faseId]: _pronostici?.fase_eliminatoria?.[faseId] || {} } }, { merge: true })
+  savePronostici(uid, _pronostici)
     .then(() => {
       if (msg) { msg.textContent = '✓ Salvato!'; msg.classList.add('esm-ok'); }
       setTimeout(() => { if (msg) { msg.textContent = ''; msg.className = 'elim-save-msg'; } }, 3000);
@@ -1394,11 +1391,7 @@ function _renderRiepilogoGironi() {
       + '</tr>';
   });
 
-  // Linea separatrice tra qualificate e non
-  if (terziData.length > 8) {
-    // Already handled with row classes above
-  }
-
+  terziHtml += '</tbody></table>'
     + '<div class="riepilogo-terze-note">Le squadre sopra la riga ✂️ si qualificano per i sedicesimi di finale.</div>'
     + '</div>';
 
@@ -1446,9 +1439,9 @@ async function _salvaPronostici() {
   try {
     _raccogliDalDOM();
     _pronostici.ts_modifica = Date.now();
-    const uid = firebase.auth().currentUser?.uid;
+    const uid = STATE.utente?.id;
     if (!uid) throw new Error('Non autenticato');
-    await firebase.firestore().collection('pronostici').doc(uid).set(_pronostici, { merge: true });
+    await savePronostici(uid, _pronostici);
     if (btn) { btn.textContent = '✓ Salvato!'; setTimeout(() => { btn.disabled = false; btn.textContent = 'Salva pronostici'; }, 2000); }
   } catch (e) {
     console.error('Errore salvataggio:', e);
