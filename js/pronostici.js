@@ -230,6 +230,385 @@ const BRACKET_FEEDS = {
   'F':   { casa:{fase:'semifinali',id:'SF1'}, trasf:{fase:'semifinali',id:'SF2'} },
 };
 
+const GIOCATORI = [
+  { cognome: 'Jiménez', nome: 'Raúl', squadra: 'MEX' },
+  { cognome: 'Lozano', nome: 'Hirving', squadra: 'MEX' },
+  { cognome: 'Martín', nome: 'Henry', squadra: 'MEX' },
+  { cognome: 'Giménez', nome: 'Santiago', squadra: 'MEX' },
+  { cognome: 'Álvarez', nome: 'Edson', squadra: 'MEX' },
+  { cognome: 'Vega', nome: 'Alexis', squadra: 'MEX' },
+  { cognome: 'Antuna', nome: 'Uriel', squadra: 'MEX' },
+  { cognome: 'Alvarado', nome: 'Roberto', squadra: 'MEX' },
+  { cognome: 'Sánchez', nome: 'Alexis', squadra: 'MEX' },
+  { cognome: 'Tau', nome: 'Percy', squadra: 'RSA' },
+  { cognome: 'Lorch', nome: 'Thembinkosi', squadra: 'RSA' },
+  { cognome: 'Foster', nome: 'Lyle', squadra: 'RSA' },
+  { cognome: 'Hlongwane', nome: 'Bongokuhle', squadra: 'RSA' },
+  { cognome: 'Mokoena', nome: 'Teboho', squadra: 'RSA' },
+  { cognome: 'Zwane', nome: 'Themba', squadra: 'RSA' },
+  { cognome: 'Son', nome: 'Heung-min', squadra: 'KOR' },
+  { cognome: 'Lee', nome: 'Jae-sung', squadra: 'KOR' },
+  { cognome: 'Hwang', nome: 'Hee-chan', squadra: 'KOR' },
+  { cognome: 'Cho', nome: 'Gue-sung', squadra: 'KOR' },
+  { cognome: 'Lee', nome: 'Gang-in', squadra: 'KOR' },
+  { cognome: 'Kim', nome: 'Min-jae', squadra: 'KOR' },
+  { cognome: 'Hwang', nome: 'In-beom', squadra: 'KOR' },
+  { cognome: 'Oh', nome: 'Hyeon-gyu', squadra: 'KOR' },
+  { cognome: 'Schick', nome: 'Patrik', squadra: 'CZE' },
+  { cognome: 'Souček', nome: 'Tomáš', squadra: 'CZE' },
+  { cognome: 'Hložek', nome: 'Adam', squadra: 'CZE' },
+  { cognome: 'Chytil', nome: 'Mojmír', squadra: 'CZE' },
+  { cognome: 'Lingr', nome: 'Ondřej', squadra: 'CZE' },
+  { cognome: 'Provod', nome: 'Lukáš', squadra: 'CZE' },
+  { cognome: 'Davies', nome: 'Alphonso', squadra: 'CAN' },
+  { cognome: 'David', nome: 'Jonathan', squadra: 'CAN' },
+  { cognome: 'Larin', nome: 'Cyle', squadra: 'CAN' },
+  { cognome: 'Buchanan', nome: 'Tajon', squadra: 'CAN' },
+  { cognome: 'Eustáquio', nome: 'Stephen', squadra: 'CAN' },
+  { cognome: 'Millar', nome: 'Liam', squadra: 'CAN' },
+  { cognome: 'Cavallini', nome: 'Lucas', squadra: 'CAN' },
+  { cognome: 'Johnston', nome: 'Alistair', squadra: 'CAN' },
+  { cognome: 'Džeko', nome: 'Edin', squadra: 'BIH' },
+  { cognome: 'Demirović', nome: 'Ermedin', squadra: 'BIH' },
+  { cognome: 'Kolašinac', nome: 'Sead', squadra: 'BIH' },
+  { cognome: 'Hajradinović', nome: 'Haris', squadra: 'BIH' },
+  { cognome: 'Milošević', nome: 'Deni', squadra: 'BIH' },
+  { cognome: 'Ali', nome: 'Almoez', squadra: 'QAT' },
+  { cognome: 'Afif', nome: 'Akram', squadra: 'QAT' },
+  { cognome: 'Al-Haydos', nome: 'Hassan', squadra: 'QAT' },
+  { cognome: 'Muntari', nome: 'Mohammed', squadra: 'QAT' },
+  { cognome: 'Hatem', nome: 'Abdulaziz', squadra: 'QAT' },
+  { cognome: 'Xhaka', nome: 'Granit', squadra: 'SUI' },
+  { cognome: 'Shaqiri', nome: 'Xherdan', squadra: 'SUI' },
+  { cognome: 'Embolo', nome: 'Breel', squadra: 'SUI' },
+  { cognome: 'Okafor', nome: 'Noah', squadra: 'SUI' },
+  { cognome: 'Akanji', nome: 'Manuel', squadra: 'SUI' },
+  { cognome: 'Rieder', nome: 'Fabian', squadra: 'SUI' },
+  { cognome: 'Seferović', nome: 'Haris', squadra: 'SUI' },
+  { cognome: 'Vargas', nome: 'Ruben', squadra: 'SUI' },
+  { cognome: 'Vinícius', nome: 'Júnior', squadra: 'BRA' },
+  { cognome: 'Rodrygo', nome: '', squadra: 'BRA' },
+  { cognome: 'Endrick', nome: '', squadra: 'BRA' },
+  { cognome: 'Raphinha', nome: '', squadra: 'BRA' },
+  { cognome: 'Casemiro', nome: '', squadra: 'BRA' },
+  { cognome: 'Guimarães', nome: 'Bruno', squadra: 'BRA' },
+  { cognome: 'Marquinhos', nome: '', squadra: 'BRA' },
+  { cognome: 'Martinelli', nome: 'Gabriel', squadra: 'BRA' },
+  { cognome: 'Cunha', nome: 'Matheus', squadra: 'BRA' },
+  { cognome: 'Paquetá', nome: 'Lucas', squadra: 'BRA' },
+  { cognome: 'Militão', nome: 'Éder', squadra: 'BRA' },
+  { cognome: 'Hakimi', nome: 'Achraf', squadra: 'MAR' },
+  { cognome: 'Ziyech', nome: 'Hakim', squadra: 'MAR' },
+  { cognome: 'En-Nesyri', nome: 'Youssef', squadra: 'MAR' },
+  { cognome: 'Ounahi', nome: 'Azzedine', squadra: 'MAR' },
+  { cognome: 'Amrabat', nome: 'Sofyan', squadra: 'MAR' },
+  { cognome: 'Mazraoui', nome: 'Noussair', squadra: 'MAR' },
+  { cognome: 'Ezzalzouli', nome: 'Abde', squadra: 'MAR' },
+  { cognome: 'Sabiri', nome: 'Abdelhamid', squadra: 'MAR' },
+  { cognome: 'Nazon', nome: 'Duckens', squadra: 'HAI' },
+  { cognome: 'Guerrier', nome: 'Wilde-Donald', squadra: 'HAI' },
+  { cognome: 'Latraverse', nome: 'Steeven', squadra: 'HAI' },
+  { cognome: 'Pierre', nome: 'Frantzdy', squadra: 'HAI' },
+  { cognome: 'Robertson', nome: 'Andy', squadra: 'SCO' },
+  { cognome: 'McGinn', nome: 'John', squadra: 'SCO' },
+  { cognome: 'McTominay', nome: 'Scott', squadra: 'SCO' },
+  { cognome: 'Shankland', nome: 'Lawrence', squadra: 'SCO' },
+  { cognome: 'Adams', nome: 'Che', squadra: 'SCO' },
+  { cognome: 'Christie', nome: 'Ryan', squadra: 'SCO' },
+  { cognome: 'Dykes', nome: 'Lyndon', squadra: 'SCO' },
+  { cognome: 'Armstrong', nome: 'Stuart', squadra: 'SCO' },
+  { cognome: 'Pulisic', nome: 'Christian', squadra: 'USA' },
+  { cognome: 'Adams', nome: 'Tyler', squadra: 'USA' },
+  { cognome: 'McKennie', nome: 'Weston', squadra: 'USA' },
+  { cognome: 'Reyna', nome: 'Giovanni', squadra: 'USA' },
+  { cognome: 'Pepi', nome: 'Ricardo', squadra: 'USA' },
+  { cognome: 'Balogun', nome: 'Folarin', squadra: 'USA' },
+  { cognome: 'Musah', nome: 'Yunus', squadra: 'USA' },
+  { cognome: 'Weah', nome: 'Timothy', squadra: 'USA' },
+  { cognome: 'Aaronson', nome: 'Brenden', squadra: 'USA' },
+  { cognome: 'Sargent', nome: 'Josh', squadra: 'USA' },
+  { cognome: 'Turner', nome: 'Matt', squadra: 'USA' },
+  { cognome: 'Enciso', nome: 'Julio', squadra: 'PAR' },
+  { cognome: 'Almirón', nome: 'Miguel', squadra: 'PAR' },
+  { cognome: 'Romero', nome: 'Ángel', squadra: 'PAR' },
+  { cognome: 'González', nome: 'Carlos', squadra: 'PAR' },
+  { cognome: 'Gómez', nome: 'Gustavo', squadra: 'PAR' },
+  { cognome: 'Villasanti', nome: 'Mathías', squadra: 'PAR' },
+  { cognome: 'Sánchez', nome: 'Richard', squadra: 'PAR' },
+  { cognome: 'Souttar', nome: 'Harry', squadra: 'AUS' },
+  { cognome: 'Hrustić', nome: 'Ajdin', squadra: 'AUS' },
+  { cognome: 'Boyle', nome: 'Martin', squadra: 'AUS' },
+  { cognome: 'Duke', nome: 'Mitch', squadra: 'AUS' },
+  { cognome: 'McGree', nome: 'Riley', squadra: 'AUS' },
+  { cognome: 'Goodwin', nome: 'Craig', squadra: 'AUS' },
+  { cognome: 'Ryan', nome: 'Mathew', squadra: 'AUS' },
+  { cognome: 'Devlin', nome: 'Cameron', squadra: 'AUS' },
+  { cognome: 'Çalhanoğlu', nome: 'Hakan', squadra: 'TUR' },
+  { cognome: 'Güler', nome: 'Arda', squadra: 'TUR' },
+  { cognome: 'Aktürkoğlu', nome: 'Kerem', squadra: 'TUR' },
+  { cognome: 'Yazıcı', nome: 'Yusuf', squadra: 'TUR' },
+  { cognome: 'Ünder', nome: 'Cengiz', squadra: 'TUR' },
+  { cognome: 'Demiral', nome: 'Merih', squadra: 'TUR' },
+  { cognome: 'Yıldız', nome: 'Kenan', squadra: 'TUR' },
+  { cognome: 'Tosun', nome: 'Cenk', squadra: 'TUR' },
+  { cognome: 'Musiala', nome: 'Jamal', squadra: 'GER' },
+  { cognome: 'Wirtz', nome: 'Florian', squadra: 'GER' },
+  { cognome: 'Havertz', nome: 'Kai', squadra: 'GER' },
+  { cognome: 'Sané', nome: 'Leroy', squadra: 'GER' },
+  { cognome: 'Müller', nome: 'Thomas', squadra: 'GER' },
+  { cognome: 'Gündoğan', nome: 'İlkay', squadra: 'GER' },
+  { cognome: 'Kimmich', nome: 'Joshua', squadra: 'GER' },
+  { cognome: 'Gnabry', nome: 'Serge', squadra: 'GER' },
+  { cognome: 'Goretzka', nome: 'Leon', squadra: 'GER' },
+  { cognome: 'Rüdiger', nome: 'Antonio', squadra: 'GER' },
+  { cognome: 'Neuer', nome: 'Manuel', squadra: 'GER' },
+  { cognome: 'Kessié', nome: 'Franck', squadra: 'CIV' },
+  { cognome: 'Pépé', nome: 'Nicolas', squadra: 'CIV' },
+  { cognome: 'Haller', nome: 'Sébastien', squadra: 'CIV' },
+  { cognome: 'Zaha', nome: 'Wilfried', squadra: 'CIV' },
+  { cognome: 'Sangaré', nome: 'Ibrahim', squadra: 'CIV' },
+  { cognome: 'Gradel', nome: 'Max-Alain', squadra: 'CIV' },
+  { cognome: 'Aurier', nome: 'Serge', squadra: 'CIV' },
+  { cognome: 'Diomandé', nome: 'Sofiane', squadra: 'CIV' },
+  { cognome: 'Valencia', nome: 'Enner', squadra: 'ECU' },
+  { cognome: 'Caicedo', nome: 'Moisés', squadra: 'ECU' },
+  { cognome: 'Plata', nome: 'Gonzalo', squadra: 'ECU' },
+  { cognome: 'Hincapié', nome: 'Piero', squadra: 'ECU' },
+  { cognome: 'Sarmiento', nome: 'Jeremy', squadra: 'ECU' },
+  { cognome: 'Ibarra', nome: 'Romario', squadra: 'ECU' },
+  { cognome: 'Reasco', nome: 'Djorkaeff', squadra: 'ECU' },
+  { cognome: 'Mena', nome: 'Ángel', squadra: 'ECU' },
+  { cognome: 'Bacuna', nome: 'Leandro', squadra: 'CUW' },
+  { cognome: 'Janga', nome: 'Rangelo', squadra: 'CUW' },
+  { cognome: 'Hooi', nome: 'Elson', squadra: 'CUW' },
+  { cognome: 'Metgod', nome: 'Cuco', squadra: 'CUW' },
+  { cognome: 'Becker', nome: 'Junicoló', squadra: 'CUW' },
+  { cognome: 'Van Dijk', nome: 'Virgil', squadra: 'NED' },
+  { cognome: 'De Jong', nome: 'Frenkie', squadra: 'NED' },
+  { cognome: 'Depay', nome: 'Memphis', squadra: 'NED' },
+  { cognome: 'Gakpo', nome: 'Cody', squadra: 'NED' },
+  { cognome: 'Dumfries', nome: 'Denzel', squadra: 'NED' },
+  { cognome: 'Simons', nome: 'Xavi', squadra: 'NED' },
+  { cognome: 'Weghorst', nome: 'Wout', squadra: 'NED' },
+  { cognome: 'Reijnders', nome: 'Tijjani', squadra: 'NED' },
+  { cognome: 'Aké', nome: 'Nathan', squadra: 'NED' },
+  { cognome: 'Koopmeiners', nome: 'Teun', squadra: 'NED' },
+  { cognome: 'Frimpong', nome: 'Jeremie', squadra: 'NED' },
+  { cognome: 'Minamino', nome: 'Takumi', squadra: 'JPN' },
+  { cognome: 'Kamada', nome: 'Daichi', squadra: 'JPN' },
+  { cognome: 'Doan', nome: 'Ritsu', squadra: 'JPN' },
+  { cognome: 'Tanaka', nome: 'Ao', squadra: 'JPN' },
+  { cognome: 'Endo', nome: 'Wataru', squadra: 'JPN' },
+  { cognome: 'Tomiyasu', nome: 'Takehiro', squadra: 'JPN' },
+  { cognome: 'Ito', nome: 'Junya', squadra: 'JPN' },
+  { cognome: 'Mitoma', nome: 'Kaoru', squadra: 'JPN' },
+  { cognome: 'Kubo', nome: 'Takefusa', squadra: 'JPN' },
+  { cognome: 'Maeda', nome: 'Daizen', squadra: 'JPN' },
+  { cognome: 'Isak', nome: 'Alexander', squadra: 'SWE' },
+  { cognome: 'Forsberg', nome: 'Emil', squadra: 'SWE' },
+  { cognome: 'Gyökeres', nome: 'Viktor', squadra: 'SWE' },
+  { cognome: 'Kulusevski', nome: 'Dejan', squadra: 'SWE' },
+  { cognome: 'Svanberg', nome: 'Mattias', squadra: 'SWE' },
+  { cognome: 'Lindelöf', nome: 'Victor', squadra: 'SWE' },
+  { cognome: 'Elanga', nome: 'Anthony', squadra: 'SWE' },
+  { cognome: 'Quaison', nome: 'Robin', squadra: 'SWE' },
+  { cognome: 'Khazri', nome: 'Wahbi', squadra: 'TUN' },
+  { cognome: 'Msakni', nome: 'Youssef', squadra: 'TUN' },
+  { cognome: 'Jaziri', nome: 'Seifeddine', squadra: 'TUN' },
+  { cognome: 'Skhiri', nome: 'Ellyes', squadra: 'TUN' },
+  { cognome: 'Ben Slimane', nome: 'Anis', squadra: 'TUN' },
+  { cognome: 'Bronn', nome: 'Dylan', squadra: 'TUN' },
+  { cognome: 'Sassi', nome: 'Ferjani', squadra: 'TUN' },
+  { cognome: 'De Bruyne', nome: 'Kevin', squadra: 'BEL' },
+  { cognome: 'Lukaku', nome: 'Romelu', squadra: 'BEL' },
+  { cognome: 'Trossard', nome: 'Leandro', squadra: 'BEL' },
+  { cognome: 'Openda', nome: 'Lois', squadra: 'BEL' },
+  { cognome: 'De Ketelaere', nome: 'Charles', squadra: 'BEL' },
+  { cognome: 'Carrasco', nome: 'Yannick', squadra: 'BEL' },
+  { cognome: 'Doku', nome: 'Jeremy', squadra: 'BEL' },
+  { cognome: 'Witsel', nome: 'Axel', squadra: 'BEL' },
+  { cognome: 'Lukebakio', nome: 'Dodi', squadra: 'BEL' },
+  { cognome: 'Castagne', nome: 'Timothy', squadra: 'BEL' },
+  { cognome: 'Salah', nome: 'Mohamed', squadra: 'EGY' },
+  { cognome: 'Marmoush', nome: 'Omar', squadra: 'EGY' },
+  { cognome: 'Mostafa', nome: 'Mohamed', squadra: 'EGY' },
+  { cognome: 'Trezeguet', nome: 'Mahmoud', squadra: 'EGY' },
+  { cognome: 'Hegazy', nome: 'Ahmed', squadra: 'EGY' },
+  { cognome: 'El-Shenawy', nome: 'Mohamed', squadra: 'EGY' },
+  { cognome: 'Azmoun', nome: 'Sardar', squadra: 'IRN' },
+  { cognome: 'Taremi', nome: 'Mehdi', squadra: 'IRN' },
+  { cognome: 'Jahanbakhsh', nome: 'Alireza', squadra: 'IRN' },
+  { cognome: 'Gholizadeh', nome: 'Ali', squadra: 'IRN' },
+  { cognome: 'Ghoddos', nome: 'Saman', squadra: 'IRN' },
+  { cognome: 'Ansarifard', nome: 'Karim', squadra: 'IRN' },
+  { cognome: 'Wood', nome: 'Chris', squadra: 'NZL' },
+  { cognome: 'Reid', nome: 'Winston', squadra: 'NZL' },
+  { cognome: 'Rojas', nome: 'Marco', squadra: 'NZL' },
+  { cognome: 'Garbett', nome: 'Matthew', squadra: 'NZL' },
+  { cognome: 'Cacace', nome: 'Liberato', squadra: 'NZL' },
+  { cognome: 'Bell', nome: 'Joe', squadra: 'NZL' },
+  { cognome: 'Pedri', nome: '', squadra: 'ESP' },
+  { cognome: 'Gavi', nome: '', squadra: 'ESP' },
+  { cognome: 'Morata', nome: 'Álvaro', squadra: 'ESP' },
+  { cognome: 'Olmo', nome: 'Dani', squadra: 'ESP' },
+  { cognome: 'Pino', nome: 'Yeremy', squadra: 'ESP' },
+  { cognome: 'Oyarzabal', nome: 'Mikel', squadra: 'ESP' },
+  { cognome: 'Torres', nome: 'Ferran', squadra: 'ESP' },
+  { cognome: 'Rodri', nome: '', squadra: 'ESP' },
+  { cognome: 'Yamal', nome: 'Lamine', squadra: 'ESP' },
+  { cognome: 'Williams', nome: 'Nico', squadra: 'ESP' },
+  { cognome: 'Félix', nome: 'João', squadra: 'ESP' },
+  { cognome: 'Carvajal', nome: 'Dani', squadra: 'ESP' },
+  { cognome: 'Mendes', nome: 'Ryan', squadra: 'CPV' },
+  { cognome: 'Rodrigues', nome: 'Garry', squadra: 'CPV' },
+  { cognome: 'Monteiro', nome: 'Jamiro', squadra: 'CPV' },
+  { cognome: 'Pina', nome: 'Kevin', squadra: 'CPV' },
+  { cognome: 'Heldon', nome: '', squadra: 'CPV' },
+  { cognome: 'Al-Shehri', nome: 'Saleh', squadra: 'KSA' },
+  { cognome: 'Al-Buraikan', nome: 'Firas', squadra: 'KSA' },
+  { cognome: 'Al-Dawsari', nome: 'Salem', squadra: 'KSA' },
+  { cognome: 'Al-Malki', nome: 'Nawaf', squadra: 'KSA' },
+  { cognome: 'Al-Ghannam', nome: 'Mohamed', squadra: 'KSA' },
+  { cognome: 'Núñez', nome: 'Darwin', squadra: 'URU' },
+  { cognome: 'Valverde', nome: 'Federico', squadra: 'URU' },
+  { cognome: 'Bentancur', nome: 'Rodrigo', squadra: 'URU' },
+  { cognome: 'Araújo', nome: 'Ronald', squadra: 'URU' },
+  { cognome: 'De la Cruz', nome: 'Nicolás', squadra: 'URU' },
+  { cognome: 'Pellistri', nome: 'Facundo', squadra: 'URU' },
+  { cognome: 'Cavani', nome: 'Edinson', squadra: 'URU' },
+  { cognome: 'Suárez', nome: 'Luis', squadra: 'URU' },
+  { cognome: 'Giménez', nome: 'José María', squadra: 'URU' },
+  { cognome: 'Mbappé', nome: 'Kylian', squadra: 'FRA' },
+  { cognome: 'Griezmann', nome: 'Antoine', squadra: 'FRA' },
+  { cognome: 'Dembélé', nome: 'Ousmane', squadra: 'FRA' },
+  { cognome: 'Thuram', nome: 'Marcus', squadra: 'FRA' },
+  { cognome: 'Tchouaméni', nome: 'Aurélien', squadra: 'FRA' },
+  { cognome: 'Saliba', nome: 'William', squadra: 'FRA' },
+  { cognome: 'Koundé', nome: 'Jules', squadra: 'FRA' },
+  { cognome: 'Camavinga', nome: 'Eduardo', squadra: 'FRA' },
+  { cognome: 'Coman', nome: 'Kingsley', squadra: 'FRA' },
+  { cognome: 'Giroud', nome: 'Olivier', squadra: 'FRA' },
+  { cognome: 'Rabiot', nome: 'Adrien', squadra: 'FRA' },
+  { cognome: 'Kanté', nome: 'N'Golo', squadra: 'FRA' },
+  { cognome: 'Mané', nome: 'Sadio', squadra: 'SEN' },
+  { cognome: 'Koulibaly', nome: 'Kalidou', squadra: 'SEN' },
+  { cognome: 'Mendy', nome: 'Edouard', squadra: 'SEN' },
+  { cognome: 'Sarr', nome: 'Ismaila', squadra: 'SEN' },
+  { cognome: 'Gueye', nome: 'Idrissa', squadra: 'SEN' },
+  { cognome: 'Camara', nome: 'Lamine', squadra: 'SEN' },
+  { cognome: 'Dia', nome: 'Boulaye', squadra: 'SEN' },
+  { cognome: 'Jackson', nome: 'Nicolas', squadra: 'SEN' },
+  { cognome: 'Habib', nome: 'Diallo', squadra: 'SEN' },
+  { cognome: 'Hussein', nome: 'Aymen', squadra: 'IRQ' },
+  { cognome: 'Ali', nome: 'Hussain', squadra: 'IRQ' },
+  { cognome: 'Yasin', nome: 'Ahmed', squadra: 'IRQ' },
+  { cognome: 'Adnan', nome: 'Ali', squadra: 'IRQ' },
+  { cognome: 'Mohammed', nome: 'Karrar', squadra: 'IRQ' },
+  { cognome: 'Haaland', nome: 'Erling', squadra: 'NOR' },
+  { cognome: 'Ødegaard', nome: 'Martin', squadra: 'NOR' },
+  { cognome: 'Sørloth', nome: 'Alexander', squadra: 'NOR' },
+  { cognome: 'Elyounoussi', nome: 'Mohamed', squadra: 'NOR' },
+  { cognome: 'Berge', nome: 'Sander', squadra: 'NOR' },
+  { cognome: 'Nusa', nome: 'Antonio', squadra: 'NOR' },
+  { cognome: 'Aarones', nome: 'Marcus', squadra: 'NOR' },
+  { cognome: 'Messi', nome: 'Lionel', squadra: 'ARG' },
+  { cognome: 'Di María', nome: 'Ángel', squadra: 'ARG' },
+  { cognome: 'De Paul', nome: 'Rodrigo', squadra: 'ARG' },
+  { cognome: 'Martínez', nome: 'Lautaro', squadra: 'ARG' },
+  { cognome: 'Álvarez', nome: 'Julián', squadra: 'ARG' },
+  { cognome: 'Mac Allister', nome: 'Alexis', squadra: 'ARG' },
+  { cognome: 'Dybala', nome: 'Paulo', squadra: 'ARG' },
+  { cognome: 'Paredes', nome: 'Leandro', squadra: 'ARG' },
+  { cognome: 'Romero', nome: 'Cristian', squadra: 'ARG' },
+  { cognome: 'Molina', nome: 'Nahuel', squadra: 'ARG' },
+  { cognome: 'Acuña', nome: 'Marcos', squadra: 'ARG' },
+  { cognome: 'Mahrez', nome: 'Riyad', squadra: 'ALG' },
+  { cognome: 'Slimani', nome: 'Islam', squadra: 'ALG' },
+  { cognome: 'Bennacer', nome: 'Ismaël', squadra: 'ALG' },
+  { cognome: 'Brahimi', nome: 'Yacine', squadra: 'ALG' },
+  { cognome: 'Feghouli', nome: 'Sofiane', squadra: 'ALG' },
+  { cognome: 'Mandi', nome: 'Aissa', squadra: 'ALG' },
+  { cognome: 'Bounedjah', nome: 'Baghdad', squadra: 'ALG' },
+  { cognome: 'Bensebaini', nome: 'Ramy', squadra: 'ALG' },
+  { cognome: 'Alaba', nome: 'David', squadra: 'AUT' },
+  { cognome: 'Sabitzer', nome: 'Marcel', squadra: 'AUT' },
+  { cognome: 'Arnautović', nome: 'Marko', squadra: 'AUT' },
+  { cognome: 'Baumgartner', nome: 'Christoph', squadra: 'AUT' },
+  { cognome: 'Gregoritsch', nome: 'Michael', squadra: 'AUT' },
+  { cognome: 'Seiwald', nome: 'Nicolas', squadra: 'AUT' },
+  { cognome: 'Wimmer', nome: 'Patrick', squadra: 'AUT' },
+  { cognome: 'Al-Taamari', nome: 'Musa', squadra: 'JOR' },
+  { cognome: 'Al-Naimat', nome: 'Yazan', squadra: 'JOR' },
+  { cognome: 'Al-Dardour', nome: 'Hamza', squadra: 'JOR' },
+  { cognome: 'Baha', nome: 'Faisal', squadra: 'JOR' },
+  { cognome: 'Al-Rawabdeh', nome: 'Anas', squadra: 'JOR' },
+  { cognome: 'Ronaldo', nome: 'Cristiano', squadra: 'POR' },
+  { cognome: 'Silva', nome: 'Bernardo', squadra: 'POR' },
+  { cognome: 'Fernandes', nome: 'Bruno', squadra: 'POR' },
+  { cognome: 'Dias', nome: 'Rúben', squadra: 'POR' },
+  { cognome: 'Jota', nome: 'Diogo', squadra: 'POR' },
+  { cognome: 'Félix', nome: 'João', squadra: 'POR' },
+  { cognome: 'Leão', nome: 'Rafael', squadra: 'POR' },
+  { cognome: 'Vitinha', nome: '', squadra: 'POR' },
+  { cognome: 'Neto', nome: 'Pedro', squadra: 'POR' },
+  { cognome: 'Conceição', nome: 'Francisco', squadra: 'POR' },
+  { cognome: 'Inácio', nome: 'Gonçalo', squadra: 'POR' },
+  { cognome: 'Bakambu', nome: 'Cédric', squadra: 'COD' },
+  { cognome: 'Mbemba', nome: 'Chancel', squadra: 'COD' },
+  { cognome: 'Wamangituka', nome: 'Silas', squadra: 'COD' },
+  { cognome: 'Kebano', nome: 'Neeskens', squadra: 'COD' },
+  { cognome: 'Masuaku', nome: 'Arthur', squadra: 'COD' },
+  { cognome: 'Luyindama', nome: 'Christian', squadra: 'COD' },
+  { cognome: 'Shomurodov', nome: 'Eldor', squadra: 'UZB' },
+  { cognome: 'Khamdamov', nome: 'Dostonbek', squadra: 'UZB' },
+  { cognome: 'Masharipov', nome: 'Jaloliddin', squadra: 'UZB' },
+  { cognome: 'Tursunov', nome: 'Sherzod', squadra: 'UZB' },
+  { cognome: 'Rodríguez', nome: 'James', squadra: 'COL' },
+  { cognome: 'Díaz', nome: 'Luis', squadra: 'COL' },
+  { cognome: 'Cuadrado', nome: 'Juan', squadra: 'COL' },
+  { cognome: 'Sánchez', nome: 'Davinson', squadra: 'COL' },
+  { cognome: 'Uribe', nome: 'Mateus', squadra: 'COL' },
+  { cognome: 'Durán', nome: 'Jhon', squadra: 'COL' },
+  { cognome: 'Borré', nome: 'Rafael', squadra: 'COL' },
+  { cognome: 'Barrios', nome: 'Wilmar', squadra: 'COL' },
+  { cognome: 'Lerma', nome: 'Jefferson', squadra: 'COL' },
+  { cognome: 'Quintero', nome: 'Juan Fernando', squadra: 'COL' },
+  { cognome: 'Kane', nome: 'Harry', squadra: 'ENG' },
+  { cognome: 'Foden', nome: 'Phil', squadra: 'ENG' },
+  { cognome: 'Saka', nome: 'Bukayo', squadra: 'ENG' },
+  { cognome: 'Bellingham', nome: 'Jude', squadra: 'ENG' },
+  { cognome: 'Rashford', nome: 'Marcus', squadra: 'ENG' },
+  { cognome: 'Rice', nome: 'Declan', squadra: 'ENG' },
+  { cognome: 'Alexander-Arnold', nome: 'Trent', squadra: 'ENG' },
+  { cognome: 'Stones', nome: 'John', squadra: 'ENG' },
+  { cognome: 'Walker', nome: 'Kyle', squadra: 'ENG' },
+  { cognome: 'Grealish', nome: 'Jack', squadra: 'ENG' },
+  { cognome: 'Bowen', nome: 'Jarrod', squadra: 'ENG' },
+  { cognome: 'Palmer', nome: 'Cole', squadra: 'ENG' },
+  { cognome: 'Trippier', nome: 'Kieran', squadra: 'ENG' },
+  { cognome: 'Modrić', nome: 'Luka', squadra: 'CRO' },
+  { cognome: 'Perišić', nome: 'Ivan', squadra: 'CRO' },
+  { cognome: 'Brozović', nome: 'Marcelo', squadra: 'CRO' },
+  { cognome: 'Gvardiol', nome: 'Joško', squadra: 'CRO' },
+  { cognome: 'Vlašić', nome: 'Nikola', squadra: 'CRO' },
+  { cognome: 'Kramarić', nome: 'Andrej', squadra: 'CRO' },
+  { cognome: 'Kovačić', nome: 'Mateo', squadra: 'CRO' },
+  { cognome: 'Petković', nome: 'Bruno', squadra: 'CRO' },
+  { cognome: 'Partey', nome: 'Thomas', squadra: 'GHA' },
+  { cognome: 'Ayew', nome: 'Jordan', squadra: 'GHA' },
+  { cognome: 'Ayew', nome: 'André', squadra: 'GHA' },
+  { cognome: 'Kudus', nome: 'Mohammed', squadra: 'GHA' },
+  { cognome: 'Sulemana', nome: 'Kamaldeen', squadra: 'GHA' },
+  { cognome: 'Williams', nome: 'Iñaki', squadra: 'GHA' },
+  { cognome: 'Fatawu', nome: 'Abdul', squadra: 'GHA' },
+  { cognome: 'Díaz', nome: 'Ismael', squadra: 'PAN' },
+  { cognome: 'Blackburn', nome: 'Rolando', squadra: 'PAN' },
+  { cognome: 'Waterman', nome: 'Cecilio', squadra: 'PAN' },
+  { cognome: 'Quintero', nome: 'Alberto', squadra: 'PAN' },
+  { cognome: 'Godoy', nome: 'Aníbal', squadra: 'PAN' },
+  { cognome: 'Davis', nome: 'Roderick', squadra: 'PAN' }
+];
+
 // ── CALCOLO CLASSIFICA PURA (senza rendering) ──────────────────────────
 function _getClassificaCompleta(lettera) {
   const girone = DB.gironi[lettera];
@@ -640,8 +1019,12 @@ function _renderSpeciali() {
     + '<p class="section-desc">Pronostica i <strong>3 migliori marcatori</strong> in ordine. 1° → 40pt, 2° → 20pt, 3° → 10pt. Bonus +10 nella terna.</p>'
     + '<div class="cannon-inputs">';
   ['primo','secondo','terzo'].forEach((key, i) => {
+    const val = pCannon[key] || '';
     html += '<div class="field-group"><label class="field-label">' + (i+1) + '° Capocannoniere</label>'
-      + '<input type="text" class="field-input" id="cannon-' + key + '" value="' + (pCannon[key]||'') + '" placeholder="es. Mbappé" autocomplete="off"></div>';
+      + '<div class="autocomplete-wrap">'
+      + '<input type="text" class="field-input cannon-input" id="cannon-' + key + '" data-key="' + key + '" value="' + val + '" placeholder="Digita il cognome..." autocomplete="off">'
+      + '<div class="autocomplete-dropdown" id="ac-drop-' + key + '"></div>'
+      + '</div></div>';
   });
   html += '</div></div>';
   container.innerHTML = html;
@@ -667,13 +1050,70 @@ function _renderPosizioniGironi() {
   return html;
 }
 
+function _normStr(s) {
+  return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
+
 function _bindSpeciali() {
-  ['primo','secondo','terzo'].forEach(key => {
-    const input = document.getElementById('cannon-' + key);
-    if (!input) return;
-    input.addEventListener('input', () => {
+  document.querySelectorAll('.cannon-input').forEach(input => {
+    const key  = input.dataset.key;
+    const drop = document.getElementById('ac-drop-' + key);
+
+    function _salvaValore(val) {
       if (!_pronostici.capocannoniere) _pronostici.capocannoniere = {};
-      _pronostici.capocannoniere[key] = input.value.trim() || null;
+      _pronostici.capocannoniere[key] = val || null;
+    }
+
+    function _chiudiDrop() { drop.innerHTML = ''; drop.style.display = 'none'; }
+
+    function _mostraSuggerimenti(query) {
+      const q = _normStr(query.trim());
+      if (q.length < 2) { _chiudiDrop(); return; }
+      const matches = GIOCATORI.filter(g =>
+        _normStr(g.cognome).includes(q) || _normStr(g.nome).includes(q)
+      ).slice(0, 8);
+      if (!matches.length) { _chiudiDrop(); return; }
+      drop.innerHTML = matches.map(g =>
+        '<div class="ac-item" data-val="' + g.cognome + ' (' + g.squadra + ')">'
+        + '<span class="ac-name">' + g.cognome + ' ' + g.nome + '</span>'
+        + '<span class="ac-team">(' + g.squadra + ')</span>'
+        + '</div>'
+      ).join('');
+      drop.style.display = 'block';
+      drop.querySelectorAll('.ac-item').forEach(item => {
+        item.addEventListener('mousedown', e => {
+          e.preventDefault();
+          input.value = item.dataset.val;
+          _salvaValore(item.dataset.val);
+          _chiudiDrop();
+        });
+      });
+    }
+
+    input.addEventListener('input', () => _mostraSuggerimenti(input.value));
+    input.addEventListener('blur',  () => { setTimeout(_chiudiDrop, 150); _salvaValore(input.value.trim()); });
+    input.addEventListener('focus', () => { if (input.value.length >= 2) _mostraSuggerimenti(input.value); });
+    input.addEventListener('keydown', e => {
+      const items = drop.querySelectorAll('.ac-item');
+      const active = drop.querySelector('.ac-item.active');
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        const next = active ? (active.nextElementSibling || items[0]) : items[0];
+        if (active) active.classList.remove('active');
+        if (next) next.classList.add('active');
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        const prev = active ? (active.previousElementSibling || items[items.length-1]) : items[items.length-1];
+        if (active) active.classList.remove('active');
+        if (prev) prev.classList.add('active');
+      } else if (e.key === 'Enter' && active) {
+        e.preventDefault();
+        input.value = active.dataset.val;
+        _salvaValore(active.dataset.val);
+        _chiudiDrop();
+      } else if (e.key === 'Escape') {
+        _chiudiDrop();
+      }
     });
   });
 }
@@ -849,21 +1289,4 @@ async function _salvaPronostici() {
 function _raccogliDalDOM() {
   document.querySelectorAll('.score-input').forEach(input => {
     const val = parseInt(input.value);
-    if (!_pronostici.gironi) _pronostici.gironi = {};
-    if (!_pronostici.gironi[input.dataset.match]) _pronostici.gironi[input.dataset.match] = {};
-    _pronostici.gironi[input.dataset.match][input.dataset.field] = isNaN(val) ? null : val;
-  });
-  ['primo','secondo','terzo'].forEach(key => {
-    const input = document.getElementById('cannon-' + key);
-    if (!input) return;
-    if (!_pronostici.capocannoniere) _pronostici.capocannoniere = {};
-    _pronostici.capocannoniere[key] = input.value.trim() || null;
-  });
-}
-
-function _fmtData(iso) {
-  if (!iso) return '';
-  try {
-    return new Date(iso).toLocaleDateString('it-IT', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit', timeZone:'Europe/Rome' });
-  } catch { return iso; }
-}
+    if (!_pronostici.gironi) _p
