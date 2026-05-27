@@ -949,10 +949,16 @@ async function _salvaGirone(lettera) {
 function _renderPartitaGirone(p) {
   const casa      = SQUADRE_BY_ID[p.casa];
   const trasferta = SQUADRE_BY_ID[p.trasferta];
-  const saved     = _pronostici?.gironi?.[p.id] || {};
-  const golCasa   = saved.gol_casa ?? '';
-  const golTrasf  = saved.gol_trasferta ?? '';
-  const segnoCurr = saved.segno || '';
+  // Pre-inizializza a 0 se non ancora compilato
+  if (!_pronostici.gironi) _pronostici.gironi = {};
+  if (!_pronostici.gironi[p.id]) _pronostici.gironi[p.id] = {};
+  if (_pronostici.gironi[p.id].gol_casa      == null) _pronostici.gironi[p.id].gol_casa      = 0;
+  if (_pronostici.gironi[p.id].gol_trasferta == null) _pronostici.gironi[p.id].gol_trasferta = 0;
+  if (!_pronostici.gironi[p.id].segno) _pronostici.gironi[p.id].segno = 'X';
+  const saved     = _pronostici.gironi[p.id];
+  const golCasa   = saved.gol_casa;
+  const golTrasf  = saved.gol_trasferta;
+  const segnoCurr = saved.segno;
   const dateLabel = p.data ? '<span class="match-date">' + _fmtData(p.data) + '</span>' : '';
   return '<div class="partita-row" data-id="' + p.id + '">'
     + '<div class="partita-meta">' + dateLabel + ' <span class="match-group-label">Girone ' + p.girone + '</span></div>'
