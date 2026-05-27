@@ -1398,4 +1398,52 @@ function _renderRiepilogoGironi() {
 }
 
 async function _salvaPronostici() {
-  const btn = document.getElementById('btn-salva-prono
+  const btn = document.getElementById('btn-salva-pronostici');
+  const msg = document.getElementById('pronostici-save-msg');
+  btn.disabled = true;
+  btn.textContent = 'Salvataggio...';
+  try {
+    _raccogliDalDOM();
+    await savePronostici(STATE.utente.id, _pronostici);
+    showToast('Pronostici salvati!', 'success');
+    msg.textContent = 'Salvato il ' + new Date().toLocaleString('it-IT');
+    msg.className = 'save-message save-ok';
+    msg.style.display = '';
+  } catch (e) {
+    showToast('Errore nel salvataggio. Riprova.', 'error');
+    msg.textContent = 'Errore.';
+    msg.className = 'save-message save-error';
+    msg.style.display = '';
+  } finally {
+    btn.disabled = !_pronosticiAperti;
+    btn.textContent = 'Salva i miei pronostici';
+  }
+}
+
+function _raccogliDalDOM() {
+  document.querySelectorAll('.score-input').forEach(input => {
+    const val = parseInt(input.value);
+    if (!_pronostici.gironi) _pronostici.gironi = {};
+    if (!_pronostici.gironi[input.dataset.match]) _pronostici.gironi[input.dataset.match] = {};
+    _pronostici.gironi[input.dataset.match][input.dataset.field] = isNaN(val) ? null : val;
+  });
+  ['primo','secondo','terzo'].forEach(key => {
+    const input = document.getElementById('cannon-' + key);
+    if (!input) return;
+    if (!_pronostici.capocannoniere) _pronostici.capocannoniere = {};
+    const v = input.value.trim();
+    if (!v || VALORI_VALIDI_CANNON.has(v)) {
+      _pronostici.capocannoniere[key] = v || null;
+    } else {
+      input.value = '';
+      _pronostici.capocannoniere[key] = null;
+    }
+  });
+}
+
+function _fmtData(iso) {
+  if (!iso) return '';
+  try {
+    return new Date(iso).toLocaleDateString('it-IT', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit', timeZone:'Europe/Rome' });
+  } catch { return iso; }
+}
