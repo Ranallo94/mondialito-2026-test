@@ -966,16 +966,81 @@ function _getMatchesFase(id) {
 
 function _renderEliminatoria() {
   const container = document.getElementById('eliminatoria-container');
-  let html = '';
-  FASI_ELIM.forEach(({ id, label }) => {
-    const matches = _getMatchesFase(id);
-    if (!matches.length) return;
-    html += '<div class="fase-block"><h3 class="fase-title">' + label + '</h3><div class="fase-matches">';
-    matches.forEach(m => { html += _renderMatchElim(id, m); });
-    html += '</div></div>';
+
+  // ── Barra sub-tab ────────────────────────────────────────────────────
+  let tabBar = '<div class="elim-subtab-bar">';
+  FASI_ELIM.forEach(({ id, label }, i) => {
+    tabBar += '<button class="elim-tab' + (i === 0 ? ' active' : '') + '" data-fase="' + id + '">' + label + '</button>';
   });
-  container.innerHTML = html || '<p>Il bracket sarà disponibile al termine dei gironi.</p>';
+  tabBar += '</div>';
+
+  // ── Pannelli per fase ────────────────────────────────────────────────
+  let panels = '';
+  FASI_ELIM.forEach(({ id, label }, i) => {
+    const matches = _getMatchesFase(id);
+    let matchesHtml = '';
+    matches.forEach(m => { matchesHtml += _renderMatchElim(id, m); });
+    panels += '<div class="elim-panel' + (i === 0 ? ' active' : '') + '" data-fase="' + id + '">'
+      + '<div class="fase-matches">' + matchesHtml + '</div>'
+      + '<div class="elim-save-row">'
+      + '<button class="btn-salva-fase" data-fase="' + id + '">💾 Salva ' + label + '</button>'
+      + '<span class="elim-save-msg" id="esm-' + id + '"></span>'
+      + '</div></div>';
+  });
+
+  container.innerHTML = tabBar + panels;
+  _bindElimTabs();
   _bindEliminatoria();
+}
+
+function _bindElimTabs() {
+  document.querySelectorAll('.elim-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.elim-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.elim-panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.querySelector('.elim-panel[data-fase="' + tab.dataset.fase + '"]')?.classList.add('active');
+    });
+  });
+
+  document.querySelectorAll('.btn-salva-fase').forEach(btn => {
+    btn.addEventListener('click', () => _salvaFase(btn.dataset.fase));
+  });
+}
+
+function _salvaFase(faseId) {
+  const msg = document.getElementById('esm-' + faseId);
+  if (msg) { msg.textContent = ''; msg.className = 'elim-save-msg'; }
+
+  // Verifica che ogni partita abbia vincitore
+  const matches = _getMatchesFase(faseId);
+  const mancanti = matches.filter(m => {
+    const v = _pronostici?.fase_eliminatoria?.[faseId]?.[m.id]?.vincitore;
+    return !v;
+  });
+
+  if (mancanti.length) {
+    if (msg) {
+      msg.textContent = '⚠ Scegli il vincitore di tutte le partite prima di salvare.';
+      msg.classList.add('esm-error');
+    }
+    return;
+  }
+
+  // Salva su Firebase
+  const uid = firebase.auth().currentUser?.uid;
+  if (!uid) return;
+  const data = {};
+  data['fase_eliminatoria.' + faseId] = _pronostici?.fase_eliminatoria?.[faseId] || {};
+  firebase.firestore().collection('pronostici').doc(uid)
+    .set({ fase_eliminatoria: { [faseId]: _pronostici?.fase_eliminatoria?.[faseId] || {} } }, { merge: true })
+    .then(() => {
+      if (msg) { msg.textContent = '✓ Salvato!'; msg.classList.add('esm-ok'); }
+      setTimeout(() => { if (msg) { msg.textContent = ''; msg.className = 'elim-save-msg'; } }, 3000);
+    })
+    .catch(e => {
+      if (msg) { msg.textContent = '✗ Errore: ' + e.message; msg.classList.add('esm-error'); }
+    });
 }
 
 function _renderMatchElim(faseId, match) {
@@ -1334,5 +1399,69 @@ function _renderRiepilogoGironi() {
     // Already handled with row classes above
   }
 
-  terziHtml += '</tbody></table>'
-    + '<div class="r
+    + '<div class="riepilogo-terze-note">Le squadre sopra la riga ✂️ si qualificano per i sedicesimi di finale.</div>'
+    + '</div>';
+
+  container.innerHTML = gridHtml + terziHtml;
+}
+
+// ── RACCOLTA DATI DAL DOM ───────────────────────────────────────────────
+function _raccogliDalDOM() {
+  // Gironi
+  document.querySelectorAll('.score-input').forEach(input => {
+    const matchId = input.dataset.match;
+    const field   = input.dataset.field;
+    if (!matchId || !field) return;
+    if (!_pronostici.gironi) _pronostici.gironi = {};
+    if (!_pronostici.gironi[matchId]) _pronostici.gironi[matchId] = {};
+    const v = parseInt(input.value, 10);
+    _pronostici.gironi[matchId][field] = isNaN(v) ? 0 : v;
+  });
+  document.querySelectorAll('.segno-btn.active').forEach(btn => {
+    const matchId = btn.dataset.match;
+    if (!matchId) return;
+    if (!_pronostici.gironi) _pronostici.gironi = {};
+    if (!_pronostici.gironi[matchId]) _pronostici.gironi[matchId] = {};
+    _pronostici.gironi[matchId].segno = btn.dataset.segno;
+  });
+  // Capocannoniere
+  if (!_pronostici.capocannoniere) _pronostici.capocannoniere = {};
+  document.querySelectorAll('.cannon-input').forEach(input => {
+    const key = input.dataset.key;
+    if (!key) return;
+    const v = input.value.trim();
+    if (!v || VALORI_VALIDI_CANNON.has(v)) {
+      _pronostici.capocannoniere[key] = v || null;
+    } else {
+      input.value = '';
+      _pronostici.capocannoniere[key] = null;
+    }
+  });
+}
+
+// ── SALVA PRONOSTICI ────────────────────────────────────────────────────
+async function _salvaPronostici() {
+  const btn = document.getElementById('btn-salva-prono');
+  if (btn) { btn.disabled = true; btn.textContent = 'Salvataggio…'; }
+  try {
+    _raccogliDalDOM();
+    _pronostici.ts_modifica = Date.now();
+    const uid = firebase.auth().currentUser?.uid;
+    if (!uid) throw new Error('Non autenticato');
+    await firebase.firestore().collection('pronostici').doc(uid).set(_pronostici, { merge: true });
+    if (btn) { btn.textContent = '✓ Salvato!'; setTimeout(() => { btn.disabled = false; btn.textContent = 'Salva pronostici'; }, 2000); }
+  } catch (e) {
+    console.error('Errore salvataggio:', e);
+    if (btn) { btn.disabled = false; btn.textContent = 'Salva pronostici'; }
+    alert('Errore durante il salvataggio: ' + e.message);
+  }
+}
+
+// ── FORMATTAZIONE DATA ──────────────────────────────────────────────────
+function _fmtData(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString('it-IT', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+}
+
+export { _salvaPronostici };
