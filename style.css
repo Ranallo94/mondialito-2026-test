@@ -894,6 +894,12 @@ select.field-input option { background: var(--bg-card2); }
 .ac-item:hover, .ac-item.active { background: rgba(255,255,255,.07); }
 .ac-name { color: var(--text); font-weight: 500; }
 .ac-team { color: var(--oro); font-size: 12px; font-weight: 700; margin-left: 8px; flex-shrink: 0; }
+.input-error { border-color: #e74c3c !important; animation: shake .3s ease; }
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  25%      { transform: translateX(-6px); }
+  75%      { transform: translateX(6px); }
+}
 .gironi-posiz-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 .girone-posiz-card { background: var(--bg-card2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; }
 .girone-posiz-header { font-size: 13px; font-weight: 700; color: var(--oro); margin-bottom: 10px; }
