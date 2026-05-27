@@ -1465,3 +1465,107 @@ select.field-input option { background: var(--bg-card2); }
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* ── SPAREGGIO MIGLIORI TERZE (admin) ── */
+.sistema-card--full {
+  grid-column: 1 / -1;
+  margin-top: 16px;
+}
+.sp-tied-label {
+  background: rgba(251,191,36,.25);
+  color: var(--oro);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.spareggio-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 14px 0 0;
+}
+.spareggio-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  transition: background .1s;
+}
+.spareggio-item.spareggio-tied {
+  border-color: var(--oro);
+  background: rgba(251,191,36,.06);
+}
+.spareggio-pos {
+  width: 48px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.sp-q  { color: #4caf50; font-size: 13px; }
+.sp-nq { color: #e74c3c; font-size: 13px; }
+.spareggio-team {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.sp-nome {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.sp-girone {
+  font-size: 11px;
+  color: var(--text-muted);
+  background: rgba(255,255,255,.06);
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+.spareggio-stats {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.spareggio-stats strong { color: var(--text); }
+.sp-nodata { color: var(--text-muted); font-style: italic; }
+.spareggio-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.btn-sp {
+  background: rgba(255,255,255,.06);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  width: 28px;
+  height: 28px;
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .1s;
+}
+.btn-sp:hover:not(:disabled) { background: rgba(255,255,255,.12); }
+.btn-sp:disabled { opacity: .3; cursor: default; }
+.spareggio-save-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 14px;
+}
+.spareggio-save-msg { font-size: 13px; }
+.spareggio-save-msg.ssm-ok    { color: #4caf50; font-weight: 600; }
+.spareggio-save-msg.ssm-error { color: #e74c3c; font-weight: 600; }
