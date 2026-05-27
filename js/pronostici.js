@@ -644,13 +644,13 @@ function _sortClassificaFIFA(classifica, partite) {
     const gruppo = classifica.slice(i, j);
     if (gruppo.length > 1) {
       const h2h = _calcH2H(gruppo.map(t => t.id), partite);
-      // Ordine: H2H pt → H2H GD → H2H GF → GD generale → GF generale
+      // Ordine FIFA 2026: GD generale → GF generale → H2H pt → H2H GD → H2H GF
       gruppo.sort((a, b) =>
+        (b.gd - a.gd)                    ||
+        (b.gf - a.gf)                    ||
         (h2h[b.id].pt  - h2h[a.id].pt)  ||
         (h2h[b.id].gd  - h2h[a.id].gd)  ||
-        (h2h[b.id].gf  - h2h[a.id].gf)  ||
-        (b.gd - a.gd)                    ||
-        (b.gf - a.gf)
+        (h2h[b.id].gf  - h2h[a.id].gf)
       );
     }
     gruppo.forEach(t => result.push(t));
