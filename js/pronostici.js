@@ -689,7 +689,7 @@ function _renderRiepilogoGironi() {
 
   let terziHtml = '<div class="riepilogo-terze-wrap">'
     + '<h3 class="riepilogo-terze-title">🏅 Migliori terze classificate</h3>'
-    + '<p class="riepilogo-terze-desc">Le 8 migliori terze si qualificano per i sedicesimi. L'ordine qui determina la loro posizione nel bracket.</p>'
+    + '<p class="riepilogo-terze-desc">Le 8 migliori terze si qualificano per i sedicesimi. L\'ordine qui determina la loro posizione nel bracket.</p>'
     + '<table class="riepilogo-table riepilogo-terze-table">'
     + '<thead><tr><th>#</th><th>Squadra</th><th>Girone</th><th>Pt</th><th>GD</th><th>GF</th></tr></thead>'
     + '<tbody>';
