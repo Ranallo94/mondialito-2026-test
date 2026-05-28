@@ -746,6 +746,11 @@ export async function initPronostici() {
   _ricalcolaSedicesimi();
   _ricalcolaBracket();
   _renderRiepilogoGironi();
+  _renderTabellone();
+
+  // Aggiorna il tabellone ogni volta che si clicca su quel tab
+  document.querySelector('.tab[data-tab="tab-tabellone"]')?.addEventListener('click', _renderTabellone);
+
   document.getElementById('form-pronostici').addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!_pronosticiAperti) { showToast('I pronostici sono chiusi!', 'error'); return; }
@@ -1350,6 +1355,121 @@ function _ricalcolaClassificaGirone(lettera) {
   _renderRiepilogoGironi();
 }
 
+
+// ── TABELLONE ELIMINATORIE ──────────────────────────────────────────────
+function _renderTabellone() {
+  const container = document.getElementById('tabellone-container');
+  if (!container) return;
+
+  // Calcola standings e terzi slot per risolvere i sedicesimi
+  const standings = {};
+  Object.keys(DB.gironi).forEach(l => {
+    const cl = _getClassificaCompleta(l);
+    standings[l] = cl.map(t => t.id);
+  });
+  const terziSlots = _calcola3rdiSlots();
+
+  // ── Helpers ──────────────────────────────────────────────────────────
+
+  // Risolve un team ID da uno slot di sedicesimi o da un feed bracket
+  function teamId(slotOrFeed, fromFase) {
+    if (!slotOrFeed) return null;
+    if (fromFase) {
+      // Feed da fase precedente → prende il vincitore pronosticato
+      return _getVincitore(fromFase, slotOrFeed) || null;
+    }
+    // Slot da classifica gironi
+    return _resolveSlot(slotOrFeed, standings, terziSlots) || null;
+  }
+
+  // Renderizza una cella del bracket
+  function cell(id, rowStart, rowEnd, casaId, trasfId, vincitoreId, faseId, matchId) {
+    const casa = casaId ? SQUADRE_BY_ID[casaId] : null;
+    const trasf = trasfId ? SQUADRE_BY_ID[trasfId] : null;
+    const mkTeam = (tid, sq) => {
+      if (!tid) return '<div class="tb-team tb-unknown">?</div>';
+      const w = vincitoreId === tid ? ' tb-winner' : '';
+      return '<div class="tb-team' + w + '">' + (sq?.flag || '') + ' <span>' + tid + '</span></div>';
+    };
+    return '<div class="tb-cell" style="grid-row:' + rowStart + '/' + rowEnd + ';grid-column:' + _colOf(faseId) + '">'
+      + mkTeam(casaId, casa)
+      + '<div class="tb-sep"></div>'
+      + mkTeam(trasfId, trasf)
+      + '</div>';
+  }
+
+  function _colOf(fase) {
+    return { sedicesimi:1, ottavi:2, quarti:3, semifinali:4, finale:5 }[fase] || 1;
+  }
+
+  // ── Costruzione match per fase ────────────────────────────────────────
+  let html = '<div class="tb-wrapper"><div class="tb-header">';
+  ['Sedicesimi','Ottavi','Quarti','Semifinali','Finale'].forEach((l,i) => {
+    html += '<div class="tb-col-label" style="grid-column:' + (i+1) + '">' + l + '</div>';
+  });
+  html += '</div><div class="tb-grid">';
+
+  // SEDICESIMI (righe 1-16, una per match)
+  SEDICESIMI_BRACKET.forEach((b, i) => {
+    const row = i + 1;
+    const casaId  = teamId(b.casa,  null);
+    const trasfId = teamId(b.trasf, null);
+    const vinc    = _getVincitore('sedicesimi', b.id);
+    html += cell(b.id, row, row + 1, casaId, trasfId, vinc, 'sedicesimi', b.id);
+  });
+
+  // OTTAVI → O1-O8 (righe 1-2, 3-4 ... 15-16)
+  const ottaviIds = ['O1','O2','O3','O4','O5','O6','O7','O8'];
+  ottaviIds.forEach((oid, i) => {
+    const rowStart = i * 2 + 1;
+    const feed = BRACKET_FEEDS[oid];
+    const casaId  = _getVincitore('sedicesimi', feed.casa.id);
+    const trasfId = _getVincitore('sedicesimi', feed.trasf.id);
+    const vinc    = _getVincitore('ottavi', oid);
+    html += cell(oid, rowStart, rowStart + 2, casaId, trasfId, vinc, 'ottavi', oid);
+  });
+
+  // QUARTI → Q1-Q4 (righe 1-4, 5-8, 9-12, 13-16)
+  const quartiIds = ['Q1','Q2','Q3','Q4'];
+  quartiIds.forEach((qid, i) => {
+    const rowStart = i * 4 + 1;
+    const feed = BRACKET_FEEDS[qid];
+    const casaId  = _getVincitore('ottavi', feed.casa.id);
+    const trasfId = _getVincitore('ottavi', feed.trasf.id);
+    const vinc    = _getVincitore('quarti', qid);
+    html += cell(qid, rowStart, rowStart + 4, casaId, trasfId, vinc, 'quarti', qid);
+  });
+
+  // SEMIFINALI → SF1 (righe 1-8), SF2 (righe 9-16)
+  [['SF1',1],['SF2',9]].forEach(([sfid, rowStart]) => {
+    const feed = BRACKET_FEEDS[sfid];
+    const casaId  = _getVincitore('quarti', feed.casa.id);
+    const trasfId = _getVincitore('quarti', feed.trasf.id);
+    const vinc    = _getVincitore('semifinali', sfid);
+    html += cell(sfid, rowStart, rowStart + 8, casaId, trasfId, vinc, 'semifinali', sfid);
+  });
+
+  // FINALE (righe 1-16)
+  {
+    const feed = BRACKET_FEEDS['F'];
+    const casaId  = _getVincitore('semifinali', feed.casa.id);
+    const trasfId = _getVincitore('semifinali', feed.trasf.id);
+    const vinc    = _getVincitore('finale', 'F');
+    html += cell('F', 1, 17, casaId, trasfId, vinc, 'finale', 'F');
+  }
+
+  html += '</div>';
+
+  // Banner campione
+  const campione = _getVincitore('finale', 'F');
+  if (campione) {
+    const sq = SQUADRE_BY_ID[campione];
+    html += '<div class="tb-campione">🏆 ' + (sq?.flag || '') + ' ' + (sq?.nome || campione) + '</div>';
+  }
+
+  html += '</div>';
+  container.innerHTML = html;
+}
 
 // ── RIEPILOGO GIRONI ────────────────────────────────────────────────────
 function _renderRiepilogoGironi() {
