@@ -37,6 +37,30 @@ export async function initAdmin() {
     _initTabPartecipanti(),
     _initTabSistema(),
   ]);
+
+  // Auto-ricalcolo classifica al variare dei risultati
+  _initAutoRicalcolo();
+}
+
+// ── AUTO-RICALCOLO CLASSIFICA ─────────────────────────
+// Ascolta risultati/ufficiali: ad ogni cambio dopo il caricamento iniziale
+// ricalcola automaticamente la classifica, senza bisogno di Cloud Functions.
+function _initAutoRicalcolo() {
+  let primoCaricamento = true;
+
+  onRisultatiSnapshot(async () => {
+    if (primoCaricamento) {
+      primoCaricamento = false;
+      return; // Salta il caricamento iniziale
+    }
+    // Risultati cambiati → ricalcola in background
+    try {
+      await _ricalcolaClassificaClient();
+      showToast('Classifica aggiornata ✓', 'success');
+    } catch (e) {
+      console.warn('[auto-ricalcolo]', e.message);
+    }
+  });
 }
 
 // ── TAB APPROVAZIONI ──────────────────────────────────
