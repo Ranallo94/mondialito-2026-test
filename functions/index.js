@@ -11,7 +11,7 @@
 
 const { onSchedule }          = require('firebase-functions/v2/scheduler');
 const { onCall, HttpsError }  = require('firebase-functions/v2/https');
-const { onDocumentUpdated }   = require('firebase-functions/v2/firestore');
+const { onDocumentWritten }   = require('firebase-functions/v2/firestore');
 const { initializeApp }       = require('firebase-admin/app');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const { getAuth }             = require('firebase-admin/auth');
@@ -63,11 +63,13 @@ exports.syncManuale = onCall(
 
 // ── 3. RICALCOLA CLASSIFICA (triggered) ───────────────
 // Si attiva ogni volta che il documento risultati/ufficiali cambia.
-exports.ricalcolaClassifica = onDocumentUpdated(
+exports.ricalcolaClassifica = onDocumentWritten(
   { document: 'risultati/ufficiali', region: 'europe-west1' },
   async (event) => {
     try {
-      await _aggiornaClassifica(event.data.after.data());
+      const data = event.data.after?.data();
+      if (!data) return; // documento eliminato, nulla da fare
+      await _aggiornaClassifica(data);
     } catch (e) {
       console.error('[ricalcolaClassifica] Errore:', e.message);
     }
