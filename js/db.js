@@ -160,3 +160,12 @@ export function onLiveSnapshot(callback) {
     callback(snap.exists() ? snap.data() : {});
   });
 }
+
+/**
+ * Ascolta la classifica marcatori in real-time.
+ */
+export function onMarcatoriSnapshot(callback) {
+  return onSnapshot(doc(db(), 'live', 'marcatori'), (snap) => {
+    callback(snap.exists() ? (snap.data().lista || []) : []);
+  });
+}

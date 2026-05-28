@@ -5,15 +5,17 @@
  */
 
 import DB from '../mondialito_db.json' with { type: 'json' };
-import { onLiveSnapshot, onRisultatiSnapshot } from './db.js';
+import { onLiveSnapshot, onRisultatiSnapshot, onMarcatoriSnapshot } from './db.js';
 import { formatTime, formatDate } from './ui.js';
 
-let _unsubLive = null;
-let _unsubRis  = null;
+let _unsubLive      = null;
+let _unsubRis       = null;
+let _unsubMarcatori = null;
 
 // Stato locale condiviso tra i due snapshot
 let _liveData  = { oggi: [], prossime: [], risultati: [] };
 let _risultati = {};
+let _marcatori = [];
 
 // ── INIT ──────────────────────────────────────────────
 export async function initLive() {
@@ -27,6 +29,22 @@ export async function initLive() {
   _unsubRis = onRisultatiSnapshot((data) => {
     _risultati = data || {};
     _renderGironi();
+  });
+
+  _unsubMarcatori = onMarcatoriSnapshot((lista) => {
+    _marcatori = lista || [];
+    _renderMarcatori();
+  });
+
+  // Tab interni: Partite / Marcatori
+  document.getElementById('live-inner-tabs')?.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-tab]');
+    if (!btn) return;
+    const tabId = btn.dataset.tab;
+    document.querySelectorAll('#live-inner-tabs .tab').forEach(b => b.classList.toggle('active', b === btn));
+    document.querySelectorAll('#page-live .tab-content').forEach(el => {
+      el.classList.toggle('active', el.id === tabId);
+    });
   });
 }
 
@@ -221,6 +239,52 @@ function _aggiornaTimestamp() {
   if (!el || !_liveData.updatedAt) return;
   const d = _liveData.updatedAt.toDate ? _liveData.updatedAt.toDate() : new Date(_liveData.updatedAt);
   el.textContent = `Agg. ${d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}`;
+}
+
+// ── MARCATORI ─────────────────────────────────────────
+function _renderMarcatori() {
+  const container = document.getElementById('live-marcatori-container');
+  if (!container) return;
+
+  if (!_marcatori.length) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">⚽</div>
+        <p>La classifica marcatori sarà disponibile all'inizio del torneo.</p>
+      </div>`;
+    return;
+  }
+
+  const rows = _marcatori.map(m => {
+    const sq = DB.squadre[m.squadra_id];
+    const flag = sq?.flag || '';
+    const squadraNome = sq?.nome || m.squadra_nome || '—';
+    const assistHtml = m.assist > 0 ? `<span class="marc-assist">${m.assist} ast</span>` : '';
+    const rigoriHtml = m.rigori > 0 ? `<span class="marc-rigori">(${m.rigori} rig)</span>` : '';
+
+    return `
+      <div class="marc-row${m.pos <= 3 ? ' marc-podio' : ''}">
+        <div class="marc-pos">${m.pos === 1 ? '🥇' : m.pos === 2 ? '🥈' : m.pos === 3 ? '🥉' : m.pos}</div>
+        <div class="marc-info">
+          <div class="marc-nome">${m.nome}</div>
+          <div class="marc-squadra">${flag} ${squadraNome}</div>
+        </div>
+        <div class="marc-stats">
+          <span class="marc-gol">${m.gol} ⚽</span>
+          ${assistHtml}
+          ${rigoriHtml}
+        </div>
+      </div>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="marc-list">
+      <div class="marc-header">
+        <span>Giocatore</span>
+        <span>Gol</span>
+      </div>
+      ${rows}
+    </div>`;
 }
 
 // ── HELPERS ───────────────────────────────────────────
