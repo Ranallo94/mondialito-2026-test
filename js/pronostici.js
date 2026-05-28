@@ -976,7 +976,7 @@ function _bindSegniGirone() {
       }
     });
 
-    // All'uscita dal campo: se vuoto, ripristina 0 e aggiorna il modello
+    // All'uscita dal campo: se vuoto, ripristina 0 e aggiorna modello + segno
     input.addEventListener('blur', () => {
       if (input.value === '' || isNaN(parseInt(input.value, 10))) {
         input.value = '0';
@@ -984,6 +984,17 @@ function _bindSegniGirone() {
         if (!_pronostici.gironi) _pronostici.gironi = {};
         if (!_pronostici.gironi[matchId]) _pronostici.gironi[matchId] = {};
         _pronostici.gironi[matchId][input.dataset.field] = 0;
+        // Ricalcola e aggiorna il segno 1/X/2
+        const gc = _pronostici.gironi[matchId].gol_casa;
+        const gt = _pronostici.gironi[matchId].gol_trasferta;
+        if (gc != null && gt != null) {
+          const s = gc > gt ? '1' : gc < gt ? '2' : 'X';
+          _pronostici.gironi[matchId].segno = s;
+          document.querySelectorAll('.segno-btn[data-match="' + matchId + '"]')
+            .forEach(b => b.classList.toggle('active', b.dataset.segno === s));
+        }
+        const lettera = _getGironeByMatchId(matchId);
+        if (lettera) _ricalcolaClassificaGirone(lettera);
       }
     });
 
