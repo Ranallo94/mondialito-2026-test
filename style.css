@@ -1343,6 +1343,39 @@ select.field-input option { background: var(--bg-card2); }
 .gd-neg   { color: var(--rosso); }
 
 /* ══════════════════════════════════════════
+   MARCATORI
+══════════════════════════════════════════ */
+.inner-tabs { margin-bottom: 16px; }
+.marc-list { display: flex; flex-direction: column; gap: 4px; max-width: 600px; }
+.marc-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 12px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--text-muted);
+}
+.marc-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.marc-row.marc-podio { border-color: var(--verde); }
+.marc-pos { min-width: 28px; font-weight: 700; font-size: 15px; text-align: center; }
+.marc-info { flex: 1; min-width: 0; }
+.marc-nome { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.marc-squadra { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.marc-stats { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.marc-gol { font-weight: 700; font-size: 16px; color: var(--verde); }
+.marc-assist { font-size: 12px; color: var(--text-muted); }
+.marc-rigori { font-size: 11px; color: var(--text-muted); }
+
+/* ══════════════════════════════════════════
    PAGINA REGOLAMENTO
 ══════════════════════════════════════════ */
 .reg-section {

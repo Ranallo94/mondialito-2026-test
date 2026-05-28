@@ -165,30 +165,46 @@
           <span id="live-updated" class="page-subtitle"></span>
         </div>
 
-        <!-- Partite in corso (solo se ci sono) -->
-        <div id="live-in-corso" class="section-block" style="display:none">
-          <h3 class="section-title section-title-live">🔴 In corso</h3>
-          <div id="live-partite-incorso"></div>
+        <!-- Tab interni -->
+        <div class="inner-tabs" id="live-inner-tabs">
+          <button class="tab active" data-tab="tab-live-risultati">Partite</button>
+          <button class="tab" data-tab="tab-live-marcatori">⚽ Marcatori</button>
         </div>
 
-        <!-- Partite oggi non ancora iniziate -->
-        <div id="live-oggi" class="section-block" style="display:none">
-          <h3 class="section-title">⏰ Oggi</h3>
-          <div id="live-partite-oggi"></div>
-        </div>
+        <!-- TAB: Partite -->
+        <div id="tab-live-risultati" class="tab-content active">
+          <!-- Partite in corso (solo se ci sono) -->
+          <div id="live-in-corso" class="section-block" style="display:none">
+            <h3 class="section-title section-title-live">🔴 In corso</h3>
+            <div id="live-partite-incorso"></div>
+          </div>
 
-        <!-- Risultati per girone -->
-        <div id="live-gironi" class="section-block">
-          <h3 class="section-title">📋 Risultati per girone</h3>
-          <div id="live-gironi-container">
-            <div class="loading-state"><div class="spinner"></div><p>Caricamento…</p></div>
+          <!-- Partite oggi non ancora iniziate -->
+          <div id="live-oggi" class="section-block" style="display:none">
+            <h3 class="section-title">⏰ Oggi</h3>
+            <div id="live-partite-oggi"></div>
+          </div>
+
+          <!-- Risultati per girone -->
+          <div id="live-gironi" class="section-block">
+            <h3 class="section-title">📋 Risultati per girone</h3>
+            <div id="live-gironi-container">
+              <div class="loading-state"><div class="spinner"></div><p>Caricamento…</p></div>
+            </div>
+          </div>
+
+          <!-- Prossime partite -->
+          <div id="live-prossime" class="section-block" style="display:none">
+            <h3 class="section-title">📅 Prossime partite</h3>
+            <div id="live-partite-prossime"></div>
           </div>
         </div>
 
-        <!-- Prossime partite -->
-        <div id="live-prossime" class="section-block" style="display:none">
-          <h3 class="section-title">📅 Prossime partite</h3>
-          <div id="live-partite-prossime"></div>
+        <!-- TAB: Marcatori -->
+        <div id="tab-live-marcatori" class="tab-content">
+          <div id="live-marcatori-container">
+            <div class="loading-state"><div class="spinner"></div><p>Caricamento marcatori…</p></div>
+          </div>
         </div>
       </div>
 
