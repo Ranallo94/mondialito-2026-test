@@ -46,7 +46,7 @@ service cloud.firestore {
     // ── RISULTATI ─────────────────────────────────────
     match /risultati/{doc} {
       allow read: if isApprovato();
-      allow write: if false; // Solo Cloud Functions
+      allow write: if isAdmin(); // Admin può scrivere (sync API + simulazioni manuali)
     }
 
     // ── CLASSIFICA ────────────────────────────────────
