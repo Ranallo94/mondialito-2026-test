@@ -572,7 +572,10 @@ async function _ricalcolaClassificaClient() {
   ]);
 
   const nomi = {};
-  partSnap.forEach(d => { nomi[d.id] = d.data().nome; });
+  partSnap.forEach(d => {
+    const { nome, cognome } = d.data();
+    nomi[d.id] = [nome, cognome].filter(Boolean).join(' ') || d.id;
+  });
 
   const risultati = risSnap.exists() ? risSnap.data() : {};
 
