@@ -16,6 +16,7 @@ import {
   onRisultatiSnapshot,
 } from './db.js';
 import { showToast, openModal, closeModal, showSpinner, formatDate } from './ui.js';
+import { calcolaPunteggio, calcolaSparegnio } from './punteggi.js';
 import { httpsCallable } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js';
 import {
   collection, onSnapshot, doc, updateDoc, deleteDoc, query, where,
@@ -387,6 +388,28 @@ async function _initTabSistema() {
       });
     }
 
+    // Ricalcola classifica
+    const btnRicalcola = document.getElementById('btn-ricalcola-classifica');
+    const classiEl = document.getElementById('sistema-classifica-status');
+    if (btnRicalcola) {
+      btnRicalcola.addEventListener('click', async () => {
+        btnRicalcola.disabled = true;
+        btnRicalcola.textContent = '⏳ Calcolo in corso…';
+        if (classiEl) classiEl.textContent = '⏳ Ricalcolo…';
+        try {
+          await _ricalcolaClassificaClient();
+          if (classiEl) classiEl.textContent = '✅ Classifica aggiornata';
+          showToast('Classifica aggiornata!', 'success');
+        } catch (e) {
+          if (classiEl) classiEl.textContent = '❌ Errore: ' + e.message;
+          showToast('Errore ricalcolo: ' + e.message, 'error');
+        } finally {
+          btnRicalcola.disabled = false;
+          btnRicalcola.textContent = 'Ricalcola classifica';
+        }
+      });
+    }
+
   } catch (e) {
     console.warn('Errore init sistema:', e);
   }
@@ -528,4 +551,58 @@ function _renderSparteggioTerze(terze) {
       el.querySelector('.btn-sp-down').disabled = i === arr.length - 1;
     });
   });
+}
+
+// ── RICALCOLO CLASSIFICA (client-side) ────────────────
+/**
+ * Legge pronostici + partecipanti + risultati da Firestore,
+ * calcola i punteggi e salva in classifica/snapshot.
+ * Funziona senza Cloud Functions — basta che l'utente sia admin.
+ */
+async function _ricalcolaClassificaClient() {
+  const { collection, getDocs, doc, getDoc, setDoc } = await import(
+    'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js'
+  );
+  const fireDb = window._firebase.db;
+
+  const [partSnap, proSnap, risSnap] = await Promise.all([
+    getDocs(collection(fireDb, 'partecipanti')),
+    getDocs(collection(fireDb, 'pronostici')),
+    getDoc(doc(fireDb, 'risultati', 'ufficiali')),
+  ]);
+
+  const nomi = {};
+  partSnap.forEach(d => { nomi[d.id] = d.data().nome; });
+
+  const risultati = risSnap.exists() ? risSnap.data() : {};
+
+  const lista = [];
+  proSnap.forEach(d => {
+    const pr = d.data();
+    const { totale, breakdown } = calcolaPunteggio(pr, risultati);
+    const spareggio = calcolaSparegnio(pr, risultati);
+    lista.push({
+      id:        d.id,
+      nome:      nomi[d.id] || d.id,
+      totale,
+      breakdown,
+      spareggio,
+    });
+  });
+
+  lista.sort((a, b) => {
+    if (b.totale !== a.totale) return b.totale - a.totale;
+    for (let i = 0; i < Math.max(a.spareggio.length, b.spareggio.length); i++) {
+      if ((b.spareggio[i] || 0) !== (a.spareggio[i] || 0))
+        return (b.spareggio[i] || 0) - (a.spareggio[i] || 0);
+    }
+    return (a.nome || '').localeCompare(b.nome || '', 'it');
+  });
+
+  await setDoc(doc(fireDb, 'classifica', 'snapshot'), {
+    partecipanti: lista,
+    updatedAt:    new Date().toISOString(),
+  });
+
+  console.log(`[ricalcolaClassifica] ${lista.length} partecipanti aggiornati`);
 }
