@@ -140,9 +140,10 @@ async function _sincronizza() {
   }
 
   // Fetch risultati dall'API
-  const [gironi, live] = await Promise.all([
+  const [gironi, live, marcatori] = await Promise.all([
     _fetchRisultatiGironi(),
     _fetchLive(),
+    _fetchMarcatori(),
   ]);
 
   // Aggiorna Firestore
@@ -155,6 +156,11 @@ async function _sincronizza() {
 
   // Live data
   batch.set(db.doc('live/oggi'), { ...live, updatedAt: FieldValue.serverTimestamp() });
+
+  // Marcatori
+  if (marcatori.length > 0) {
+    batch.set(db.doc('live/marcatori'), { lista: marcatori, updatedAt: FieldValue.serverTimestamp() });
+  }
 
   // Aggiorna config sistema con info prossima partita
   const prossimaPartita = live.prossime?.[0]?.orario || null;
@@ -240,6 +246,30 @@ async function _fetchLive() {
 }
 
 /**
+ * Fetch classifica marcatori dal torneo.
+ */
+async function _fetchMarcatori() {
+  try {
+    const res = await axios.get(
+      `${API_BASE}/competitions/${COMPETITION}/scorers?season=${WC_SEASON}&limit=20`,
+      { headers: { 'X-Auth-Token': API_KEY }, timeout: 10000 }
+    );
+    return (res.data.scorers || []).map((s, i) => ({
+      pos:          i + 1,
+      nome:         s.player?.name || '—',
+      squadra_id:   _teamNameToId(s.team?.name),
+      squadra_nome: s.team?.name || '—',
+      gol:          s.goals ?? 0,
+      assist:       s.assists ?? 0,
+      rigori:       s.penalties ?? 0,
+    }));
+  } catch (e) {
+    console.error('[_fetchMarcatori]', e.message);
+    return [];
+  }
+}
+
+/**
  * Mappa un match dell'API nel formato usato dal frontend.
  */
 function _mapMatchLive(m) {
@@ -269,7 +299,10 @@ async function _aggiornaClassifica(risultati) {
   ]);
 
   const nomi = {};
-  partSnap.docs.forEach(d => { nomi[d.id] = d.data().nome; });
+  partSnap.docs.forEach(d => {
+    const { nome, cognome } = d.data();
+    nomi[d.id] = [nome, cognome].filter(Boolean).join(' ') || d.id;
+  });
 
   const partecipanti = pronSnap.docs.map(d => {
     const pr = d.data();
