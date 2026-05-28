@@ -52,7 +52,7 @@ service cloud.firestore {
     // ── CLASSIFICA ────────────────────────────────────
     match /classifica/{doc} {
       allow read: if isApprovato();
-      allow write: if false;
+      allow write: if isAdmin(); // Cloud Function + ricalcolo manuale admin
     }
 
     // ── LIVE ──────────────────────────────────────────
