@@ -966,9 +966,30 @@ function _bindSegniGirone() {
     });
   });
   document.querySelectorAll('.score-input').forEach(input => {
+    // Alla messa a fuoco: se il valore è 0 lo azzera subito,
+    // altrimenti seleziona tutto così la digitazione sovrascrive
+    input.addEventListener('focus', () => {
+      if (input.value === '0') {
+        input.value = '';
+      } else {
+        input.select();
+      }
+    });
+
+    // All'uscita dal campo: se vuoto, ripristina 0 e aggiorna il modello
+    input.addEventListener('blur', () => {
+      if (input.value === '' || isNaN(parseInt(input.value, 10))) {
+        input.value = '0';
+        const matchId = input.dataset.match;
+        if (!_pronostici.gironi) _pronostici.gironi = {};
+        if (!_pronostici.gironi[matchId]) _pronostici.gironi[matchId] = {};
+        _pronostici.gironi[matchId][input.dataset.field] = 0;
+      }
+    });
+
     input.addEventListener('input', () => {
       const matchId = input.dataset.match;
-      const val = parseInt(input.value);
+      const val = parseInt(input.value, 10);
       if (!_pronostici.gironi) _pronostici.gironi = {};
       if (!_pronostici.gironi[matchId]) _pronostici.gironi[matchId] = {};
       _pronostici.gironi[matchId][input.dataset.field] = isNaN(val) ? null : val;
