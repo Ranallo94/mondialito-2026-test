@@ -993,6 +993,41 @@ select.field-input option { background: var(--bg-card2); }
   animation: pulse 2s infinite;
 }
 
+@media (max-width: 640px) {
+  .tb-header {
+    grid-template-columns: repeat(5, 62px);
+    gap: 4px;
+    min-width: 0;
+  }
+  .tb-col-label {
+    font-size: 8px;
+    letter-spacing: 0;
+    padding: 2px 0;
+  }
+  .tb-grid {
+    grid-template-columns: repeat(5, 62px);
+    grid-template-rows: repeat(16, 38px);
+    gap: 4px;
+    min-width: 0;
+  }
+  .tb-cell {
+    padding: 3px 4px;
+    border-radius: 5px;
+    gap: 2px;
+  }
+  .tb-team {
+    font-size: 9px;
+    gap: 2px;
+    padding-left: 4px;
+  }
+  .tb-sep {
+    margin: 1px 0 1px 4px;
+  }
+  .tb-campione {
+    font-size: 15px;
+  }
+}
+
 /* ── SUB-TAB GIRONI ── */
 .girone-subtab-bar {
   display: flex;
