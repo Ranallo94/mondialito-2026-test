@@ -844,35 +844,68 @@ function _aggiornaBadgeGirone(lettera) {
   else { badge.textContent = '✓'; badge.className = 'gtab-badge complete'; }
 }
 
+// ── VALIDAZIONE GLOBALE ─────────────────────────────────────────────────
+
+/**
+ * Verifica che tutti e 72 i risultati dei gironi siano compilati
+ * (gol_casa, gol_trasferta, segno 1/X/2).
+ * Restituisce { ok, riepilogo } dove riepilogo è una stringa descrittiva.
+ */
+function _validaGironiCompleti() {
+  const incompleti = [];
+  Object.entries(DB.gironi).forEach(([lettera, girone]) => {
+    let n = 0;
+    girone.partite.forEach(p => {
+      const d = _pronostici?.gironi?.[p.id];
+      if (d?.gol_casa == null || d?.gol_trasferta == null || !d?.segno) n++;
+    });
+    if (n > 0) incompleti.push('Girone ' + lettera + ' (' + n + ' ' + (n === 1 ? 'partita' : 'partite') + ')');
+  });
+  return {
+    ok: incompleti.length === 0,
+    riepilogo: incompleti.length ? 'Gironi incompleti: ' + incompleti.join(', ') : '',
+  };
+}
+
+/**
+ * Verifica che tutte le fasi eliminatorie abbiano il vincitore selezionato.
+ * Restituisce { ok, riepilogo }.
+ */
+function _validaEliminatorieComplete() {
+  const incompleti = [];
+  FASI_ELIM.forEach(({ id, label }) => {
+    const matches = _getMatchesFase(id);
+    const n = matches.filter(m => !_pronostici?.fase_eliminatoria?.[id]?.[m.id]?.vincitore).length;
+    if (n > 0) incompleti.push(label + ' (' + n + ' ' + (n === 1 ? 'partita' : 'partite') + ')');
+  });
+  return {
+    ok: incompleti.length === 0,
+    riepilogo: incompleti.length ? 'Fasi incomplete: ' + incompleti.join(', ') : '',
+  };
+}
+
 async function _salvaGirone(lettera) {
   if (!_pronosticiAperti) { showToast('I pronostici sono chiusi!', 'error'); return; }
   const girone = DB.gironi[lettera];
   if (!girone) return;
 
-  // Validazione: ogni partita deve avere gol_casa e gol_trasferta
-  const mancanti = [];
-  girone.partite.forEach(p => {
-    const d = _pronostici?.gironi?.[p.id];
-    if (d?.gol_casa == null || d?.gol_trasferta == null) {
-      const casa  = SQUADRE_BY_ID[p.casa];
-      const trasf = SQUADRE_BY_ID[p.trasferta];
-      mancanti.push((casa?.nome || p.casa) + ' - ' + (trasf?.nome || p.trasferta));
-    }
-  });
-
   const msg = document.getElementById('save-msg-girone-' + lettera);
   const btn = document.querySelector('.btn-salva-girone[data-girone="' + lettera + '"]');
 
-  if (mancanti.length) {
-    if (msg) { msg.textContent = '⚠️ Partite incomplete: ' + mancanti.join(' | '); msg.className = 'girone-save-msg gsm-error'; }
-    showToast('Completa tutte le ' + girone.partite.length + ' partite del Girone ' + lettera, 'error');
+  // Raccoglie prima i dati dal DOM così la validazione vede i valori aggiornati
+  _raccogliDalDOM();
+
+  // Validazione: tutti e 72 i risultati dei gironi devono essere completi
+  const { ok, riepilogo } = _validaGironiCompleti();
+  if (!ok) {
+    if (msg) { msg.textContent = '⚠️ ' + riepilogo; msg.className = 'girone-save-msg gsm-error'; }
+    showToast('Completa tutti i gironi prima di salvare', 'error');
     return;
   }
 
   btn.disabled = true;
   if (msg) { msg.textContent = 'Salvataggio...'; msg.className = 'girone-save-msg'; }
   try {
-    _raccogliDalDOM();
     await savePronostici(STATE.utente.id, _pronostici);
     if (msg) { msg.textContent = '✅ Girone ' + lettera + ' salvato!'; msg.className = 'girone-save-msg gsm-ok'; }
     _aggiornaBadgeGirone(lettera);
@@ -1012,18 +1045,17 @@ function _salvaFase(faseId) {
   const msg = document.getElementById('esm-' + faseId);
   if (msg) { msg.textContent = ''; msg.className = 'elim-save-msg'; }
 
-  // Verifica che ogni partita abbia vincitore
-  const matches = _getMatchesFase(faseId);
-  const mancanti = matches.filter(m => {
-    const v = _pronostici?.fase_eliminatoria?.[faseId]?.[m.id]?.vincitore;
-    return !v;
-  });
+  // Validazione 1: tutti i gironi devono essere completi
+  const vGironi = _validaGironiCompleti();
+  if (!vGironi.ok) {
+    if (msg) { msg.textContent = '⚠ ' + vGironi.riepilogo; msg.classList.add('esm-error'); }
+    return;
+  }
 
-  if (mancanti.length) {
-    if (msg) {
-      msg.textContent = '⚠ Scegli il vincitore di tutte le partite prima di salvare.';
-      msg.classList.add('esm-error');
-    }
+  // Validazione 2: tutte le fasi eliminatorie devono avere vincitore
+  const vElim = _validaEliminatorieComplete();
+  if (!vElim.ok) {
+    if (msg) { msg.textContent = '⚠ ' + vElim.riepilogo; msg.classList.add('esm-error'); }
     return;
   }
 
