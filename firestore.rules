@@ -37,9 +37,10 @@ service cloud.firestore {
     }
 
     // ── PRONOSTICI ────────────────────────────────────
-    // Solo utenti approvati possono compilare la scheda.
+    // Tutti gli approvati possono leggere (per vedere le schede altrui dalla classifica).
+    // Solo il proprietario può scrivere la propria scheda.
     match /pronostici/{uid} {
-      allow read:  if isAuth() && (request.auth.uid == uid || isAdmin());
+      allow read:  if isApprovato();
       allow write: if isApprovato() && request.auth.uid == uid;
     }
 

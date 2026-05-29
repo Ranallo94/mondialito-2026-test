@@ -751,7 +751,13 @@ select.field-input option { background: var(--bg-card2); }
 /* ── CLASSIFICA ── */
 .classifica-list   { display: flex; flex-direction: column; gap: 8px; }
 .classifica-header { display: grid; grid-template-columns: 48px 1fr 72px; gap: 12px; padding: 8px 16px; color: var(--text-muted); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
-.classifica-row    { display: grid; grid-template-columns: 48px 1fr 72px; gap: 12px; align-items: center; padding: 14px 16px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); transition: background .15s; }
+.classifica-row    { display: grid; grid-template-columns: 48px 1fr 72px; gap: 12px; align-items: center; padding: 14px 16px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); transition: background .15s, transform .15s; }
+.classifica-row-link { cursor: pointer; }
+.classifica-row-link:hover { transform: translateY(-2px); border-color: var(--verde); }
+.profilo-banner-altrui { display: flex; align-items: center; gap: 12px; padding: 10px 0 4px; }
+.profilo-banner-nome { font-size: 14px; color: var(--text-muted); }
+.btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--verde); padding: 4px 10px; border-radius: 6px; font-size: 13px; cursor: pointer; }
+.btn-ghost:hover { background: var(--bg-card2); }
 .classifica-row.row-me  { border-color: var(--oro); background: rgba(240,180,41,.06); }
 .classifica-row.pos-1   { border-color: #f0b429; }
 .classifica-row.pos-2   { border-color: #c0c0c0; }
