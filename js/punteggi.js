@@ -147,17 +147,21 @@ export function calcolaPunteggio(pronostici, risultati) {
   }
 
   // ── 5. CAPOCANNONIERE ─────────────────────────────────
-  const { primo: cp1, secondo: cp2, terzo: cp3 } = rCannon;
-  const { primo: pp1, secondo: pp2, terzo: pp3 } = pCannon;
-  const ternaP = [pp1, pp2, pp3].filter(Boolean);
-  const ternaR = [cp1, cp2, cp3].filter(Boolean);
+  // I punti del capocannoniere si assegnano SOLO a fine torneo,
+  // quando il vincitore della finale è noto.
+  if (vincitoreR) {
+    const { primo: cp1, secondo: cp2, terzo: cp3 } = rCannon;
+    const { primo: pp1, secondo: pp2, terzo: pp3 } = pCannon;
+    const ternaP = [pp1, pp2, pp3].filter(Boolean);
+    const ternaR = [cp1, cp2, cp3].filter(Boolean);
 
-  if (cp1 && pp1 === cp1) { bd.capocannoniere.punti += REG.capocannoniere.primo_classificato; bd.capocannoniere.dettaglio += '1°✓ '; }
-  if (cp2 && pp2 === cp2) { bd.capocannoniere.punti += REG.capocannoniere.secondo_classificato; bd.capocannoniere.dettaglio += '2°✓ '; }
-  if (cp3 && pp3 === cp3) { bd.capocannoniere.punti += REG.capocannoniere.terzo_classificato; bd.capocannoniere.dettaglio += '3°✓ '; }
-  // Bonus terna: +10 se almeno uno nella terna ma non nel posto esatto
-  const nellaTerna = ternaP.filter(p => ternaR.includes(p) && p !== pp1 && p !== pp2 && p !== pp3);
-  if (nellaTerna.length > 0) { bd.capocannoniere.punti += REG.capocannoniere.nella_terna; bd.capocannoniere.dettaglio += 'terna✓'; }
+    if (cp1 && pp1 === cp1) { bd.capocannoniere.punti += REG.capocannoniere.primo_classificato; bd.capocannoniere.dettaglio += '1°✓ '; }
+    if (cp2 && pp2 === cp2) { bd.capocannoniere.punti += REG.capocannoniere.secondo_classificato; bd.capocannoniere.dettaglio += '2°✓ '; }
+    if (cp3 && pp3 === cp3) { bd.capocannoniere.punti += REG.capocannoniere.terzo_classificato; bd.capocannoniere.dettaglio += '3°✓ '; }
+    // Bonus terna: +10 se almeno uno nella terna ma non nel posto esatto
+    const nellaTerna = ternaP.filter(p => ternaR.includes(p) && p !== pp1 && p !== pp2 && p !== pp3);
+    if (nellaTerna.length > 0) { bd.capocannoniere.punti += REG.capocannoniere.nella_terna; bd.capocannoniere.dettaglio += 'terna✓'; }
+  }
 
   // ── TOTALE ────────────────────────────────────────────
   const totale = Object.values(bd).reduce((sum, v) =>
