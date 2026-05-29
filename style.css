@@ -1394,6 +1394,7 @@ select.field-input option { background: var(--bg-card2); }
    MARCATORI
 ══════════════════════════════════════════ */
 .inner-tabs { margin-bottom: 16px; }
+.tb-scroll-wrapper { overflow-x: auto; }
 .marc-list { display: flex; flex-direction: column; gap: 4px; max-width: 600px; }
 .marc-header {
   display: flex;
