@@ -325,26 +325,33 @@ async function _renderPartecipanti() {
         ? p.updatedAt.toDate().toLocaleString('it-IT')
         : p.updatedAt || '—';
 
-      const isSelf  = p.id === STATE.utente?.id;
-      const isOwner = !!p.isOwner;
-      const adminBtn = p.isAdmin
-        ? (isOwner
-            ? '' // owner: nessun pulsante
-            : `<button class="btn btn-sm btn-secondary" data-uid="${p.id}" data-action="revoca-admin" ${isSelf ? 'disabled title="Non puoi revocare te stesso"' : ''}>
-                 Revoca admin
-               </button>`)
-        : `<button class="btn btn-sm btn-secondary" data-uid="${p.id}" data-action="promuovi-admin">
-             ⭐ Promuovi ad admin
-           </button>`;
+      const isSelf    = p.id === STATE.utente?.id;
+      const isOwner   = !!p.isOwner;
+      const isDisab   = !!p.disabilitato;
+
+      const adminBtn = isOwner ? '' : p.isAdmin
+        ? `<button class="btn btn-sm btn-secondary" data-uid="${p.id}" data-action="revoca-admin" ${isSelf ? 'disabled title="Non puoi revocare te stesso"' : ''}>Revoca admin</button>`
+        : `<button class="btn btn-sm btn-secondary" data-uid="${p.id}" data-action="promuovi-admin">⭐ Promuovi</button>`;
+
+      const disabBtn = isOwner || isSelf ? '' : isDisab
+        ? `<button class="btn btn-sm btn-ok" data-uid="${p.id}" data-action="riabilita">✅ Riabilita</button>`
+        : `<button class="btn btn-sm btn-warning" data-uid="${p.id}" data-action="disabilita">🚫 Disabilita</button>`;
+
+      const deleteBtn = isOwner || isSelf ? ''
+        : `<button class="btn btn-sm btn-danger" data-uid="${p.id}" data-action="elimina">🗑️ Elimina</button>`;
+
+      const badgeDisab = isDisab ? ' <span class="badge-disab">Disabilitato</span>' : '';
+      const badgeLabel = isOwner ? ' <span class="badge-owner">👑 Proprietario</span>'
+                       : p.isAdmin ? ' <span class="badge-admin">Admin</span>' : '';
 
       return `
-        <div class="admin-partecipante-row">
+        <div class="admin-partecipante-row${isDisab ? ' ap-row-disab' : ''}">
           <div class="ap-info">
-            <span class="ap-nome">${p.nome} ${p.cognome || ''}${p.isOwner ? ' <span class="badge-owner">👑 Proprietario</span>' : p.isAdmin ? ' <span class="badge-admin">Admin</span>' : ''}</span>
+            <span class="ap-nome">${p.nome} ${p.cognome || ''}${badgeLabel}${badgeDisab}</span>
             <span class="ap-stato">${stato}</span>
             ${p.haPronostici ? `<span class="ap-date">Salvato: ${aggiornato}</span>` : ''}
           </div>
-          <div class="ap-actions">${adminBtn}</div>
+          <div class="ap-actions">${adminBtn} ${disabBtn} ${deleteBtn}</div>
         </div>`;
     }).join('');
 
@@ -399,6 +406,71 @@ async function _renderPartecipanti() {
                   try {
                     await updateDoc(doc(db(), 'partecipanti', uid), { isAdmin: false });
                     showToast(`Privilegi admin revocati a ${nome}`, 'info');
+                    closeModal();
+                    _renderPartecipanti();
+                  } catch (e) {
+                    showToast('Errore: ' + e.message, 'error');
+                  }
+                },
+              },
+              { label: 'Annulla', cls: 'btn btn-secondary', onClick: closeModal },
+            ],
+          });
+        }
+
+        if (action === 'disabilita') {
+          openModal({
+            title: 'Disabilita account',
+            body: `<p>Vuoi disabilitare l'account di <strong>${nome}</strong>?<br>L'utente non potrà più accedere all'app ma i suoi dati resteranno intatti. Potrai riabilitarlo in qualsiasi momento.</p>`,
+            buttons: [
+              {
+                label: 'Sì, disabilita',
+                cls: 'btn btn-warning',
+                onClick: async () => {
+                  try {
+                    await updateDoc(doc(db(), 'partecipanti', uid), { disabilitato: true });
+                    showToast(`Account di ${nome} disabilitato`, 'info');
+                    closeModal();
+                    _renderPartecipanti();
+                  } catch (e) {
+                    showToast('Errore: ' + e.message, 'error');
+                  }
+                },
+              },
+              { label: 'Annulla', cls: 'btn btn-secondary', onClick: closeModal },
+            ],
+          });
+        }
+
+        if (action === 'riabilita') {
+          try {
+            await updateDoc(doc(db(), 'partecipanti', uid), { disabilitato: false });
+            showToast(`Account di ${nome} riabilitato ✅`, 'success');
+            _renderPartecipanti();
+          } catch (e) {
+            showToast('Errore: ' + e.message, 'error');
+          }
+        }
+
+        if (action === 'elimina') {
+          openModal({
+            title: 'Elimina utente',
+            body: `<p>Vuoi eliminare definitivamente <strong>${nome}</strong>?<br>Verranno cancellati il profilo e i pronostici. L'operazione è <strong>irreversibile</strong>.</p>`,
+            buttons: [
+              {
+                label: 'Sì, elimina',
+                cls: 'btn btn-danger',
+                onClick: async () => {
+                  try {
+                    await deleteDoc(doc(db(), 'partecipanti', uid));
+                    // Prova a eliminare anche i pronostici
+                    try { await deleteDoc(doc(db(), 'pronostici', uid)); } catch (_) {}
+                    // Prova a eliminare da Auth (richiede Cloud Function)
+                    try {
+                      const fn = httpsCallable(window._firebase.functions, 'eliminaUtente');
+                      await fn({ uid });
+                    } catch (_) {}
+                    showToast(`${nome} eliminato`, 'info');
                     closeModal();
                     _renderPartecipanti();
                   } catch (e) {

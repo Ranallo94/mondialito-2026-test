@@ -31,7 +31,9 @@ export async function initApp() {
       return;
     }
     STATE.utente = utente;
-    if (!utente.approvato) {
+    if (utente.disabilitato) {
+      mostraDisabilitato(utente);
+    } else if (!utente.approvato) {
       mostraAttesa(utente);
     } else {
       await mostraApp();
@@ -112,6 +114,16 @@ function mostraLogin() {
   document.getElementById('tab-registrati').classList.remove('active');
   document.getElementById('form-login').style.display = '';
   document.getElementById('form-registrazione').style.display = 'none';
+}
+
+function mostraDisabilitato(utente) {
+  _nascondiTutto();
+  document.getElementById('screen-disabilitato').style.display = '';
+  document.getElementById('disab-nome').textContent =
+    `${utente.nome} ${utente.cognome || ''}`.trim();
+  document.getElementById('btn-logout-disab').onclick = async () => {
+    await logout();
+  };
 }
 
 function mostraAttesa(utente) {
