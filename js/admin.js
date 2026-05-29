@@ -298,6 +298,10 @@ function _apriModalCorreggi(matchId, tipo, risultati) {
 
 // ── TAB PARTECIPANTI ──────────────────────────────────
 async function _initTabPartecipanti() {
+  await _renderPartecipanti();
+}
+
+async function _renderPartecipanti() {
   const container = document.getElementById('admin-partecipanti-container');
   if (!container) return;
 
@@ -321,13 +325,26 @@ async function _initTabPartecipanti() {
         ? p.updatedAt.toDate().toLocaleString('it-IT')
         : p.updatedAt || '—';
 
+      const isSelf  = p.id === STATE.utente?.id;
+      const isOwner = !!p.isOwner;
+      const adminBtn = p.isAdmin
+        ? (isOwner
+            ? '' // owner: nessun pulsante
+            : `<button class="btn btn-sm btn-secondary" data-uid="${p.id}" data-action="revoca-admin" ${isSelf ? 'disabled title="Non puoi revocare te stesso"' : ''}>
+                 Revoca admin
+               </button>`)
+        : `<button class="btn btn-sm btn-secondary" data-uid="${p.id}" data-action="promuovi-admin">
+             ⭐ Promuovi ad admin
+           </button>`;
+
       return `
         <div class="admin-partecipante-row">
           <div class="ap-info">
-            <span class="ap-nome">${p.nome}${p.isAdmin ? ' <span class="badge-admin">Admin</span>' : ''}</span>
+            <span class="ap-nome">${p.nome} ${p.cognome || ''}${p.isOwner ? ' <span class="badge-owner">👑 Proprietario</span>' : p.isAdmin ? ' <span class="badge-admin">Admin</span>' : ''}</span>
             <span class="ap-stato">${stato}</span>
             ${p.haPronostici ? `<span class="ap-date">Salvato: ${aggiornato}</span>` : ''}
           </div>
+          <div class="ap-actions">${adminBtn}</div>
         </div>`;
     }).join('');
 
@@ -337,6 +354,64 @@ async function _initTabPartecipanti() {
         ${schede.filter(p => p.haPronostici).length} schede compilate
       </div>
       <div class="admin-partecipanti-list">${rows}</div>`;
+
+    // Gestione clic pulsanti admin
+    container.querySelectorAll('[data-action]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const uid    = btn.dataset.uid;
+        const action = btn.dataset.action;
+        const p      = schede.find(s => s.id === uid);
+        const nome   = `${p?.nome || ''} ${p?.cognome || ''}`.trim();
+
+        if (action === 'promuovi-admin') {
+          openModal({
+            title: 'Promuovi ad admin',
+            body: `<p>Vuoi promuovere <strong>${nome}</strong> ad amministratore?<br>Potrà accedere al pannello admin e gestire i risultati.</p>`,
+            buttons: [
+              {
+                label: 'Sì, promuovi',
+                cls: 'btn btn-primary',
+                onClick: async () => {
+                  try {
+                    await updateDoc(doc(db(), 'partecipanti', uid), { isAdmin: true });
+                    showToast(`${nome} è ora admin ⭐`, 'success');
+                    closeModal();
+                    _renderPartecipanti();
+                  } catch (e) {
+                    showToast('Errore: ' + e.message, 'error');
+                  }
+                },
+              },
+              { label: 'Annulla', cls: 'btn btn-secondary', onClick: closeModal },
+            ],
+          });
+        }
+
+        if (action === 'revoca-admin') {
+          openModal({
+            title: 'Revoca admin',
+            body: `<p>Vuoi revocare i privilegi di amministratore a <strong>${nome}</strong>?</p>`,
+            buttons: [
+              {
+                label: 'Sì, revoca',
+                cls: 'btn btn-danger',
+                onClick: async () => {
+                  try {
+                    await updateDoc(doc(db(), 'partecipanti', uid), { isAdmin: false });
+                    showToast(`Privilegi admin revocati a ${nome}`, 'info');
+                    closeModal();
+                    _renderPartecipanti();
+                  } catch (e) {
+                    showToast('Errore: ' + e.message, 'error');
+                  }
+                },
+              },
+              { label: 'Annulla', cls: 'btn btn-secondary', onClick: closeModal },
+            ],
+          });
+        }
+      });
+    });
 
   } catch (e) {
     container.innerHTML = `<p class="text-muted">Errore caricamento: ${e.message}</p>`;
