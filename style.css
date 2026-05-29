@@ -1260,12 +1260,14 @@ select.field-input option { background: var(--bg-card2); }
 .badge-ok      { background: rgba(42,138,71,.2); color: var(--verde-light); }
 .badge-pending { background: rgba(240,180,41,.15); color: var(--oro); }
 .badge-admin   { background: var(--oro); color: var(--text-dark); font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 20px; margin-left: 4px; vertical-align: middle; }
+.badge-owner   { background: linear-gradient(135deg, #f0b429, #e07b00); color: #fff; font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 20px; margin-left: 4px; vertical-align: middle; }
 .admin-partecipanti-header { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
 .admin-partecipanti-list  { display: flex; flex-direction: column; gap: 8px; }
-.admin-partecipante-row   { display: flex; align-items: center; justify-content: space-between; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; }
-.ap-info  { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.ap-nome  { font-weight: 600; font-size: 14px; }
-.ap-stato { font-size: 12px; }
+.admin-partecipante-row   { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; flex-wrap: wrap; }
+.ap-info    { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; flex: 1; }
+.ap-actions { flex-shrink: 0; }
+.ap-nome    { font-weight: 600; font-size: 14px; }
+.ap-stato   { font-size: 12px; }
 .ap-date  { font-size: 11px; color: var(--text-muted); }
 .modal-match-title  { font-size: 16px; font-weight: 700; text-align: center; padding: 10px 0 16px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
 .modal-form         { display: flex; flex-direction: column; gap: 12px; }

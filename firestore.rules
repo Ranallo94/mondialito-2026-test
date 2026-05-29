@@ -30,7 +30,12 @@ service cloud.firestore {
         && request.resource.data.isAdmin == false;
 
       // Aggiornamento: solo admin possono modificare (approvazione, correzioni).
-      allow update: if isAdmin();
+      // Un utente con isOwner:true può essere modificato SOLO da se stesso,
+      // così nessun altro admin può revocargli i privilegi.
+      allow update: if isAdmin() && (
+        !resource.data.get('isOwner', false) ||
+        request.auth.uid == uid
+      );
 
       // Cancellazione: solo admin (rifiuto richieste).
       allow delete: if isAdmin();
