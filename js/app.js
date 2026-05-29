@@ -15,6 +15,7 @@ import { showToast } from './ui.js';
 export const STATE = {
   utente: null,       // { id, nome, cognome, isAdmin, approvato }
   pagina: 'classifica',
+  profiloUid: null,   // uid del profilo visualizzato (null = profilo personale)
   db: null,
   _appInizializzata: false,
 };
@@ -187,14 +188,23 @@ function _nascondiTutto() {
 }
 
 // ── ROUTER ─────────────────────────────────────────────
-export function navigaA(pagina) {
+export function navigaA(pagina, params = {}) {
   STATE.pagina = pagina;
+
+  // Gestione profiloUid: se non specificato lo azzera
+  STATE.profiloUid = params.uid || null;
+
   document.querySelectorAll('.nav-item').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.page === pagina);
   });
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   const target = document.getElementById('page-' + pagina);
   if (target) { target.classList.add('active'); window.scrollTo(0, 0); }
+
+  // Se navighiamo al profilo, lo reinizializziamo con il nuovo uid
+  if (pagina === 'profilo') {
+    import('./profilo.js').then(m => m.initProfilo());
+  }
 }
 
 // ── HELPERS ────────────────────────────────────────────

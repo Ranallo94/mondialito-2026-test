@@ -5,7 +5,7 @@
  */
 
 import DB from '../mondialito_db.json' with { type: 'json' };
-import { STATE } from './app.js';
+import { STATE, navigaA } from './app.js';
 import { getPronostici, onRisultatiSnapshot, onClassificaSnapshot } from './db.js';
 import { calcolaPunteggio } from './punteggi.js';
 import { showSpinner } from './ui.js';
@@ -15,14 +15,24 @@ let _risultati   = {};
 let _classifica  = [];
 let _unsubRis    = null;
 let _unsubClass  = null;
+let _targetUid   = null;   // uid visualizzato (null = utente corrente)
+let _targetNome  = null;
 
 // ── INIT ──────────────────────────────────────────────
 export async function initProfilo() {
-  showSpinner('profilo-breakdown', 'Caricamento profilo…');
+  // Cancella subscriptions precedenti
+  _unsubRis?.();
+  _unsubClass?.();
 
-  // Carica pronostici dell'utente
+  _targetUid  = STATE.profiloUid || STATE.utente?.id;
+  _targetNome = null;  // verrà ricavato dalla classifica
+
+  showSpinner('profilo-breakdown', 'Caricamento profilo…');
+  _renderHeader();
+
+  // Carica pronostici dell'utente target
   try {
-    _pronostici = await getPronostici(STATE.utente.id);
+    _pronostici = await getPronostici(_targetUid);
   } catch (e) {
     console.warn('Errore caricamento pronostici:', e);
     _pronostici = null;
@@ -37,8 +47,33 @@ export async function initProfilo() {
   // Ascolta classifica per la posizione
   _unsubClass = onClassificaSnapshot((cl) => {
     _classifica = cl;
+    // Ricava il nome dal snapshot classifica
+    const entry = cl.find(p => p.id === _targetUid);
+    if (entry) _targetNome = entry.nome;
+    _renderHeader();
     _renderProfilo();
   });
+}
+
+// ── HEADER (torna indietro + nome se profilo altrui) ──
+function _renderHeader() {
+  const headerEl = document.getElementById('profilo-header-banner');
+  if (!headerEl) return;
+
+  const isAltrui = STATE.profiloUid && STATE.profiloUid !== STATE.utente?.id;
+  if (isAltrui) {
+    const nome = _targetNome || '…';
+    headerEl.innerHTML = `
+      <div class="profilo-banner-altrui">
+        <button class="btn btn-ghost btn-sm" id="btn-torna-classifica">← Classifica</button>
+        <span class="profilo-banner-nome">Scheda di <strong>${nome}</strong></span>
+      </div>`;
+    document.getElementById('btn-torna-classifica')?.addEventListener('click', () => {
+      navigaA('classifica');
+    });
+  } else {
+    headerEl.innerHTML = '';
+  }
 }
 
 // ── RENDER PRINCIPALE ─────────────────────────────────
@@ -51,9 +86,9 @@ function _renderProfilo() {
 
   const { totale, breakdown: bd } = calcolaPunteggio(_pronostici, _risultati);
 
-  // Posizione in classifica
-  const me = _classifica.find(p => p.id === STATE.utente?.id);
-  const pos = me?._pos || '—';
+  // Posizione in classifica (dell'utente visualizzato)
+  const entry = _classifica.find(p => p.id === _targetUid);
+  const pos = entry?._pos || '—';
 
   // Score card (aggiorna il div già nel DOM)
   _renderScoreCard(totale, pos);
@@ -77,7 +112,7 @@ function _renderScoreCard(totale, pos) {
     <div class="score-card-inner">
       <div class="score-card-pos">${posLabel}</div>
       <div class="score-card-info">
-        <div class="score-card-nome">${STATE.utente?.nome || ''}</div>
+        <div class="score-card-nome">${_targetNome || STATE.utente?.nome || ''}</div>
         <div class="score-card-totale">${totale} <span class="score-card-pt">pt</span></div>
       </div>
     </div>`;

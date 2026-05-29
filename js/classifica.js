@@ -4,7 +4,7 @@
  * La classifica pre-calcolata è in Firestore (aggiornata dalla Cloud Function).
  */
 
-import { STATE } from './app.js';
+import { STATE, navigaA } from './app.js';
 import { onClassificaSnapshot, getClassificaUpdatedAt } from './db.js';
 import { showSpinner, showEmpty, formatDate } from './ui.js';
 
@@ -73,7 +73,7 @@ export function renderClassifica(partecipanti) {
     const bdHtml   = _renderBreakdownInline(p.breakdown);
 
     return `
-      <div class="classifica-row${meClass} ${posClass}" data-uid="${p.id}">
+      <div class="classifica-row${meClass} ${posClass} classifica-row-link" data-uid="${p.id}" title="Vedi scheda pronostici">
         <div class="row-pos">${_posLabel(p._pos)}</div>
         <div class="row-info">
           <span class="row-nome">${p.nome || '—'}${isMe(p.id) ? ' <span class="badge-tu">Tu</span>' : ''}</span>
@@ -92,6 +92,14 @@ export function renderClassifica(partecipanti) {
       </div>
       ${rows}
     </div>`;
+
+  // Clic su una riga → apri scheda pronostici
+  container.querySelectorAll('.classifica-row-link').forEach(row => {
+    row.addEventListener('click', () => {
+      const uid = row.dataset.uid;
+      if (uid) navigaA('profilo', { uid });
+    });
+  });
 
   // Aggiorna profilo se è la pagina corrente
   _aggiornaProfilo(sorted);
