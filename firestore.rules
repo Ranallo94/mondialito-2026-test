@@ -12,8 +12,8 @@ service cloud.firestore {
     }
 
     function isApprovato() {
-      return isAuth() &&
-        get(/databases/$(database)/documents/partecipanti/$(request.auth.uid)).data.approvato == true;
+      let d = get(/databases/$(database)/documents/partecipanti/$(request.auth.uid)).data;
+      return isAuth() && d.approvato == true && d.get('disabilitato', false) != true;
     }
 
     // ── PARTECIPANTI ──────────────────────────────────

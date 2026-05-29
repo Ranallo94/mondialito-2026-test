@@ -70,6 +70,27 @@
   </div>
 
   <!-- ══════════════════════════════════════════
+       SCHERMATA ACCOUNT DISABILITATO
+  ══════════════════════════════════════════ -->
+  <div id="screen-disabilitato" class="screen" style="display:none">
+    <div class="login-bg">
+      <div class="login-card login-card--attesa">
+        <div class="login-logo">🚫</div>
+        <h2 class="login-title">Account disabilitato</h2>
+        <p class="attesa-desc">
+          Il tuo account è stato disabilitato dall'amministratore.<br>
+          Contatta l'organizzatore per maggiori informazioni.
+        </p>
+        <div class="attesa-info">
+          <div class="attesa-row"><span class="attesa-label">Account</span><span id="disab-nome" class="attesa-val"></span></div>
+          <div class="attesa-row"><span class="attesa-label">Stato</span><span class="attesa-val" style="color:var(--rosso)">Disabilitato</span></div>
+        </div>
+        <button id="btn-logout-disab" class="btn btn-secondary btn-full" style="margin-top:20px">Esci</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
        SCHERMATA ATTESA APPROVAZIONE
   ══════════════════════════════════════════ -->
   <div id="screen-attesa" class="screen" style="display:none">
