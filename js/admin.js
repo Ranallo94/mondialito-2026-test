@@ -743,8 +743,10 @@ async function _ricalcolaClassificaClient() {
   ]);
 
   const nomi = {};
+  const disabilitati = new Set();
   partSnap.forEach(d => {
-    const { nome, cognome } = d.data();
+    const { nome, cognome, disabilitato } = d.data();
+    if (disabilitato) { disabilitati.add(d.id); return; }
     nomi[d.id] = [nome, cognome].filter(Boolean).join(' ') || d.id;
   });
 
@@ -752,6 +754,7 @@ async function _ricalcolaClassificaClient() {
 
   const lista = [];
   proSnap.forEach(d => {
+    if (disabilitati.has(d.id)) return; // escludi disabilitati
     const pr = d.data();
     const { totale, breakdown } = calcolaPunteggio(pr, risultati);
     const spareggio = calcolaSparegnio(pr, risultati);
