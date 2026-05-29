@@ -1349,6 +1349,39 @@ select.field-input option { background: var(--bg-card2); }
 .gd-neg   { color: var(--rosso); }
 
 /* ══════════════════════════════════════════
+   SCHEDA PRONOSTICI (read-only)
+══════════════════════════════════════════ */
+.scheda-section { margin-bottom: 28px; }
+.scheda-gironi-grid,
+.scheda-griglia-grid,
+.scheda-elim-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.scheda-girone-block,
+.scheda-griglia-block,
+.scheda-fase-block {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.scheda-girone-title { font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; color: var(--verde); margin-bottom: 8px; }
+.scheda-match-row { display: flex; align-items: center; gap: 6px; padding: 4px 0; font-size: 13px; border-bottom: 1px solid var(--border); }
+.scheda-match-row:last-child { border-bottom: none; }
+.scheda-match-row.scheda-ok { background: rgba(34,197,94,.05); }
+.scheda-match-row.scheda-ko { opacity: .7; }
+.scheda-team { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12px; }
+.scheda-team-away { text-align: right; }
+.scheda-score { flex-shrink: 0; text-align: center; font-size: 13px; min-width: 70px; }
+.scheda-segno { color: var(--text-muted); font-size: 11px; }
+.scheda-tbd { color: var(--text-muted); }
+.scheda-griglia-item { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 13px; }
+.scheda-pos-num { font-weight: 700; color: var(--text-muted); min-width: 20px; }
+.scheda-elim-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.scheda-elim-row { display: flex; gap: 8px; align-items: center; padding: 4px 0; font-size: 13px; border-bottom: 1px solid var(--border); }
+.scheda-elim-row:last-child { border-bottom: none; }
+.scheda-elim-id { min-width: 60px; font-size: 11px; color: var(--text-muted); font-weight: 600; }
+.scheda-elim-vin { flex: 1; }
+
+/* ══════════════════════════════════════════
    MARCATORI
 ══════════════════════════════════════════ */
 .inner-tabs { margin-bottom: 16px; }
