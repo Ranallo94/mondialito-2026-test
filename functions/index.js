@@ -299,12 +299,14 @@ async function _aggiornaClassifica(risultati) {
   ]);
 
   const nomi = {};
+  const disabilitati = new Set();
   partSnap.docs.forEach(d => {
-    const { nome, cognome } = d.data();
+    const { nome, cognome, disabilitato } = d.data();
+    if (disabilitato) { disabilitati.add(d.id); return; }
     nomi[d.id] = [nome, cognome].filter(Boolean).join(' ') || d.id;
   });
 
-  const partecipanti = pronSnap.docs.map(d => {
+  const partecipanti = pronSnap.docs.filter(d => !disabilitati.has(d.id)).map(d => {
     const pr = d.data();
     const { totale, breakdown } = calcolaPunteggio(pr, risultati);
     const spareggio = calcolaSparegnio(pr, risultati);
