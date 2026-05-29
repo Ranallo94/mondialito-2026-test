@@ -42,17 +42,38 @@ export async function initProfilo() {
   _unsubRis = onRisultatiSnapshot((ris) => {
     _risultati = ris;
     _renderProfilo();
+    _renderSchedaPronostici();
   });
 
   // Ascolta classifica per la posizione
   _unsubClass = onClassificaSnapshot((cl) => {
     _classifica = cl;
-    // Ricava il nome dal snapshot classifica
     const entry = cl.find(p => p.id === _targetUid);
     if (entry) _targetNome = entry.nome;
     _renderHeader();
     _renderProfilo();
   });
+
+  // Tab interni: Riepilogo / Scheda
+  document.getElementById('profilo-inner-tabs')?.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-tab]');
+    if (!btn) return;
+    const tabId = btn.dataset.tab;
+    document.querySelectorAll('#profilo-inner-tabs .tab').forEach(b => b.classList.toggle('active', b === btn));
+    document.querySelectorAll('#page-profilo .tab-content').forEach(el => {
+      el.classList.toggle('active', el.id === tabId);
+    });
+    // Rendering lazy della scheda al primo accesso
+    if (tabId === 'tab-profilo-scheda') _renderSchedaPronostici();
+  });
+
+  // Titolo pagina
+  const titleEl = document.getElementById('profilo-page-title');
+  if (titleEl) {
+    titleEl.textContent = STATE.profiloUid && STATE.profiloUid !== STATE.utente?.id
+      ? '📋 Scheda partecipante'
+      : '📊 Il mio profilo';
+  }
 }
 
 // ── HEADER (torna indietro + nome se profilo altrui) ──
@@ -270,5 +291,136 @@ function _renderDettaglioGironi(bd) {
     <div class="breakdown-section">
       <h3 class="section-title">⚽ Partite giocate — girone</h3>
       <div class="profilo-matches-list">${rows}</div>
+    </div>`;
+}
+
+// ── SCHEDA PRONOSTICI COMPLETA (read-only) ────────────
+function _renderSchedaPronostici() {
+  const el = document.getElementById('profilo-scheda-container');
+  if (!el) return;
+  if (!_pronostici) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><p>Nessun pronostico trovato.</p></div>';
+    return;
+  }
+
+  const pGironi = _pronostici.gironi              || {};
+  const pPosiz  = _pronostici.posizioni_girone    || {};
+  const pElim   = _pronostici.fase_eliminatoria   || {};
+  const pCannon = _pronostici.capocannoniere      || {};
+  const rGironi = _risultati.gironi               || {};
+
+  const sq = (id) => {
+    if (!id) return '<span class="scheda-tbd">—</span>';
+    const s = DB.squadre[id];
+    return s ? `${s.flag} ${s.nome}` : id;
+  };
+
+  // ── 1. GIRONI ──────────────────────────────────────
+  let htmlGironi = '';
+  Object.entries(DB.gironi).forEach(([lettera, girone]) => {
+    const matchRows = girone.partite.map(p => {
+      const pr = pGironi[p.id];
+      const r  = rGironi[p.id];
+      const casa  = DB.squadre[p.casa]      || { nome: p.casa,      flag: '' };
+      const trasf = DB.squadre[p.trasferta] || { nome: p.trasferta, flag: '' };
+
+      const hasResult = r?.gol_casa != null;
+      const segnoR = hasResult ? (r.gol_casa > r.gol_trasferta ? '1' : r.gol_casa < r.gol_trasferta ? '2' : 'X') : null;
+      const ok = pr && segnoR && pr.segno === segnoR;
+      const esatto = pr && hasResult && pr.gol_casa == r.gol_casa && pr.gol_trasferta == r.gol_trasferta;
+
+      const score = pr
+        ? `<strong>${pr.gol_casa ?? '?'}–${pr.gol_trasferta ?? '?'}</strong> <span class="scheda-segno">(${pr.segno || '?'})</span>`
+        : '<span class="scheda-tbd">—</span>';
+
+      const badge = esatto ? ' 🎯' : ok ? ' ✓' : hasResult ? ' ✗' : '';
+      const rowClass = hasResult ? (ok ? 'scheda-ok' : 'scheda-ko') : '';
+
+      return `
+        <div class="scheda-match-row ${rowClass}">
+          <span class="scheda-team">${casa.flag} ${casa.nome}</span>
+          <span class="scheda-score">${score}${badge}</span>
+          <span class="scheda-team scheda-team-away">${trasf.nome} ${trasf.flag}</span>
+        </div>`;
+    }).join('');
+
+    htmlGironi += `
+      <div class="scheda-girone-block">
+        <div class="scheda-girone-title">Girone ${lettera}</div>
+        ${matchRows}
+      </div>`;
+  });
+
+  // ── 2. GRIGLIA ─────────────────────────────────────
+  let htmlGriglia = '';
+  Object.entries(DB.gironi).forEach(([lettera, girone]) => {
+    const posizioni = pPosiz[lettera] || [];
+    const squadreHtml = girone.squadre.map((_, i) => {
+      const id = posizioni[i];
+      return `<div class="scheda-griglia-item"><span class="scheda-pos-num">${i + 1}°</span> ${sq(id)}</div>`;
+    }).join('');
+    htmlGriglia += `<div class="scheda-griglia-block"><div class="scheda-girone-title">Girone ${lettera}</div>${squadreHtml}</div>`;
+  });
+
+  // ── 3. FASI ELIMINATORIE ───────────────────────────
+  const fasiLabel = {
+    sedicesimi: 'Sedicesimi', ottavi: 'Ottavi', quarti: 'Quarti',
+    semifinali: 'Semifinali', finale: 'Finale',
+  };
+
+  let htmlElim = '';
+  ['sedicesimi', 'ottavi', 'quarti', 'semifinali'].forEach(fase => {
+    const partite = pElim[fase] || {};
+    const entries = Object.entries(partite);
+    if (!entries.length) return;
+
+    const righe = entries.map(([id, m]) => {
+      if (!m?.vincitore) return '';
+      const modalitaLabel = m.modalita === 'rigori' ? ' (rig)' : m.modalita === 'supplementari' ? ' (sup)' : '';
+      return `<div class="scheda-elim-row">
+        <span class="scheda-elim-id">${id}</span>
+        <span class="scheda-elim-vin">${sq(m.vincitore)}${modalitaLabel}</span>
+      </div>`;
+    }).filter(Boolean).join('');
+
+    if (righe) htmlElim += `<div class="scheda-fase-block"><div class="scheda-girone-title">${fasiLabel[fase]}</div>${righe}</div>`;
+  });
+
+  // Finale separata
+  const finale = pElim.finale || {};
+  const finalisti = (finale.squadre || []).map(id => sq(id)).join(' vs ');
+  const vincitore = finale.vincitore ? sq(finale.vincitore) : '—';
+  if (finalisti || vincitore !== '—') {
+    htmlElim += `
+      <div class="scheda-fase-block">
+        <div class="scheda-girone-title">Finale</div>
+        <div class="scheda-elim-row"><span class="scheda-elim-id">Finalisti</span><span class="scheda-elim-vin">${finalisti || '—'}</span></div>
+        <div class="scheda-elim-row"><span class="scheda-elim-id">🏆 Vincitore</span><span class="scheda-elim-vin">${vincitore}</span></div>
+      </div>`;
+  }
+
+  // ── 4. CAPOCANNONIERE ──────────────────────────────
+  const cannonHtml = ['primo', 'secondo', 'terzo'].map((pos, i) => {
+    const id = pCannon[pos];
+    const label = ['1°', '2°', '3°'][i];
+    return `<div class="scheda-elim-row"><span class="scheda-elim-id">${label}</span><span class="scheda-elim-vin">${id || '—'}</span></div>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="scheda-section">
+      <h3 class="section-title">⚽ Pronostici gironi</h3>
+      <div class="scheda-gironi-grid">${htmlGironi}</div>
+    </div>
+    <div class="scheda-section">
+      <h3 class="section-title">📊 Griglia — ordine finale girone</h3>
+      <div class="scheda-griglia-grid">${htmlGriglia}</div>
+    </div>
+    <div class="scheda-section">
+      <h3 class="section-title">🏟️ Fase eliminatoria</h3>
+      <div class="scheda-elim-grid">${htmlElim || '<p class="text-muted">Non compilata</p>'}</div>
+    </div>
+    <div class="scheda-section">
+      <h3 class="section-title">👟 Capocannoniere</h3>
+      <div class="scheda-fase-block">${cannonHtml}</div>
     </div>`;
 }
