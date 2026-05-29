@@ -8,7 +8,6 @@
     "versione_db": "1.0",
     "note": "Il database è la fonte unica di verità per regolamento, partite e pronostici."
   },
-
   "regolamento": {
     "punteggi": {
       "girone": {
@@ -30,7 +29,11 @@
         "vincitore_torneo": 70,
         "modalita_passaggio_turno": {
           "punti": 5,
-          "valori_possibili": ["90min", "supplementari", "rigori"],
+          "valori_possibili": [
+            "90min",
+            "supplementari",
+            "rigori"
+          ],
           "applicazione": "Dai sedicesimi in poi, per ogni partita eliminatoria"
         }
       },
@@ -66,193 +69,1082 @@
       "note": "I premi verranno stabiliti in base al numero di partecipanti all'inizio della competizione e annunciati il giorno successivo all'inizio del torneo."
     }
   },
-
   "squadre": [
-    { "id": "MEX", "nome": "Messico",                    "girone": "A", "flag": "🇲🇽" },
-    { "id": "RSA", "nome": "Sudafrica",                  "girone": "A", "flag": "🇿🇦" },
-    { "id": "KOR", "nome": "Corea del Sud",              "girone": "A", "flag": "🇰🇷" },
-    { "id": "CZE", "nome": "Repubblica Ceca",            "girone": "A", "flag": "🇨🇿" },
-    { "id": "CAN", "nome": "Canada",                     "girone": "B", "flag": "🇨🇦" },
-    { "id": "BIH", "nome": "Bosnia-Erzegovina",          "girone": "B", "flag": "🇧🇦" },
-    { "id": "QAT", "nome": "Qatar",                      "girone": "B", "flag": "🇶🇦" },
-    { "id": "SUI", "nome": "Svizzera",                   "girone": "B", "flag": "🇨🇭" },
-    { "id": "BRA", "nome": "Brasile",                    "girone": "C", "flag": "🇧🇷" },
-    { "id": "MAR", "nome": "Marocco",                    "girone": "C", "flag": "🇲🇦" },
-    { "id": "HAI", "nome": "Haiti",                      "girone": "C", "flag": "🇭🇹" },
-    { "id": "SCO", "nome": "Scozia",                     "girone": "C", "flag": "🏴󠁧󠁢󠁳󠁣󠁴󠁿" },
-    { "id": "USA", "nome": "Stati Uniti",                "girone": "D", "flag": "🇺🇸" },
-    { "id": "PAR", "nome": "Paraguay",                   "girone": "D", "flag": "🇵🇾" },
-    { "id": "AUS", "nome": "Australia",                  "girone": "D", "flag": "🇦🇺" },
-    { "id": "TUR", "nome": "Turchia",                    "girone": "D", "flag": "🇹🇷" },
-    { "id": "GER", "nome": "Germania",                   "girone": "E", "flag": "🇩🇪" },
-    { "id": "CIV", "nome": "Costa d'Avorio",             "girone": "E", "flag": "🇨🇮" },
-    { "id": "ECU", "nome": "Ecuador",                    "girone": "E", "flag": "🇪🇨" },
-    { "id": "CUW", "nome": "Curaçao",                    "girone": "E", "flag": "🇨🇼" },
-    { "id": "NED", "nome": "Olanda",                     "girone": "F", "flag": "🇳🇱" },
-    { "id": "JPN", "nome": "Giappone",                   "girone": "F", "flag": "🇯🇵" },
-    { "id": "SWE", "nome": "Svezia",                     "girone": "F", "flag": "🇸🇪" },
-    { "id": "TUN", "nome": "Tunisia",                    "girone": "F", "flag": "🇹🇳" },
-    { "id": "BEL", "nome": "Belgio",                     "girone": "G", "flag": "🇧🇪" },
-    { "id": "EGY", "nome": "Egitto",                     "girone": "G", "flag": "🇪🇬" },
-    { "id": "IRN", "nome": "Iran",                       "girone": "G", "flag": "🇮🇷" },
-    { "id": "NZL", "nome": "Nuova Zelanda",              "girone": "G", "flag": "🇳🇿" },
-    { "id": "ESP", "nome": "Spagna",                     "girone": "H", "flag": "🇪🇸" },
-    { "id": "CPV", "nome": "Capo Verde",                 "girone": "H", "flag": "🇨🇻" },
-    { "id": "KSA", "nome": "Arabia Saudita",             "girone": "H", "flag": "🇸🇦" },
-    { "id": "URU", "nome": "Uruguay",                    "girone": "H", "flag": "🇺🇾" },
-    { "id": "FRA", "nome": "Francia",                    "girone": "I", "flag": "🇫🇷" },
-    { "id": "SEN", "nome": "Senegal",                    "girone": "I", "flag": "🇸🇳" },
-    { "id": "IRQ", "nome": "Iraq",                       "girone": "I", "flag": "🇮🇶" },
-    { "id": "NOR", "nome": "Norvegia",                   "girone": "I", "flag": "🇳🇴" },
-    { "id": "ARG", "nome": "Argentina",                  "girone": "J", "flag": "🇦🇷" },
-    { "id": "ALG", "nome": "Algeria",                    "girone": "J", "flag": "🇩🇿" },
-    { "id": "AUT", "nome": "Austria",                    "girone": "J", "flag": "🇦🇹" },
-    { "id": "JOR", "nome": "Giordania",                  "girone": "J", "flag": "🇯🇴" },
-    { "id": "POR", "nome": "Portogallo",                 "girone": "K", "flag": "🇵🇹" },
-    { "id": "COD", "nome": "Rep. Dem. del Congo",        "girone": "K", "flag": "🇨🇩" },
-    { "id": "UZB", "nome": "Uzbekistan",                 "girone": "K", "flag": "🇺🇿" },
-    { "id": "COL", "nome": "Colombia",                   "girone": "K", "flag": "🇨🇴" },
-    { "id": "ENG", "nome": "Inghilterra",                "girone": "L", "flag": "🏴󠁧󠁢󠁥󠁮󠁧󠁿" },
-    { "id": "CRO", "nome": "Croazia",                    "girone": "L", "flag": "🇭🇷" },
-    { "id": "GHA", "nome": "Ghana",                      "girone": "L", "flag": "🇬🇭" },
-    { "id": "PAN", "nome": "Panama",                     "girone": "L", "flag": "🇵🇦" }
+    {
+      "id": "MEX",
+      "nome": "Messico",
+      "girone": "A",
+      "flag": "🇲🇽"
+    },
+    {
+      "id": "RSA",
+      "nome": "Sudafrica",
+      "girone": "A",
+      "flag": "🇿🇦"
+    },
+    {
+      "id": "KOR",
+      "nome": "Corea del Sud",
+      "girone": "A",
+      "flag": "🇰🇷"
+    },
+    {
+      "id": "CZE",
+      "nome": "Repubblica Ceca",
+      "girone": "A",
+      "flag": "🇨🇿"
+    },
+    {
+      "id": "CAN",
+      "nome": "Canada",
+      "girone": "B",
+      "flag": "🇨🇦"
+    },
+    {
+      "id": "BIH",
+      "nome": "Bosnia-Erzegovina",
+      "girone": "B",
+      "flag": "🇧🇦"
+    },
+    {
+      "id": "QAT",
+      "nome": "Qatar",
+      "girone": "B",
+      "flag": "🇶🇦"
+    },
+    {
+      "id": "SUI",
+      "nome": "Svizzera",
+      "girone": "B",
+      "flag": "🇨🇭"
+    },
+    {
+      "id": "BRA",
+      "nome": "Brasile",
+      "girone": "C",
+      "flag": "🇧🇷"
+    },
+    {
+      "id": "MAR",
+      "nome": "Marocco",
+      "girone": "C",
+      "flag": "🇲🇦"
+    },
+    {
+      "id": "HAI",
+      "nome": "Haiti",
+      "girone": "C",
+      "flag": "🇭🇹"
+    },
+    {
+      "id": "SCO",
+      "nome": "Scozia",
+      "girone": "C",
+      "flag": "🏴󠁧󠁢󠁳󠁣󠁴󠁿"
+    },
+    {
+      "id": "USA",
+      "nome": "Stati Uniti",
+      "girone": "D",
+      "flag": "🇺🇸"
+    },
+    {
+      "id": "PAR",
+      "nome": "Paraguay",
+      "girone": "D",
+      "flag": "🇵🇾"
+    },
+    {
+      "id": "AUS",
+      "nome": "Australia",
+      "girone": "D",
+      "flag": "🇦🇺"
+    },
+    {
+      "id": "TUR",
+      "nome": "Turchia",
+      "girone": "D",
+      "flag": "🇹🇷"
+    },
+    {
+      "id": "GER",
+      "nome": "Germania",
+      "girone": "E",
+      "flag": "🇩🇪"
+    },
+    {
+      "id": "CIV",
+      "nome": "Costa d'Avorio",
+      "girone": "E",
+      "flag": "🇨🇮"
+    },
+    {
+      "id": "ECU",
+      "nome": "Ecuador",
+      "girone": "E",
+      "flag": "🇪🇨"
+    },
+    {
+      "id": "CUW",
+      "nome": "Curaçao",
+      "girone": "E",
+      "flag": "🇨🇼"
+    },
+    {
+      "id": "NED",
+      "nome": "Olanda",
+      "girone": "F",
+      "flag": "🇳🇱"
+    },
+    {
+      "id": "JPN",
+      "nome": "Giappone",
+      "girone": "F",
+      "flag": "🇯🇵"
+    },
+    {
+      "id": "SWE",
+      "nome": "Svezia",
+      "girone": "F",
+      "flag": "🇸🇪"
+    },
+    {
+      "id": "TUN",
+      "nome": "Tunisia",
+      "girone": "F",
+      "flag": "🇹🇳"
+    },
+    {
+      "id": "BEL",
+      "nome": "Belgio",
+      "girone": "G",
+      "flag": "🇧🇪"
+    },
+    {
+      "id": "EGY",
+      "nome": "Egitto",
+      "girone": "G",
+      "flag": "🇪🇬"
+    },
+    {
+      "id": "IRN",
+      "nome": "Iran",
+      "girone": "G",
+      "flag": "🇮🇷"
+    },
+    {
+      "id": "NZL",
+      "nome": "Nuova Zelanda",
+      "girone": "G",
+      "flag": "🇳🇿"
+    },
+    {
+      "id": "ESP",
+      "nome": "Spagna",
+      "girone": "H",
+      "flag": "🇪🇸"
+    },
+    {
+      "id": "CPV",
+      "nome": "Capo Verde",
+      "girone": "H",
+      "flag": "🇨🇻"
+    },
+    {
+      "id": "KSA",
+      "nome": "Arabia Saudita",
+      "girone": "H",
+      "flag": "🇸🇦"
+    },
+    {
+      "id": "URU",
+      "nome": "Uruguay",
+      "girone": "H",
+      "flag": "🇺🇾"
+    },
+    {
+      "id": "FRA",
+      "nome": "Francia",
+      "girone": "I",
+      "flag": "🇫🇷"
+    },
+    {
+      "id": "SEN",
+      "nome": "Senegal",
+      "girone": "I",
+      "flag": "🇸🇳"
+    },
+    {
+      "id": "IRQ",
+      "nome": "Iraq",
+      "girone": "I",
+      "flag": "🇮🇶"
+    },
+    {
+      "id": "NOR",
+      "nome": "Norvegia",
+      "girone": "I",
+      "flag": "🇳🇴"
+    },
+    {
+      "id": "ARG",
+      "nome": "Argentina",
+      "girone": "J",
+      "flag": "🇦🇷"
+    },
+    {
+      "id": "ALG",
+      "nome": "Algeria",
+      "girone": "J",
+      "flag": "🇩🇿"
+    },
+    {
+      "id": "AUT",
+      "nome": "Austria",
+      "girone": "J",
+      "flag": "🇦🇹"
+    },
+    {
+      "id": "JOR",
+      "nome": "Giordania",
+      "girone": "J",
+      "flag": "🇯🇴"
+    },
+    {
+      "id": "POR",
+      "nome": "Portogallo",
+      "girone": "K",
+      "flag": "🇵🇹"
+    },
+    {
+      "id": "COD",
+      "nome": "Rep. Dem. del Congo",
+      "girone": "K",
+      "flag": "🇨🇩"
+    },
+    {
+      "id": "UZB",
+      "nome": "Uzbekistan",
+      "girone": "K",
+      "flag": "🇺🇿"
+    },
+    {
+      "id": "COL",
+      "nome": "Colombia",
+      "girone": "K",
+      "flag": "🇨🇴"
+    },
+    {
+      "id": "ENG",
+      "nome": "Inghilterra",
+      "girone": "L",
+      "flag": "🏴󠁧󠁢󠁥󠁮󠁧󠁿"
+    },
+    {
+      "id": "CRO",
+      "nome": "Croazia",
+      "girone": "L",
+      "flag": "🇭🇷"
+    },
+    {
+      "id": "GHA",
+      "nome": "Ghana",
+      "girone": "L",
+      "flag": "🇬🇭"
+    },
+    {
+      "id": "PAN",
+      "nome": "Panama",
+      "girone": "L",
+      "flag": "🇵🇦"
+    }
   ],
-
   "gironi": {
     "A": {
-      "squadre": ["MEX", "RSA", "KOR", "CZE"],
+      "squadre": [
+        "MEX",
+        "RSA",
+        "KOR",
+        "CZE"
+      ],
       "partite": [
-        { "id": "A1", "giornata": 1, "casa": "MEX", "trasferta": "RSA", "data": "2026-06-11", "ora_it": "02:00+1", "stadio": "Ciudad de México" },
-        { "id": "A2", "giornata": 1, "casa": "KOR", "trasferta": "CZE", "data": "2026-06-11", "ora_it": "04:00+1", "stadio": "Guadalajara" },
-        { "id": "A3", "giornata": 2, "casa": "CZE", "trasferta": "RSA", "data": "2026-06-18", "ora_it": "21:00", "stadio": "Atlanta" },
-        { "id": "A4", "giornata": 2, "casa": "MEX", "trasferta": "KOR", "data": "2026-06-18", "ora_it": "05:00+1", "stadio": "Guadalajara" },
-        { "id": "A5", "giornata": 3, "casa": "CZE", "trasferta": "MEX", "data": "2026-06-24", "ora_it": "02:00+1", "stadio": "Ciudad de México" },
-        { "id": "A6", "giornata": 3, "casa": "RSA", "trasferta": "KOR", "data": "2026-06-24", "ora_it": "02:00+1", "stadio": "Monterrey" }
+        {
+          "id": "A1",
+          "giornata": 1,
+          "casa": "MEX",
+          "trasferta": "RSA",
+          "data": "2026-06-11T21:00:00+02:00",
+          "ora_it": "02:00+1",
+          "stadio": "Ciudad de México"
+        },
+        {
+          "id": "A2",
+          "giornata": 1,
+          "casa": "KOR",
+          "trasferta": "CZE",
+          "data": "2026-06-12T04:00:00+02:00",
+          "ora_it": "04:00+1",
+          "stadio": "Guadalajara"
+        },
+        {
+          "id": "A3",
+          "giornata": 2,
+          "casa": "CZE",
+          "trasferta": "RSA",
+          "data": "2026-06-18T18:00:00+02:00",
+          "ora_it": "21:00",
+          "stadio": "Atlanta"
+        },
+        {
+          "id": "A4",
+          "giornata": 2,
+          "casa": "MEX",
+          "trasferta": "KOR",
+          "data": "2026-06-19T03:00:00+02:00",
+          "ora_it": "05:00+1",
+          "stadio": "Guadalajara"
+        },
+        {
+          "id": "A5",
+          "giornata": 3,
+          "casa": "CZE",
+          "trasferta": "MEX",
+          "data": "2026-06-25T03:00:00+02:00",
+          "ora_it": "02:00+1",
+          "stadio": "Ciudad de México"
+        },
+        {
+          "id": "A6",
+          "giornata": 3,
+          "casa": "RSA",
+          "trasferta": "KOR",
+          "data": "2026-06-25T03:00:00+02:00",
+          "ora_it": "02:00+1",
+          "stadio": "Monterrey"
+        }
       ]
     },
     "B": {
-      "squadre": ["CAN", "BIH", "QAT", "SUI"],
+      "squadre": [
+        "CAN",
+        "BIH",
+        "QAT",
+        "SUI"
+      ],
       "partite": [
-        { "id": "B1", "giornata": 1, "casa": "CAN", "trasferta": "BIH", "data": "2026-06-12", "ora_it": "01:00+1", "stadio": "Toronto" },
-        { "id": "B2", "giornata": 1, "casa": "QAT", "trasferta": "SUI", "data": "2026-06-13", "ora_it": "04:00+1", "stadio": "San Francisco" },
-        { "id": "B3", "giornata": 2, "casa": "SUI", "trasferta": "BIH", "data": "2026-06-18", "ora_it": "00:00+1", "stadio": "Los Angeles" },
-        { "id": "B4", "giornata": 2, "casa": "CAN", "trasferta": "QAT", "data": "2026-06-18", "ora_it": "03:00+1", "stadio": "Vancouver" },
-        { "id": "B5", "giornata": 3, "casa": "SUI", "trasferta": "CAN", "data": "2026-06-24", "ora_it": "22:00", "stadio": "Vancouver" },
-        { "id": "B6", "giornata": 3, "casa": "BIH", "trasferta": "QAT", "data": "2026-06-24", "ora_it": "22:00", "stadio": "Seattle" }
+        {
+          "id": "B1",
+          "giornata": 1,
+          "casa": "CAN",
+          "trasferta": "BIH",
+          "data": "2026-06-12T21:00:00+02:00",
+          "ora_it": "01:00+1",
+          "stadio": "Toronto"
+        },
+        {
+          "id": "B2",
+          "giornata": 1,
+          "casa": "QAT",
+          "trasferta": "SUI",
+          "data": "2026-06-13T21:00:00+02:00",
+          "ora_it": "04:00+1",
+          "stadio": "San Francisco"
+        },
+        {
+          "id": "B3",
+          "giornata": 2,
+          "casa": "SUI",
+          "trasferta": "BIH",
+          "data": "2026-06-18T21:00:00+02:00",
+          "ora_it": "00:00+1",
+          "stadio": "Los Angeles"
+        },
+        {
+          "id": "B4",
+          "giornata": 2,
+          "casa": "CAN",
+          "trasferta": "QAT",
+          "data": "2026-06-20T00:00:00+02:00",
+          "ora_it": "03:00+1",
+          "stadio": "Vancouver"
+        },
+        {
+          "id": "B5",
+          "giornata": 3,
+          "casa": "SUI",
+          "trasferta": "CAN",
+          "data": "2026-06-24T21:00:00+02:00",
+          "ora_it": "22:00",
+          "stadio": "Vancouver"
+        },
+        {
+          "id": "B6",
+          "giornata": 3,
+          "casa": "BIH",
+          "trasferta": "QAT",
+          "data": "2026-06-24T21:00:00+02:00",
+          "ora_it": "22:00",
+          "stadio": "Seattle"
+        }
       ]
     },
     "C": {
-      "squadre": ["BRA", "MAR", "HAI", "SCO"],
+      "squadre": [
+        "BRA",
+        "MAR",
+        "HAI",
+        "SCO"
+      ],
       "partite": [
-        { "id": "C1", "giornata": 1, "casa": "HAI", "trasferta": "SCO", "data": "2026-06-13", "ora_it": "19:00", "stadio": "Boston" },
-        { "id": "C2", "giornata": 1, "casa": "BRA", "trasferta": "MAR", "data": "2026-06-13", "ora_it": "02:00+1", "stadio": "New York/New Jersey" },
-        { "id": "C3", "giornata": 2, "casa": "BRA", "trasferta": "HAI", "data": "2026-06-19", "ora_it": "19:00", "stadio": "Philadelphia" },
-        { "id": "C4", "giornata": 2, "casa": "SCO", "trasferta": "MAR", "data": "2026-06-19", "ora_it": "22:00", "stadio": "Boston" },
-        { "id": "C5", "giornata": 3, "casa": "SCO", "trasferta": "BRA", "data": "2026-06-24", "ora_it": "19:00", "stadio": "Miami" },
-        { "id": "C6", "giornata": 3, "casa": "MAR", "trasferta": "HAI", "data": "2026-06-24", "ora_it": "19:00", "stadio": "Atlanta" }
+        {
+          "id": "C1",
+          "giornata": 1,
+          "casa": "HAI",
+          "trasferta": "SCO",
+          "data": "2026-06-14T03:00:00+02:00",
+          "ora_it": "19:00",
+          "stadio": "Boston"
+        },
+        {
+          "id": "C2",
+          "giornata": 1,
+          "casa": "BRA",
+          "trasferta": "MAR",
+          "data": "2026-06-15T00:00:00+02:00",
+          "ora_it": "02:00+1",
+          "stadio": "New York/New Jersey"
+        },
+        {
+          "id": "C3",
+          "giornata": 2,
+          "casa": "BRA",
+          "trasferta": "HAI",
+          "data": "2026-06-20T03:00:00+02:00",
+          "ora_it": "19:00",
+          "stadio": "Philadelphia"
+        },
+        {
+          "id": "C4",
+          "giornata": 2,
+          "casa": "SCO",
+          "trasferta": "MAR",
+          "data": "2026-06-21T00:00:00+02:00",
+          "ora_it": "22:00",
+          "stadio": "Boston"
+        },
+        {
+          "id": "C5",
+          "giornata": 3,
+          "casa": "SCO",
+          "trasferta": "BRA",
+          "data": "2026-06-26T00:00:00+02:00",
+          "ora_it": "19:00",
+          "stadio": "Miami"
+        },
+        {
+          "id": "C6",
+          "giornata": 3,
+          "casa": "MAR",
+          "trasferta": "HAI",
+          "data": "2026-06-26T00:00:00+02:00",
+          "ora_it": "19:00",
+          "stadio": "Atlanta"
+        }
       ]
     },
     "D": {
-      "squadre": ["USA", "PAR", "AUS", "TUR"],
+      "squadre": [
+        "USA",
+        "PAR",
+        "AUS",
+        "TUR"
+      ],
       "partite": [
-        { "id": "D1", "giornata": 1, "casa": "USA", "trasferta": "PAR", "data": "2026-06-12", "ora_it": "03:00+1", "stadio": "Los Angeles" },
-        { "id": "D2", "giornata": 1, "casa": "AUS", "trasferta": "TUR", "data": "2026-06-13", "ora_it": "22:00", "stadio": "Vancouver" },
-        { "id": "D3", "giornata": 2, "casa": "TUR", "trasferta": "PAR", "data": "2026-06-19", "ora_it": "01:00+1", "stadio": "San Francisco" },
-        { "id": "D4", "giornata": 2, "casa": "USA", "trasferta": "AUS", "data": "2026-06-19", "ora_it": "04:00+1", "stadio": "Seattle" },
-        { "id": "D5", "giornata": 3, "casa": "TUR", "trasferta": "USA", "data": "2026-06-25", "ora_it": "02:00+1", "stadio": "Los Angeles" },
-        { "id": "D6", "giornata": 3, "casa": "PAR", "trasferta": "AUS", "data": "2026-06-25", "ora_it": "02:00+1", "stadio": "San Francisco" }
+        {
+          "id": "D1",
+          "giornata": 1,
+          "casa": "USA",
+          "trasferta": "PAR",
+          "data": "2026-06-13T03:00:00+02:00",
+          "ora_it": "03:00+1",
+          "stadio": "Los Angeles"
+        },
+        {
+          "id": "D2",
+          "giornata": 1,
+          "casa": "AUS",
+          "trasferta": "TUR",
+          "data": "2026-06-13T06:00:00+02:00",
+          "ora_it": "22:00",
+          "stadio": "Vancouver"
+        },
+        {
+          "id": "D3",
+          "giornata": 2,
+          "casa": "TUR",
+          "trasferta": "PAR",
+          "data": "2026-06-19T06:00:00+02:00",
+          "ora_it": "01:00+1",
+          "stadio": "San Francisco"
+        },
+        {
+          "id": "D4",
+          "giornata": 2,
+          "casa": "USA",
+          "trasferta": "AUS",
+          "data": "2026-06-19T21:00:00+02:00",
+          "ora_it": "04:00+1",
+          "stadio": "Seattle"
+        },
+        {
+          "id": "D5",
+          "giornata": 3,
+          "casa": "TUR",
+          "trasferta": "USA",
+          "data": "2026-06-26T04:00:00+02:00",
+          "ora_it": "02:00+1",
+          "stadio": "Los Angeles"
+        },
+        {
+          "id": "D6",
+          "giornata": 3,
+          "casa": "PAR",
+          "trasferta": "AUS",
+          "data": "2026-06-26T04:00:00+02:00",
+          "ora_it": "02:00+1",
+          "stadio": "San Francisco"
+        }
       ]
     },
     "E": {
-      "squadre": ["GER", "CIV", "ECU", "CUW"],
+      "squadre": [
+        "GER",
+        "CIV",
+        "ECU",
+        "CUW"
+      ],
       "partite": [
-        { "id": "E1", "giornata": 1, "casa": "CIV", "trasferta": "ECU", "data": "2026-06-14", "ora_it": "21:00", "stadio": "Philadelphia" },
-        { "id": "E2", "giornata": 1, "casa": "GER", "trasferta": "CUW", "data": "2026-06-14", "ora_it": "00:00+1", "stadio": "Houston" },
-        { "id": "E3", "giornata": 2, "casa": "CIV", "trasferta": "GER", "data": "2026-06-20", "ora_it": "21:00", "stadio": "Dallas", "nota": "Data stimata" },
-        { "id": "E4", "giornata": 2, "casa": "CUW", "trasferta": "ECU", "data": "2026-06-20", "ora_it": "00:00+1", "stadio": "Houston", "nota": "Data stimata" },
-        { "id": "E5", "giornata": 3, "casa": "CUW", "trasferta": "CIV", "data": "2026-06-25", "ora_it": "19:00", "stadio": "Philadelphia" },
-        { "id": "E6", "giornata": 3, "casa": "ECU", "trasferta": "GER", "data": "2026-06-25", "ora_it": "19:00", "stadio": "New York/New Jersey" }
+        {
+          "id": "E1",
+          "giornata": 1,
+          "casa": "CIV",
+          "trasferta": "ECU",
+          "data": "2026-06-14T22:00:00+02:00",
+          "ora_it": "21:00",
+          "stadio": "Philadelphia"
+        },
+        {
+          "id": "E2",
+          "giornata": 1,
+          "casa": "GER",
+          "trasferta": "CUW",
+          "data": "2026-06-14T19:00:00+02:00",
+          "ora_it": "00:00+1",
+          "stadio": "Houston"
+        },
+        {
+          "id": "E3",
+          "giornata": 2,
+          "casa": "CIV",
+          "trasferta": "GER",
+          "data": "2026-06-20T22:00:00+02:00",
+          "ora_it": "21:00",
+          "stadio": "Dallas",
+          "nota": "Data stimata"
+        },
+        {
+          "id": "E4",
+          "giornata": 2,
+          "casa": "CUW",
+          "trasferta": "ECU",
+          "data": "2026-06-21T02:00:00+02:00",
+          "ora_it": "00:00+1",
+          "stadio": "Houston",
+          "nota": "Data stimata"
+        },
+        {
+          "id": "E5",
+          "giornata": 3,
+          "casa": "CUW",
+          "trasferta": "CIV",
+          "data": "2026-06-25T22:00:00+02:00",
+          "ora_it": "19:00",
+          "stadio": "Philadelphia"
+        },
+        {
+          "id": "E6",
+          "giornata": 3,
+          "casa": "ECU",
+          "trasferta": "GER",
+          "data": "2026-06-25T22:00:00+02:00",
+          "ora_it": "19:00",
+          "stadio": "New York/New Jersey"
+        }
       ]
     },
     "F": {
-      "squadre": ["NED", "JPN", "SWE", "TUN"],
+      "squadre": [
+        "NED",
+        "JPN",
+        "SWE",
+        "TUN"
+      ],
       "partite": [
-        { "id": "F1", "giornata": 1, "casa": "NED", "trasferta": "JPN", "data": "2026-06-14", "ora_it": "03:00+1", "stadio": "Dallas" },
-        { "id": "F2", "giornata": 1, "casa": "SWE", "trasferta": "TUN", "data": "2026-06-14", "ora_it": "05:00+1", "stadio": "Monterrey" },
-        { "id": "F3", "giornata": 2, "casa": "NED", "trasferta": "SWE", "data": "2026-06-21", "ora_it": "21:00", "stadio": "Dallas", "nota": "Data stimata" },
-        { "id": "F4", "giornata": 2, "casa": "TUN", "trasferta": "JPN", "data": "2026-06-21", "ora_it": "00:00+1", "stadio": "Kansas City", "nota": "Data stimata" },
-        { "id": "F5", "giornata": 3, "casa": "JPN", "trasferta": "SWE", "data": "2026-06-25", "ora_it": "22:00", "stadio": "Dallas" },
-        { "id": "F6", "giornata": 3, "casa": "TUN", "trasferta": "NED", "data": "2026-06-25", "ora_it": "22:00", "stadio": "Kansas City" }
+        {
+          "id": "F1",
+          "giornata": 1,
+          "casa": "NED",
+          "trasferta": "JPN",
+          "data": "2026-06-14T22:00:00+02:00",
+          "ora_it": "03:00+1",
+          "stadio": "Dallas"
+        },
+        {
+          "id": "F2",
+          "giornata": 1,
+          "casa": "SWE",
+          "trasferta": "TUN",
+          "data": "2026-06-15T04:00:00+02:00",
+          "ora_it": "05:00+1",
+          "stadio": "Monterrey"
+        },
+        {
+          "id": "F3",
+          "giornata": 2,
+          "casa": "NED",
+          "trasferta": "SWE",
+          "data": "2026-06-20T19:00:00+02:00",
+          "ora_it": "21:00",
+          "stadio": "Dallas",
+          "nota": "Data stimata"
+        },
+        {
+          "id": "F4",
+          "giornata": 2,
+          "casa": "TUN",
+          "trasferta": "JPN",
+          "data": "2026-06-20T06:00:00+02:00",
+          "ora_it": "00:00+1",
+          "stadio": "Kansas City",
+          "nota": "Data stimata"
+        },
+        {
+          "id": "F5",
+          "giornata": 3,
+          "casa": "JPN",
+          "trasferta": "SWE",
+          "data": "2026-06-26T01:00:00+02:00",
+          "ora_it": "22:00",
+          "stadio": "Dallas"
+        },
+        {
+          "id": "F6",
+          "giornata": 3,
+          "casa": "TUN",
+          "trasferta": "NED",
+          "data": "2026-06-26T01:00:00+02:00",
+          "ora_it": "22:00",
+          "stadio": "Kansas City"
+        }
       ]
     },
     "G": {
-      "squadre": ["BEL", "EGY", "IRN", "NZL"],
+      "squadre": [
+        "BEL",
+        "EGY",
+        "IRN",
+        "NZL"
+      ],
       "partite": [
-        { "id": "G1", "giornata": 1, "casa": "IRN", "trasferta": "NZL", "data": "2026-06-15", "ora_it": "01:00+1", "stadio": "Los Angeles" },
-        { "id": "G2", "giornata": 1, "casa": "BEL", "trasferta": "EGY", "data": "2026-06-15", "ora_it": "04:00+1", "stadio": "Seattle" },
-        { "id": "G3", "giornata": 2, "casa": "IRN", "trasferta": "BEL", "data": "2026-06-21", "ora_it": "22:00", "stadio": "Los Angeles", "nota": "Data stimata" },
-        { "id": "G4", "giornata": 2, "casa": "EGY", "trasferta": "NZL", "data": "2026-06-21", "ora_it": "00:00+1", "stadio": "Seattle", "nota": "Data stimata" },
-        { "id": "G5", "giornata": 3, "casa": "EGY", "trasferta": "IRN", "data": "2026-06-26", "ora_it": "22:00", "stadio": "Seattle" },
-        { "id": "G6", "giornata": 3, "casa": "NZL", "trasferta": "BEL", "data": "2026-06-26", "ora_it": "22:00", "stadio": "Vancouver" }
+        {
+          "id": "G1",
+          "giornata": 1,
+          "casa": "IRN",
+          "trasferta": "NZL",
+          "data": "2026-06-16T03:00:00+02:00",
+          "ora_it": "01:00+1",
+          "stadio": "Los Angeles"
+        },
+        {
+          "id": "G2",
+          "giornata": 1,
+          "casa": "BEL",
+          "trasferta": "EGY",
+          "data": "2026-06-15T21:00:00+02:00",
+          "ora_it": "04:00+1",
+          "stadio": "Seattle"
+        },
+        {
+          "id": "G3",
+          "giornata": 2,
+          "casa": "IRN",
+          "trasferta": "BEL",
+          "data": "2026-06-21T21:00:00+02:00",
+          "ora_it": "22:00",
+          "stadio": "Los Angeles",
+          "nota": "Data stimata"
+        },
+        {
+          "id": "G4",
+          "giornata": 2,
+          "casa": "EGY",
+          "trasferta": "NZL",
+          "data": "2026-06-22T03:00:00+02:00",
+          "ora_it": "00:00+1",
+          "stadio": "Seattle",
+          "nota": "Data stimata"
+        },
+        {
+          "id": "G5",
+          "giornata": 3,
+          "casa": "EGY",
+          "trasferta": "IRN",
+          "data": "2026-06-27T05:00:00+02:00",
+          "ora_it": "22:00",
+          "stadio": "Seattle"
+        },
+        {
+          "id": "G6",
+          "giornata": 3,
+          "casa": "NZL",
+          "trasferta": "BEL",
+          "data": "2026-06-27T05:00:00+02:00",
+          "ora_it": "22:00",
+          "stadio": "Vancouver"
+        }
       ]
     },
     "H": {
-      "squadre": ["ESP", "CPV", "KSA", "URU"],
+      "squadre": [
+        "ESP",
+        "CPV",
+        "KSA",
+        "URU"
+      ],
       "partite": [
-        { "id": "H1", "giornata": 1, "casa": "KSA", "trasferta": "URU", "data": "2026-06-15", "ora_it": "19:00", "stadio": "Miami" },
-        { "id": "H2", "giornata": 1, "casa": "ESP", "trasferta": "CPV", "data": "2026-06-15", "ora_it": "22:00", "stadio": "Atlanta" },
-        { "id": "H3", "giornata": 2, "casa": "KSA", "trasferta": "ESP", "data": "2026-06-22", "ora_it": "19:00", "stadio": "Miami", "nota": "Data stimata" },
-        { "id": "H4", "giornata": 2, "casa": "CPV", "trasferta": "URU", "data": "2026-06-22", "ora_it": "22:00", "stadio": "Atlanta", "nota": "Data stimata" },
-        { "id": "H5", "giornata": 3, "casa": "CPV", "trasferta": "KSA", "data": "2026-06-26", "ora_it": "02:00+1", "stadio": "Houston" },
-        { "id": "H6", "giornata": 3, "casa": "URU", "trasferta": "ESP", "data": "2026-06-26", "ora_it": "02:00+1", "stadio": "Guadalajara" }
+        {
+          "id": "H1",
+          "giornata": 1,
+          "casa": "KSA",
+          "trasferta": "URU",
+          "data": "2026-06-17T00:00:00+02:00",
+          "ora_it": "19:00",
+          "stadio": "Miami"
+        },
+        {
+          "id": "H2",
+          "giornata": 1,
+          "casa": "ESP",
+          "trasferta": "CPV",
+          "data": "2026-06-15T18:00:00+02:00",
+          "ora_it": "22:00",
+          "stadio": "Atlanta"
+        },
+        {
+          "id": "H3",
+          "giornata": 2,
+          "casa": "KSA",
+          "trasferta": "ESP",
+          "data": "2026-06-21T18:00:00+02:00",
+          "ora_it": "19:00",
+          "stadio": "Miami",
+          "nota": "Data stimata"
+        },
+        {
+          "id": "H4",
+          "giornata": 2,
+          "casa": "CPV",
+          "trasferta": "URU",
+          "data": "2026-06-23T00:00:00+02:00",
+          "ora_it": "22:00",
+          "stadio": "Atlanta",
+          "nota": "Data stimata"
+        },
+        {
+          "id": "H5",
+          "giornata": 3,
+          "casa": "CPV",
+          "trasferta": "KSA",
+          "data": "2026-06-27T02:00:00+02:00",
+          "ora_it": "02:00+1",
+          "stadio": "Houston"
+        },
+        {
+          "id": "H6",
+          "giornata": 3,
+          "casa": "URU",
+          "trasferta": "ESP",
+          "data": "2026-06-27T02:00:00+02:00",
+          "ora_it": "02:00+1",
+          "stadio": "Guadalajara"
+        }
       ]
     },
     "I": {
-      "squadre": ["FRA", "SEN", "IRQ", "NOR"],
+      "squadre": [
+        "FRA",
+        "SEN",
+        "IRQ",
+        "NOR"
+      ],
       "partite": [
-        { "id": "I1", "giornata": 1, "casa": "FRA", "trasferta": "SEN", "data": "2026-06-16", "ora_it": "21:00", "stadio": "New York/New Jersey" },
-        { "id": "I2", "giornata": 1, "casa": "IRQ", "trasferta": "NOR", "data": "2026-06-16", "ora_it": "00:00+1", "stadio": "Boston" },
-        { "id": "I3", "giornata": 2, "casa": "FRA", "trasferta": "IRQ", "data": "2026-06-22", "ora_it": "21:00", "stadio": "New York/New Jersey", "nota": "Data stimata" },
-        { "id": "I4", "giornata": 2, "casa": "NOR", "trasferta": "SEN", "data": "2026-06-22", "ora_it": "00:00+1", "stadio": "Boston", "nota": "Data stimata" },
-        { "id": "I5", "giornata": 3, "casa": "NOR", "trasferta": "FRA", "data": "2026-06-26", "ora_it": "19:00", "stadio": "Boston" },
-        { "id": "I6", "giornata": 3, "casa": "SEN", "trasferta": "IRQ", "data": "2026-06-26", "ora_it": "19:00", "stadio": "Toronto" }
+        {
+          "id": "I1",
+          "giornata": 1,
+          "casa": "FRA",
+          "trasferta": "SEN",
+          "data": "2026-06-16T21:00:00+02:00",
+          "ora_it": "21:00",
+          "stadio": "New York/New Jersey"
+        },
+        {
+          "id": "I2",
+          "giornata": 1,
+          "casa": "IRQ",
+          "trasferta": "NOR",
+          "data": "2026-06-18T00:00:00+02:00",
+          "ora_it": "00:00+1",
+          "stadio": "Boston"
+        },
+        {
+          "id": "I3",
+          "giornata": 2,
+          "casa": "FRA",
+          "trasferta": "IRQ",
+          "data": "2026-06-22T23:00:00+02:00",
+          "ora_it": "21:00",
+          "stadio": "New York/New Jersey",
+          "nota": "Data stimata"
+        },
+        {
+          "id": "I4",
+          "giornata": 2,
+          "casa": "NOR",
+          "trasferta": "SEN",
+          "data": "2026-06-23T02:00:00+02:00",
+          "ora_it": "00:00+1",
+          "stadio": "Boston",
+          "nota": "Data stimata"
+        },
+        {
+          "id": "I5",
+          "giornata": 3,
+          "casa": "NOR",
+          "trasferta": "FRA",
+          "data": "2026-06-26T21:00:00+02:00",
+          "ora_it": "19:00",
+          "stadio": "Boston"
+        },
+        {
+          "id": "I6",
+          "giornata": 3,
+          "casa": "SEN",
+          "trasferta": "IRQ",
+          "data": "2026-06-26T21:00:00+02:00",
+          "ora_it": "19:00",
+          "stadio": "Toronto"
+        }
       ]
     },
     "J": {
-      "squadre": ["ARG", "ALG", "AUT", "JOR"],
+      "squadre": [
+        "ARG",
+        "ALG",
+        "AUT",
+        "JOR"
+      ],
       "partite": [
-        { "id": "J1", "giornata": 1, "casa": "ARG", "trasferta": "ALG", "data": "2026-06-16", "ora_it": "03:00+1", "stadio": "Kansas City" },
-        { "id": "J2", "giornata": 1, "casa": "AUT", "trasferta": "JOR", "data": "2026-06-16", "ora_it": "05:00+1", "stadio": "San Francisco" },
-        { "id": "J3", "giornata": 2, "casa": "ARG", "trasferta": "AUT", "data": "2026-06-23", "ora_it": "21:00", "stadio": "Dallas", "nota": "Data stimata" },
-        { "id": "J4", "giornata": 2, "casa": "JOR", "trasferta": "ALG", "data": "2026-06-23", "ora_it": "00:00+1", "stadio": "Kansas City", "nota": "Data stimata" },
-        { "id": "J5", "giornata": 3, "casa": "ALG", "trasferta": "AUT", "data": "2026-06-27", "ora_it": "22:00", "stadio": "Kansas City" },
-        { "id": "J6", "giornata": 3, "casa": "JOR", "trasferta": "ARG", "data": "2026-06-27", "ora_it": "22:00", "stadio": "Dallas" }
+        {
+          "id": "J1",
+          "giornata": 1,
+          "casa": "ARG",
+          "trasferta": "ALG",
+          "data": "2026-06-17T03:00:00+02:00",
+          "ora_it": "03:00+1",
+          "stadio": "Kansas City"
+        },
+        {
+          "id": "J2",
+          "giornata": 1,
+          "casa": "AUT",
+          "trasferta": "JOR",
+          "data": "2026-06-16T06:00:00+02:00",
+          "ora_it": "05:00+1",
+          "stadio": "San Francisco"
+        },
+        {
+          "id": "J3",
+          "giornata": 2,
+          "casa": "ARG",
+          "trasferta": "AUT",
+          "data": "2026-06-22T19:00:00+02:00",
+          "ora_it": "21:00",
+          "stadio": "Dallas",
+          "nota": "Data stimata"
+        },
+        {
+          "id": "J4",
+          "giornata": 2,
+          "casa": "JOR",
+          "trasferta": "ALG",
+          "data": "2026-06-23T05:00:00+02:00",
+          "ora_it": "00:00+1",
+          "stadio": "Kansas City",
+          "nota": "Data stimata"
+        },
+        {
+          "id": "J5",
+          "giornata": 3,
+          "casa": "ALG",
+          "trasferta": "AUT",
+          "data": "2026-06-28T04:00:00+02:00",
+          "ora_it": "22:00",
+          "stadio": "Kansas City"
+        },
+        {
+          "id": "J6",
+          "giornata": 3,
+          "casa": "JOR",
+          "trasferta": "ARG",
+          "data": "2026-06-28T04:00:00+02:00",
+          "ora_it": "22:00",
+          "stadio": "Dallas"
+        }
       ]
     },
     "K": {
-      "squadre": ["POR", "COD", "UZB", "COL"],
+      "squadre": [
+        "POR",
+        "COD",
+        "UZB",
+        "COL"
+      ],
       "partite": [
-        { "id": "K1", "giornata": 1, "casa": "POR", "trasferta": "COD", "data": "2026-06-17", "ora_it": "01:00+1", "stadio": "Houston" },
-        { "id": "K2", "giornata": 1, "casa": "UZB", "trasferta": "COL", "data": "2026-06-17", "ora_it": "04:00+1", "stadio": "Ciudad de México" },
-        { "id": "K3", "giornata": 2, "casa": "POR", "trasferta": "UZB", "data": "2026-06-23", "ora_it": "22:00", "stadio": "Houston", "nota": "Data stimata" },
-        { "id": "K4", "giornata": 2, "casa": "COL", "trasferta": "COD", "data": "2026-06-23", "ora_it": "00:00+1", "stadio": "Atlanta", "nota": "Data stimata" },
-        { "id": "K5", "giornata": 3, "casa": "COL", "trasferta": "POR", "data": "2026-06-27", "ora_it": "02:00+1", "stadio": "Miami" },
-        { "id": "K6", "giornata": 3, "casa": "COD", "trasferta": "UZB", "data": "2026-06-27", "ora_it": "02:00+1", "stadio": "Atlanta" }
+        {
+          "id": "K1",
+          "giornata": 1,
+          "casa": "POR",
+          "trasferta": "COD",
+          "data": "2026-06-17T19:00:00+02:00",
+          "ora_it": "01:00+1",
+          "stadio": "Houston"
+        },
+        {
+          "id": "K2",
+          "giornata": 1,
+          "casa": "UZB",
+          "trasferta": "COL",
+          "data": "2026-06-18T04:00:00+02:00",
+          "ora_it": "04:00+1",
+          "stadio": "Ciudad de México"
+        },
+        {
+          "id": "K3",
+          "giornata": 2,
+          "casa": "POR",
+          "trasferta": "UZB",
+          "data": "2026-06-23T19:00:00+02:00",
+          "ora_it": "22:00",
+          "stadio": "Houston",
+          "nota": "Data stimata"
+        },
+        {
+          "id": "K4",
+          "giornata": 2,
+          "casa": "COL",
+          "trasferta": "COD",
+          "data": "2026-06-24T04:00:00+02:00",
+          "ora_it": "00:00+1",
+          "stadio": "Atlanta",
+          "nota": "Data stimata"
+        },
+        {
+          "id": "K5",
+          "giornata": 3,
+          "casa": "COL",
+          "trasferta": "POR",
+          "data": "2026-06-28T01:30:00+02:00",
+          "ora_it": "02:00+1",
+          "stadio": "Miami"
+        },
+        {
+          "id": "K6",
+          "giornata": 3,
+          "casa": "COD",
+          "trasferta": "UZB",
+          "data": "2026-06-28T01:30:00+02:00",
+          "ora_it": "02:00+1",
+          "stadio": "Atlanta"
+        }
       ]
     },
     "L": {
-      "squadre": ["ENG", "CRO", "GHA", "PAN"],
+      "squadre": [
+        "ENG",
+        "CRO",
+        "GHA",
+        "PAN"
+      ],
       "partite": [
-        { "id": "L1", "giornata": 1, "casa": "GHA", "trasferta": "PAN", "data": "2026-06-17", "ora_it": "19:00", "stadio": "Toronto" },
-        { "id": "L2", "giornata": 1, "casa": "ENG", "trasferta": "CRO", "data": "2026-06-17", "ora_it": "22:00", "stadio": "Dallas" },
-        { "id": "L3", "giornata": 2, "casa": "GHA", "trasferta": "ENG", "data": "2026-06-23", "ora_it": "19:00", "stadio": "Philadelphia", "nota": "Data stimata" },
-        { "id": "L4", "giornata": 2, "casa": "CRO", "trasferta": "PAN", "data": "2026-06-23", "ora_it": "22:00", "stadio": "Miami", "nota": "Data stimata" },
-        { "id": "L5", "giornata": 3, "casa": "PAN", "trasferta": "ENG", "data": "2026-06-27", "ora_it": "19:00", "stadio": "New York/New Jersey" },
-        { "id": "L6", "giornata": 3, "casa": "CRO", "trasferta": "GHA", "data": "2026-06-27", "ora_it": "19:00", "stadio": "Philadelphia" }
+        {
+          "id": "L1",
+          "giornata": 1,
+          "casa": "GHA",
+          "trasferta": "PAN",
+          "data": "2026-06-18T01:00:00+02:00",
+          "ora_it": "19:00",
+          "stadio": "Toronto"
+        },
+        {
+          "id": "L2",
+          "giornata": 1,
+          "casa": "ENG",
+          "trasferta": "CRO",
+          "data": "2026-06-17T22:00:00+02:00",
+          "ora_it": "22:00",
+          "stadio": "Dallas"
+        },
+        {
+          "id": "L3",
+          "giornata": 2,
+          "casa": "GHA",
+          "trasferta": "ENG",
+          "data": "2026-06-23T22:00:00+02:00",
+          "ora_it": "19:00",
+          "stadio": "Philadelphia",
+          "nota": "Data stimata"
+        },
+        {
+          "id": "L4",
+          "giornata": 2,
+          "casa": "CRO",
+          "trasferta": "PAN",
+          "data": "2026-06-24T01:00:00+02:00",
+          "ora_it": "22:00",
+          "stadio": "Miami",
+          "nota": "Data stimata"
+        },
+        {
+          "id": "L5",
+          "giornata": 3,
+          "casa": "PAN",
+          "trasferta": "ENG",
+          "data": "2026-06-27T23:00:00+02:00",
+          "ora_it": "19:00",
+          "stadio": "New York/New Jersey"
+        },
+        {
+          "id": "L6",
+          "giornata": 3,
+          "casa": "CRO",
+          "trasferta": "GHA",
+          "data": "2026-06-27T23:00:00+02:00",
+          "ora_it": "19:00",
+          "stadio": "Philadelphia"
+        }
       ]
     }
   },
-
   "fase_eliminatoria": {
     "nota": "Il tabellone viene compilato automaticamente al termine della fase a gironi. Dagli ottavi in poi si indica solo la modalità di vittoria (90min / supplementari / rigori).",
     "sedicesimi": {
@@ -261,22 +1153,102 @@
       "data_inizio": "2026-06-28",
       "data_fine": "2026-07-02",
       "partite": [
-        { "id": "S01", "casa": null, "trasferta": null, "data": null },
-        { "id": "S02", "casa": null, "trasferta": null, "data": null },
-        { "id": "S03", "casa": null, "trasferta": null, "data": null },
-        { "id": "S04", "casa": null, "trasferta": null, "data": null },
-        { "id": "S05", "casa": null, "trasferta": null, "data": null },
-        { "id": "S06", "casa": null, "trasferta": null, "data": null },
-        { "id": "S07", "casa": null, "trasferta": null, "data": null },
-        { "id": "S08", "casa": null, "trasferta": null, "data": null },
-        { "id": "S09", "casa": null, "trasferta": null, "data": null },
-        { "id": "S10", "casa": null, "trasferta": null, "data": null },
-        { "id": "S11", "casa": null, "trasferta": null, "data": null },
-        { "id": "S12", "casa": null, "trasferta": null, "data": null },
-        { "id": "S13", "casa": null, "trasferta": null, "data": null },
-        { "id": "S14", "casa": null, "trasferta": null, "data": null },
-        { "id": "S15", "casa": null, "trasferta": null, "data": null },
-        { "id": "S16", "casa": null, "trasferta": null, "data": null }
+        {
+          "id": "S01",
+          "casa": null,
+          "trasferta": null,
+          "data": null
+        },
+        {
+          "id": "S02",
+          "casa": null,
+          "trasferta": null,
+          "data": null
+        },
+        {
+          "id": "S03",
+          "casa": null,
+          "trasferta": null,
+          "data": null
+        },
+        {
+          "id": "S04",
+          "casa": null,
+          "trasferta": null,
+          "data": null
+        },
+        {
+          "id": "S05",
+          "casa": null,
+          "trasferta": null,
+          "data": null
+        },
+        {
+          "id": "S06",
+          "casa": null,
+          "trasferta": null,
+          "data": null
+        },
+        {
+          "id": "S07",
+          "casa": null,
+          "trasferta": null,
+          "data": null
+        },
+        {
+          "id": "S08",
+          "casa": null,
+          "trasferta": null,
+          "data": null
+        },
+        {
+          "id": "S09",
+          "casa": null,
+          "trasferta": null,
+          "data": null
+        },
+        {
+          "id": "S10",
+          "casa": null,
+          "trasferta": null,
+          "data": null
+        },
+        {
+          "id": "S11",
+          "casa": null,
+          "trasferta": null,
+          "data": null
+        },
+        {
+          "id": "S12",
+          "casa": null,
+          "trasferta": null,
+          "data": null
+        },
+        {
+          "id": "S13",
+          "casa": null,
+          "trasferta": null,
+          "data": null
+        },
+        {
+          "id": "S14",
+          "casa": null,
+          "trasferta": null,
+          "data": null
+        },
+        {
+          "id": "S15",
+          "casa": null,
+          "trasferta": null,
+          "data": null
+        },
+        {
+          "id": "S16",
+          "casa": null,
+          "trasferta": null,
+          "data": null
+        }
       ]
     },
     "ottavi": {
@@ -285,14 +1257,54 @@
       "data_inizio": "2026-07-03",
       "data_fine": "2026-07-06",
       "partite": [
-        { "id": "O1", "casa": null, "trasferta": null, "data": null },
-        { "id": "O2", "casa": null, "trasferta": null, "data": null },
-        { "id": "O3", "casa": null, "trasferta": null, "data": null },
-        { "id": "O4", "casa": null, "trasferta": null, "data": null },
-        { "id": "O5", "casa": null, "trasferta": null, "data": null },
-        { "id": "O6", "casa": null, "trasferta": null, "data": null },
-        { "id": "O7", "casa": null, "trasferta": null, "data": null },
-        { "id": "O8", "casa": null, "trasferta": null, "data": null }
+        {
+          "id": "O1",
+          "casa": null,
+          "trasferta": null,
+          "data": null
+        },
+        {
+          "id": "O2",
+          "casa": null,
+          "trasferta": null,
+          "data": null
+        },
+        {
+          "id": "O3",
+          "casa": null,
+          "trasferta": null,
+          "data": null
+        },
+        {
+          "id": "O4",
+          "casa": null,
+          "trasferta": null,
+          "data": null
+        },
+        {
+          "id": "O5",
+          "casa": null,
+          "trasferta": null,
+          "data": null
+        },
+        {
+          "id": "O6",
+          "casa": null,
+          "trasferta": null,
+          "data": null
+        },
+        {
+          "id": "O7",
+          "casa": null,
+          "trasferta": null,
+          "data": null
+        },
+        {
+          "id": "O8",
+          "casa": null,
+          "trasferta": null,
+          "data": null
+        }
       ]
     },
     "quarti": {
@@ -301,10 +1313,30 @@
       "data_inizio": "2026-07-08",
       "data_fine": "2026-07-09",
       "partite": [
-        { "id": "Q1", "casa": null, "trasferta": null, "data": null },
-        { "id": "Q2", "casa": null, "trasferta": null, "data": null },
-        { "id": "Q3", "casa": null, "trasferta": null, "data": null },
-        { "id": "Q4", "casa": null, "trasferta": null, "data": null }
+        {
+          "id": "Q1",
+          "casa": null,
+          "trasferta": null,
+          "data": null
+        },
+        {
+          "id": "Q2",
+          "casa": null,
+          "trasferta": null,
+          "data": null
+        },
+        {
+          "id": "Q3",
+          "casa": null,
+          "trasferta": null,
+          "data": null
+        },
+        {
+          "id": "Q4",
+          "casa": null,
+          "trasferta": null,
+          "data": null
+        }
       ]
     },
     "semifinali": {
@@ -313,8 +1345,18 @@
       "data_inizio": "2026-07-12",
       "data_fine": "2026-07-14",
       "partite": [
-        { "id": "SF1", "casa": null, "trasferta": null, "data": null },
-        { "id": "SF2", "casa": null, "trasferta": null, "data": null }
+        {
+          "id": "SF1",
+          "casa": null,
+          "trasferta": null,
+          "data": null
+        },
+        {
+          "id": "SF2",
+          "casa": null,
+          "trasferta": null,
+          "data": null
+        }
       ]
     },
     "finale": {
@@ -323,17 +1365,18 @@
       "punti_vincitore": 70,
       "data": "2026-07-19",
       "stadio": "New York/New Jersey Stadium",
-      "partita": { "id": "F", "casa": null, "trasferta": null }
+      "partita": {
+        "id": "F",
+        "casa": null,
+        "trasferta": null
+      }
     }
   },
-
   "capocannonieri_selezione": {
     "nota": "Lista basata sulle pre-selezioni ufficiali. Non sostituibile in caso di forfait.",
     "giocatori": []
   },
-
   "partecipanti": [],
-
   "pronostici": {
     "_struttura_riferimento": {
       "id_partecipante": "string",
@@ -345,9 +1388,23 @@
         }
       },
       "posizioni_girone": {
-        "A": ["squadra_1°", "squadra_2°", "squadra_3°", "squadra_4°"],
-        "B": [], "C": [], "D": [], "E": [], "F": [],
-        "G": [], "H": [], "I": [], "J": [], "K": [], "L": []
+        "A": [
+          "squadra_1°",
+          "squadra_2°",
+          "squadra_3°",
+          "squadra_4°"
+        ],
+        "B": [],
+        "C": [],
+        "D": [],
+        "E": [],
+        "F": [],
+        "G": [],
+        "H": [],
+        "I": [],
+        "J": [],
+        "K": [],
+        "L": []
       },
       "fase_eliminatoria": {
         "ID_PARTITA_ELIMINATORIA (es. S01)": {
@@ -362,14 +1419,22 @@
       }
     }
   },
-
   "risultati": {
     "_nota": "Sezione compilata durante il torneo dall'amministratore.",
     "gironi": {},
     "posizioni_finali_gironi": {
-      "A": [], "B": [], "C": [], "D": [],
-      "E": [], "F": [], "G": [], "H": [],
-      "I": [], "J": [], "K": [], "L": []
+      "A": [],
+      "B": [],
+      "C": [],
+      "D": [],
+      "E": [],
+      "F": [],
+      "G": [],
+      "H": [],
+      "I": [],
+      "J": [],
+      "K": [],
+      "L": []
     },
     "fase_eliminatoria": {},
     "capocannoniere_finale": {
