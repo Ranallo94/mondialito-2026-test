@@ -9,6 +9,7 @@ import { STATE, navigaA } from './app.js';
 import { getPronostici, onRisultatiSnapshot, onClassificaSnapshot } from './db.js';
 import { calcolaPunteggio } from './punteggi.js';
 import { showSpinner } from './ui.js';
+import { renderRiepilogoGironi, renderTabellone } from './bracket.js';
 
 let _pronostici  = null;
 let _risultati   = {};
@@ -304,8 +305,6 @@ function _renderSchedaPronostici() {
   }
 
   const pGironi = _pronostici.gironi              || {};
-  const pPosiz  = _pronostici.posizioni_girone    || {};
-  const pElim   = _pronostici.fase_eliminatoria   || {};
   const pCannon = _pronostici.capocannoniere      || {};
   const rGironi = _risultati.gironi               || {};
 
@@ -351,68 +350,6 @@ function _renderSchedaPronostici() {
       </div>`;
   });
 
-  // ── 2. GRIGLIA ─────────────────────────────────────
-  let htmlGriglia = '';
-  Object.entries(DB.gironi).forEach(([lettera, girone]) => {
-    const posizioni = pPosiz[lettera] || [];
-    // posizioni può essere array o object con chiavi numeriche (Firestore)
-    const get = (i) => Array.isArray(posizioni) ? posizioni[i] : posizioni[String(i)];
-    const filled = girone.squadre.some((_, i) => !!get(i));
-    if (!filled) return; // girone non compilato, non mostrare
-
-    const squadreHtml = girone.squadre.map((_, i) => {
-      const id = get(i);
-      return `<div class="scheda-griglia-item"><span class="scheda-pos-num">${i + 1}°</span> ${sq(id)}</div>`;
-    }).join('');
-    htmlGriglia += `<div class="scheda-griglia-block"><div class="scheda-girone-title">Girone ${lettera}</div>${squadreHtml}</div>`;
-  });
-
-  // ── 3. FASI ELIMINATORIE ───────────────────────────
-  // Mostra chi avanza per ogni round, non i singoli match con ID tecnici
-  const fasiConfig = [
-    { key: 'sedicesimi', label: '⚔️ Sedicesimi — avanzano' },
-    { key: 'ottavi',     label: '⚡ Ottavi — avanzano' },
-    { key: 'quarti',     label: '🔥 Quarti — avanzano' },
-    { key: 'semifinali', label: '💥 Semifinali — avanzano' },
-  ];
-
-  let htmlElim = '';
-  fasiConfig.forEach(({ key, label }) => {
-    const partite = pElim[key] || {};
-    const vincitori = Object.values(partite)
-      .filter(m => m?.vincitore)
-      .map(m => {
-        const mod = m.modalita === 'rigori' ? '<span class="scheda-mod">rig</span>'
-                  : m.modalita === 'supplementari' ? '<span class="scheda-mod">sup</span>' : '';
-        return `<div class="scheda-team-chip">${sq(m.vincitore)} ${mod}</div>`;
-      });
-
-    if (!vincitori.length) return;
-    htmlElim += `
-      <div class="scheda-fase-block scheda-fase-wide">
-        <div class="scheda-girone-title">${label}</div>
-        <div class="scheda-chips">${vincitori.join('')}</div>
-      </div>`;
-  });
-
-  // Finale separata
-  const finale = pElim.finale || {};
-  const finalisti = (finale.squadre || []).filter(Boolean);
-  const vincitore = finale.vincitore;
-
-  if (finalisti.length || vincitore) {
-    const fHtml = finalisti.map(id => `<div class="scheda-team-chip">${sq(id)}</div>`).join('');
-    const vHtml = vincitore
-      ? `<div class="scheda-team-chip scheda-chip-gold">🏆 ${sq(vincitore)}</div>`
-      : '';
-    htmlElim += `
-      <div class="scheda-fase-block scheda-fase-wide">
-        <div class="scheda-girone-title">🏆 Finale</div>
-        ${fHtml ? `<div class="scheda-chips">${fHtml}</div>` : ''}
-        ${vHtml ? `<div class="scheda-chips">${vHtml}</div>` : ''}
-      </div>`;
-  }
-
   // ── 4. CAPOCANNONIERE ──────────────────────────────
   const cannonHtml = [
     { pos: 'primo',   label: '🥇 1° marcatore' },
@@ -423,22 +360,26 @@ function _renderSchedaPronostici() {
     return `<div class="scheda-griglia-item"><span class="scheda-cannon-label">${label}</span> <strong>${id || '—'}</strong></div>`;
   }).join('');
 
+  // ── Struttura contenitore ──────────────────────────
   el.innerHTML = `
     <div class="scheda-section">
       <h3 class="section-title">⚽ Pronostici gironi</h3>
       <div class="scheda-gironi-grid">${htmlGironi || '<p class="text-muted">Non compilati</p>'}</div>
     </div>
-    ${htmlGriglia ? `
     <div class="scheda-section">
-      <h3 class="section-title">📊 Ordine finale girone</h3>
-      <div class="scheda-griglia-grid">${htmlGriglia}</div>
-    </div>` : ''}
+      <h3 class="section-title">📊 Classifica gironi pronosticata</h3>
+      <div id="scheda-riepilogo-container"></div>
+    </div>
     <div class="scheda-section">
-      <h3 class="section-title">🏟️ Fase eliminatoria</h3>
-      ${htmlElim || '<p class="text-muted">Non compilata</p>'}
+      <h3 class="section-title">🏟️ Tabellone eliminatorie</h3>
+      <div id="scheda-tabellone-container" class="tb-scroll-wrapper"></div>
     </div>
     <div class="scheda-section">
       <h3 class="section-title">👟 Capocannoniere</h3>
       <div class="scheda-griglia-block">${cannonHtml}</div>
     </div>`;
+
+  // Renderizza riepilogo e tabellone nei loro container
+  renderRiepilogoGironi(document.getElementById('scheda-riepilogo-container'), _pronostici, DB);
+  renderTabellone(document.getElementById('scheda-tabellone-container'), _pronostici, DB);
 }
