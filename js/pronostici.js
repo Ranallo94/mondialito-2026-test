@@ -777,23 +777,16 @@ function _aggiornaStatoBanner() {
 function _aggiornaBtnSalva() {
   const aperti = _pronosticiAperti;
 
-  // Pulsante salva finale
-  const btnFinale = document.getElementById('btn-salva-pronostici');
-  if (btnFinale) btnFinale.disabled = !aperti;
-
-  // Pulsanti "Salva Girone X" — nascosti quando chiusi
-  document.querySelectorAll('.btn-salva-girone').forEach(btn => {
+  // Tutti i pulsanti salva — nascosti quando chiusi
+  const selettori = [
+    '#btn-salva-pronostici',
+    '.btn-salva-girone',
+    '.btn-salva-fase',
+    '[id^="btn-salva-"]',
+  ];
+  document.querySelectorAll(selettori.join(', ')).forEach(btn => {
     btn.style.display = aperti ? '' : 'none';
-  });
-
-  // Pulsanti "Salva Fase" nelle eliminatorie — nascosti quando chiusi
-  document.querySelectorAll('.btn-salva-fase').forEach(btn => {
-    btn.style.display = aperti ? '' : 'none';
-  });
-
-  // Tutti gli altri btn-salva-* (griglia, speciali, ecc.)
-  document.querySelectorAll('[id^="btn-salva-"]').forEach(btn => {
-    if (btn.id !== 'btn-salva-pronostici') btn.style.display = aperti ? '' : 'none';
+    btn.disabled = !aperti;
   });
 }
 
