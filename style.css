@@ -287,6 +287,20 @@ select.field-input option { background: var(--bg-card2); }
 /* ════════════════════════════════════════
    PRONOSTICI FORM
 ════════════════════════════════════════ */
+
+/* Stato bloccato: campi grigi e non cliccabili */
+#form-pronostici.form-locked input:disabled,
+#form-pronostici.form-locked select:disabled,
+#form-pronostici.form-locked textarea:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background: var(--bg-card2);
+}
+#form-pronostici.form-locked button:disabled:not(.tab):not(.girone-tab) {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
 .girone-block {
   margin-bottom: 24px;
   background: var(--bg-card);
