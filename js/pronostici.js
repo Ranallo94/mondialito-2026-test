@@ -751,11 +751,28 @@ export async function initPronostici() {
   // Aggiorna il tabellone ogni volta che si clicca su quel tab
   document.querySelector('.tab[data-tab="tab-tabellone"]')?.addEventListener('click', _renderTabellone);
 
-  document.getElementById('form-pronostici').addEventListener('submit', async (e) => {
-    e.preventDefault();
+  // Pulsante "Salva Marcatori" nella tab speciali
+  document.getElementById('btn-salva-marcatori')?.addEventListener('click', async () => {
     if (!_pronosticiAperti) { showToast('I pronostici sono chiusi!', 'error'); return; }
-    await _salvaPronostici();
+    const btn = document.getElementById('btn-salva-marcatori');
+    const msg = document.getElementById('esm-marcatori');
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Salvataggio…'; }
+    if (msg) { msg.textContent = ''; msg.className = 'elim-save-msg'; }
+    try {
+      _raccogliDalDOM();
+      await savePronostici(STATE.utente.id, _pronostici);
+      if (msg) { msg.textContent = '✅ Marcatori salvati!'; msg.className = 'elim-save-msg esm-ok'; }
+      showToast('Marcatori salvati!', 'success');
+    } catch (e) {
+      if (msg) { msg.textContent = '❌ Errore: ' + e.message; msg.className = 'elim-save-msg esm-error'; }
+      showToast('Errore: ' + e.message, 'error');
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = '💾 Salva Marcatori'; }
+    }
   });
+
+  // Blocca submit accidentale da tastiera (Enter)
+  document.getElementById('form-pronostici').addEventListener('submit', (e) => e.preventDefault());
 }
 
 function _aggiornaStatoBanner() {
@@ -776,15 +793,8 @@ function _aggiornaStatoBanner() {
 
 function _aggiornaBtnSalva() {
   const aperti = _pronosticiAperti;
-
-  // Tutti i pulsanti salva — nascosti quando chiusi
-  const selettori = [
-    '#btn-salva-pronostici',
-    '.btn-salva-girone',
-    '.btn-salva-fase',
-    '[id^="btn-salva-"]',
-  ];
-  document.querySelectorAll(selettori.join(', ')).forEach(btn => {
+  // Nasconde tutti i pulsanti salva contestuali quando i pronostici sono chiusi
+  document.querySelectorAll('.btn-salva-girone, .btn-salva-fase, #btn-salva-marcatori').forEach(btn => {
     btn.style.display = aperti ? '' : 'none';
     btn.disabled = !aperti;
   });
