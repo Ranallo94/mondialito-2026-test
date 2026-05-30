@@ -508,8 +508,13 @@ async function _initTabSistema() {
     const btnToggle = document.getElementById('btn-toggle-pronostici');
     if (btnToggle) {
       btnToggle.addEventListener('click', async () => {
-        const nuovoStato = cfg.pronostici_aperti === false ? true : false;
+        if (btnToggle.disabled) return;
+        btnToggle.disabled = true;
+        btnToggle.textContent = '⏳ …';
         try {
+          // Legge stato fresco da Firestore per evitare stale closure
+          const cfgFresco = await getSistema();
+          const nuovoStato = cfgFresco.pronostici_aperti === false ? true : false;
           await updateSistema({ pronostici_aperti: nuovoStato });
           cfg.pronostici_aperti = nuovoStato;
           if (statusEl) {
@@ -520,6 +525,9 @@ async function _initTabSistema() {
           showToast(nuovoStato ? 'Pronostici aperti!' : 'Pronostici chiusi!', 'success');
         } catch (e) {
           showToast('Errore: ' + e.message, 'error');
+        } finally {
+          btnToggle.disabled = false;
+          btnToggle.textContent = 'Apri / Chiudi';
         }
       });
     }
