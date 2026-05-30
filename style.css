@@ -72,7 +72,8 @@ a { color: var(--oro); text-decoration: none; }
   text-align: center;
 }
 
-.login-logo { font-size: 52px; margin-bottom: 12px; line-height: 1; }
+.login-logo { margin-bottom: 8px; line-height: 1; }
+.login-logo-img { width: 150px; height: 150px; object-fit: contain; display: block; margin: 0 auto; }
 .login-title { font-size: 28px; font-weight: 900; color: var(--oro); letter-spacing: -0.5px; }
 .login-subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 32px; margin-top: 4px; }
 
@@ -156,7 +157,7 @@ select.field-input option { background: var(--bg-card2); }
   padding: 0 16px;
 }
 .header-logo { display: flex; align-items: center; gap: 8px; }
-.header-trophy { font-size: 22px; }
+.header-logo-img { width: 34px; height: 34px; object-fit: contain; }
 .header-title { font-size: 17px; font-weight: 800; color: var(--text); }
 .header-year { color: var(--oro); }
 .header-user { display: flex; align-items: center; gap: 10px; }
