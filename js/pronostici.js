@@ -748,6 +748,9 @@ export async function initPronostici() {
   _renderRiepilogoGironi();
   _renderTabellone();
 
+  // Applica lo stato aperti/chiusi ai campi ora che il form è renderizzato
+  _aggiornaBtnSalva();
+
   // Aggiorna il tabellone ogni volta che si clicca su quel tab
   document.querySelector('.tab[data-tab="tab-tabellone"]')?.addEventListener('click', _renderTabellone);
 
@@ -793,10 +796,27 @@ function _aggiornaStatoBanner() {
 
 function _aggiornaBtnSalva() {
   const aperti = _pronosticiAperti;
-  // Nasconde tutti i pulsanti salva contestuali quando i pronostici sono chiusi
-  document.querySelectorAll('.btn-salva-girone, .btn-salva-fase, #btn-salva-marcatori').forEach(btn => {
+  const form = document.getElementById('form-pronostici');
+  if (!form) return;
+
+  // Classe visiva sul form
+  form.classList.toggle('form-locked', !aperti);
+
+  // Pulsanti salva: nascosti quando chiusi
+  form.querySelectorAll('.btn-salva-girone, .btn-salva-fase, #btn-salva-marcatori').forEach(btn => {
     btn.style.display = aperti ? '' : 'none';
     btn.disabled = !aperti;
+  });
+
+  // Tutti gli input e select del form
+  form.querySelectorAll('input, select, textarea').forEach(el => {
+    el.disabled = !aperti;
+  });
+
+  // Pulsanti interattivi non-tab (segni 1/X/2, frecce spareggio, ecc.)
+  // I tab di navigazione (.tab, .girone-tab) restano cliccabili
+  form.querySelectorAll('button:not(.tab):not(.girone-tab):not(.btn-salva-girone):not(.btn-salva-fase)').forEach(btn => {
+    if (btn.id !== 'btn-salva-marcatori') btn.disabled = !aperti;
   });
 }
 
