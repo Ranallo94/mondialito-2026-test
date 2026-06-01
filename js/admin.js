@@ -397,9 +397,11 @@ async function _renderPartecipanti() {
                   if (!newNick) { showToast('Il nickname non può essere vuoto.', 'error'); return; }
                   try {
                     await updateDoc(doc(db(), 'partecipanti', uid), { nickname: newNick });
-                    showToast(`Nickname aggiornato: "${newNick}"`, 'success');
                     closeModal();
                     _renderPartecipanti();
+                    // Ricalcola classifica in background per aggiornare il nickname
+                    await _ricalcolaClassificaClient();
+                    showToast(`Nickname aggiornato: "${newNick}" ✓`, 'success');
                   } catch (e) {
                     showToast('Errore: ' + e.message, 'error');
                   }
