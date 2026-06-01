@@ -810,6 +810,7 @@ async function _ricalcolaClassificaClient() {
   const lista = [];
   proSnap.forEach(d => {
     if (disabilitati.has(d.id)) return; // escludi disabilitati
+    if (!nomi[d.id]) return;            // escludi utenti eliminati (pronostici orfani)
     const pr = d.data();
     const { totale, breakdown } = calcolaPunteggio(pr, risultati);
     const spareggio = calcolaSparegnio(pr, risultati);
