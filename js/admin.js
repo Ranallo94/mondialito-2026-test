@@ -340,6 +340,8 @@ async function _renderPartecipanti() {
       const deleteBtn = isOwner || isSelf ? ''
         : `<button class="btn btn-sm btn-danger" data-uid="${p.id}" data-action="elimina">🗑️ Elimina</button>`;
 
+      const nickBtn = `<button class="btn btn-sm btn-secondary" data-uid="${p.id}" data-action="nickname" data-current="${p.nickname || ''}">✏️ Nickname</button>`;
+
       const badgeDisab = isDisab ? ' <span class="badge-disab">Disabilitato</span>' : '';
       const badgeLabel = isOwner ? ' <span class="badge-owner">👑 Proprietario</span>'
                        : p.isAdmin ? ' <span class="badge-admin">Admin</span>' : '';
@@ -354,7 +356,7 @@ async function _renderPartecipanti() {
             <span class="ap-stato">${stato}</span>
             ${p.haPronostici ? `<span class="ap-date">Salvato: ${aggiornato}</span>` : ''}
           </div>
-          <div class="ap-actions">${adminBtn} ${disabBtn} ${deleteBtn}</div>
+          <div class="ap-actions">${nickBtn} ${adminBtn} ${disabBtn} ${deleteBtn}</div>
         </div>`;
     }).join('');
 
@@ -372,6 +374,46 @@ async function _renderPartecipanti() {
         const action = btn.dataset.action;
         const p      = schede.find(s => s.id === uid);
         const nome   = `${p?.nome || ''} ${p?.cognome || ''}`.trim();
+
+        if (action === 'nickname') {
+          const current = btn.dataset.current || '';
+          const inputId = 'modal-nickname-input';
+          openModal({
+            title: `Nickname — ${nome}`,
+            body: `
+              <p style="margin-bottom:12px;color:var(--text-muted);font-size:13px">
+                Questo nome sarà visibile nella classifica e nelle schede pronostici.
+              </p>
+              <input id="${inputId}" type="text" class="field-input"
+                value="${current}" maxlength="20"
+                placeholder="es. Roby, Il Fenomeno, MrGol…"
+                style="width:100%">`,
+            buttons: [
+              {
+                label: 'Salva',
+                cls: 'btn btn-primary',
+                onClick: async () => {
+                  const newNick = document.getElementById(inputId)?.value.trim();
+                  if (!newNick) { showToast('Il nickname non può essere vuoto.', 'error'); return; }
+                  try {
+                    await updateDoc(doc(db(), 'partecipanti', uid), { nickname: newNick });
+                    showToast(`Nickname aggiornato: "${newNick}"`, 'success');
+                    closeModal();
+                    _renderPartecipanti();
+                  } catch (e) {
+                    showToast('Errore: ' + e.message, 'error');
+                  }
+                },
+              },
+              { label: 'Annulla', cls: 'btn btn-secondary', onClick: closeModal },
+            ],
+          });
+          // Focus automatico sull'input appena la modal è aperta
+          setTimeout(() => {
+            const inp = document.getElementById(inputId);
+            if (inp) { inp.focus(); inp.select(); }
+          }, 50);
+        }
 
         if (action === 'promuovi-admin') {
           openModal({
