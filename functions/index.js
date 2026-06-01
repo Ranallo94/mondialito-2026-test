@@ -306,7 +306,7 @@ async function _aggiornaClassifica(risultati) {
     nomi[d.id] = nickname || [nome, cognome].filter(Boolean).join(' ') || d.id;
   });
 
-  const partecipanti = pronSnap.docs.filter(d => !disabilitati.has(d.id)).map(d => {
+  const partecipanti = pronSnap.docs.filter(d => !disabilitati.has(d.id) && !!nomi[d.id]).map(d => {
     const pr = d.data();
     const { totale, breakdown } = calcolaPunteggio(pr, risultati);
     const spareggio = calcolaSparegnio(pr, risultati);
