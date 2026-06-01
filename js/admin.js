@@ -343,11 +343,14 @@ async function _renderPartecipanti() {
       const badgeDisab = isDisab ? ' <span class="badge-disab">Disabilitato</span>' : '';
       const badgeLabel = isOwner ? ' <span class="badge-owner">👑 Proprietario</span>'
                        : p.isAdmin ? ' <span class="badge-admin">Admin</span>' : '';
+      const nicknameLabel = p.nickname
+        ? `<span class="ap-nickname">"${p.nickname}"</span> `
+        : '';
 
       return `
         <div class="admin-partecipante-row${isDisab ? ' ap-row-disab' : ''}">
           <div class="ap-info">
-            <span class="ap-nome">${p.nome} ${p.cognome || ''}${badgeLabel}${badgeDisab}</span>
+            <span class="ap-nome">${nicknameLabel}${p.nome} ${p.cognome || ''}${badgeLabel}${badgeDisab}</span>
             <span class="ap-stato">${stato}</span>
             ${p.haPronostici ? `<span class="ap-date">Salvato: ${aggiornato}</span>` : ''}
           </div>
@@ -753,9 +756,9 @@ async function _ricalcolaClassificaClient() {
   const nomi = {};
   const disabilitati = new Set();
   partSnap.forEach(d => {
-    const { nome, cognome, disabilitato } = d.data();
+    const { nome, cognome, nickname, disabilitato } = d.data();
     if (disabilitato) { disabilitati.add(d.id); return; }
-    nomi[d.id] = [nome, cognome].filter(Boolean).join(' ') || d.id;
+    nomi[d.id] = nickname || [nome, cognome].filter(Boolean).join(' ') || d.id;
   });
 
   const risultati = risSnap.exists() ? risSnap.data() : {};

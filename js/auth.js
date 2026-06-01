@@ -51,7 +51,7 @@ export async function initAuth(emailOrSlug, password) {
  * @param {string} password
  * @returns {{ email: string }} — email generata, per conferma UI
  */
-export async function registra(nome, cognome, telefono, password) {
+export async function registra(nome, cognome, telefono, password, nickname = '') {
   // Genera email fittizia unica: nome.cognome@mondialito.app
   // Sanifica: lowercase, no spazi, no accenti
   const slug  = _slug(nome) + '.' + _slug(cognome);
@@ -65,6 +65,7 @@ export async function registra(nome, cognome, telefono, password) {
   await setDoc(doc(db(), 'partecipanti', uid), {
     nome:       nome.trim(),
     cognome:    cognome.trim(),
+    nickname:   nickname.trim() || nome.trim(),
     telefono:   telefono.trim(),
     email,
     isAdmin:    false,

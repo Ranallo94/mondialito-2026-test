@@ -82,10 +82,12 @@ export async function initApp() {
     const nome     = document.getElementById('reg-nome').value.trim();
     const cognome  = document.getElementById('reg-cognome').value.trim();
     const telefono = document.getElementById('reg-telefono').value.trim();
+    const nickname = document.getElementById('reg-nickname').value.trim();
     const pw1      = document.getElementById('reg-password').value;
     const pw2      = document.getElementById('reg-password2').value;
 
-    if (!nome || !cognome || !telefono) { showRegError('Compila tutti i campi.'); return; }
+    if (!nome || !cognome || !telefono || !nickname) { showRegError('Compila tutti i campi.'); return; }
+    if (nickname.length < 2) { showRegError('Il nickname deve avere almeno 2 caratteri.'); return; }
     if (pw1 !== pw2) { showRegError('Le password non coincidono.'); return; }
     if (pw1.length < 6) { showRegError('La password deve avere almeno 6 caratteri.'); return; }
 
@@ -94,7 +96,7 @@ export async function initApp() {
     btn.textContent = '⏳ Invio in corso…';
 
     try {
-      await registra(nome, cognome, telefono, pw1);
+      await registra(nome, cognome, telefono, pw1, nickname);
       // onAuthChange gestirà il redirect alla schermata attesa
     } catch (err) {
       const msg = _traduciErroreAuth(err.code) || 'Errore nella registrazione. Riprova.';
@@ -142,11 +144,9 @@ async function mostraApp() {
   _nascondiTutto();
   document.getElementById('screen-app').style.display = '';
 
-  // Header
-  const nomeCompleto = STATE.utente.cognome
-    ? `${STATE.utente.nome} ${STATE.utente.cognome}`
-    : STATE.utente.nome;
-  document.getElementById('header-username').textContent = nomeCompleto;
+  // Header — mostra nickname se disponibile, altrimenti nome
+  const displayName = STATE.utente.nickname || STATE.utente.nome || '';
+  document.getElementById('header-username').textContent = displayName;
 
   // Nav admin
   if (STATE.utente.isAdmin) {
