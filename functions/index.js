@@ -301,9 +301,9 @@ async function _aggiornaClassifica(risultati) {
   const nomi = {};
   const disabilitati = new Set();
   partSnap.docs.forEach(d => {
-    const { nome, cognome, disabilitato } = d.data();
+    const { nome, cognome, nickname, disabilitato } = d.data();
     if (disabilitato) { disabilitati.add(d.id); return; }
-    nomi[d.id] = [nome, cognome].filter(Boolean).join(' ') || d.id;
+    nomi[d.id] = nickname || [nome, cognome].filter(Boolean).join(' ') || d.id;
   });
 
   const partecipanti = pronSnap.docs.filter(d => !disabilitati.has(d.id)).map(d => {
