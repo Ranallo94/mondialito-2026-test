@@ -1285,9 +1285,11 @@ select.field-input option { background: var(--bg-card2); }
 .admin-partecipanti-list  { display: flex; flex-direction: column; gap: 8px; }
 .admin-partecipante-row   { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; flex-wrap: wrap; }
 .ap-info    { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; flex: 1; }
-.ap-actions { flex-shrink: 0; }
-.ap-nome    { font-weight: 600; font-size: 14px; }
-.ap-stato   { font-size: 12px; }
+.ap-actions  { flex-shrink: 0; }
+.ap-nome     { font-weight: 600; font-size: 14px; }
+.ap-nickname { color: var(--verde-light); font-weight: 700; }
+.ap-stato    { font-size: 12px; }
+.field-hint  { font-size: 11px; color: var(--text-muted); font-weight: 400; }
 .ap-date  { font-size: 11px; color: var(--text-muted); }
 .modal-match-title  { font-size: 16px; font-weight: 700; text-align: center; padding: 10px 0 16px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
 .modal-form         { display: flex; flex-direction: column; gap: 12px; }
