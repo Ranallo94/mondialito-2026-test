@@ -24,23 +24,23 @@ export const SEDICESIMI_BRACKET = [
   { id:'S16', casa:{t:'2',g:'D'}, trasf:{t:'2',g:'G'} },
 ];
 
-// ── BRACKET FEEDS ─────────────────────────────────────
+// ── BRACKET FEEDS (ufficiale FIFA 2026) ───────────────
 export const BRACKET_FEEDS = {
-  'O1': { casa:{fase:'sedicesimi',id:'S01'}, trasf:{fase:'sedicesimi',id:'S02'} },
-  'O2': { casa:{fase:'sedicesimi',id:'S03'}, trasf:{fase:'sedicesimi',id:'S04'} },
-  'O3': { casa:{fase:'sedicesimi',id:'S05'}, trasf:{fase:'sedicesimi',id:'S06'} },
-  'O4': { casa:{fase:'sedicesimi',id:'S07'}, trasf:{fase:'sedicesimi',id:'S08'} },
-  'O5': { casa:{fase:'sedicesimi',id:'S09'}, trasf:{fase:'sedicesimi',id:'S10'} },
-  'O6': { casa:{fase:'sedicesimi',id:'S11'}, trasf:{fase:'sedicesimi',id:'S12'} },
-  'O7': { casa:{fase:'sedicesimi',id:'S13'}, trasf:{fase:'sedicesimi',id:'S14'} },
-  'O8': { casa:{fase:'sedicesimi',id:'S15'}, trasf:{fase:'sedicesimi',id:'S16'} },
-  'Q1': { casa:{fase:'ottavi',id:'O1'}, trasf:{fase:'ottavi',id:'O2'} },
-  'Q2': { casa:{fase:'ottavi',id:'O3'}, trasf:{fase:'ottavi',id:'O4'} },
-  'Q3': { casa:{fase:'ottavi',id:'O5'}, trasf:{fase:'ottavi',id:'O6'} },
-  'Q4': { casa:{fase:'ottavi',id:'O7'}, trasf:{fase:'ottavi',id:'O8'} },
-  'SF1': { casa:{fase:'quarti',id:'Q1'}, trasf:{fase:'quarti',id:'Q2'} },
-  'SF2': { casa:{fase:'quarti',id:'Q3'}, trasf:{fase:'quarti',id:'Q4'} },
-  'F':   { casa:{fase:'semifinali',id:'SF1'}, trasf:{fase:'semifinali',id:'SF2'} },
+  'O1': { casa:{fase:'sedicesimi',id:'S02'}, trasf:{fase:'sedicesimi',id:'S05'} }, // M74 vs M77 → M89
+  'O2': { casa:{fase:'sedicesimi',id:'S01'}, trasf:{fase:'sedicesimi',id:'S03'} }, // M73 vs M75 → M90
+  'O3': { casa:{fase:'sedicesimi',id:'S11'}, trasf:{fase:'sedicesimi',id:'S12'} }, // M83 vs M84 → M93
+  'O4': { casa:{fase:'sedicesimi',id:'S09'}, trasf:{fase:'sedicesimi',id:'S10'} }, // M81 vs M82 → M94
+  'O5': { casa:{fase:'sedicesimi',id:'S04'}, trasf:{fase:'sedicesimi',id:'S06'} }, // M76 vs M78 → M91
+  'O6': { casa:{fase:'sedicesimi',id:'S07'}, trasf:{fase:'sedicesimi',id:'S08'} }, // M79 vs M80 → M92
+  'O7': { casa:{fase:'sedicesimi',id:'S14'}, trasf:{fase:'sedicesimi',id:'S16'} }, // M86 vs M88 → M95
+  'O8': { casa:{fase:'sedicesimi',id:'S13'}, trasf:{fase:'sedicesimi',id:'S15'} }, // M85 vs M87 → M96
+  'Q1': { casa:{fase:'ottavi',id:'O1'}, trasf:{fase:'ottavi',id:'O2'} },           // M89 vs M90 → M97
+  'Q2': { casa:{fase:'ottavi',id:'O3'}, trasf:{fase:'ottavi',id:'O4'} },           // M93 vs M94 → M98
+  'Q3': { casa:{fase:'ottavi',id:'O5'}, trasf:{fase:'ottavi',id:'O6'} },           // M91 vs M92 → M99
+  'Q4': { casa:{fase:'ottavi',id:'O7'}, trasf:{fase:'ottavi',id:'O8'} },           // M95 vs M96 → M100
+  'SF1': { casa:{fase:'quarti',id:'Q1'}, trasf:{fase:'quarti',id:'Q2'} },          // M97 vs M98 → M101
+  'SF2': { casa:{fase:'quarti',id:'Q3'}, trasf:{fase:'quarti',id:'Q4'} },          // M99 vs M100 → M102
+  'F':   { casa:{fase:'semifinali',id:'SF1'}, trasf:{fase:'semifinali',id:'SF2'} }, // M101 vs M102 → M104
 };
 
 // ── COMB_3I (Tabella FIFA Annex C) ────────────────────

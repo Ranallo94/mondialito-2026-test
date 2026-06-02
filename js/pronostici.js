@@ -207,26 +207,39 @@ const COMB_3I = {
 };
 const COMB_SLOT_ORDER = ['A','B','D','E','G','I','K','L'];
 
-// Mappa: matchId → {casa, trasf} del turno precedente che alimenta quella partita
+// Mappa ufficiale FIFA 2026: matchId → {casa, trasf} del turno precedente
+// Fonte: Wikipedia 2026_FIFA_World_Cup_knockout_stage
 const BRACKET_FEEDS = {
-  // Ottavi ← vincitori sedicesimi
-  'O1': { casa:{fase:'sedicesimi',id:'S01'}, trasf:{fase:'sedicesimi',id:'S02'} },
-  'O2': { casa:{fase:'sedicesimi',id:'S03'}, trasf:{fase:'sedicesimi',id:'S04'} },
-  'O3': { casa:{fase:'sedicesimi',id:'S05'}, trasf:{fase:'sedicesimi',id:'S06'} },
-  'O4': { casa:{fase:'sedicesimi',id:'S07'}, trasf:{fase:'sedicesimi',id:'S08'} },
-  'O5': { casa:{fase:'sedicesimi',id:'S09'}, trasf:{fase:'sedicesimi',id:'S10'} },
-  'O6': { casa:{fase:'sedicesimi',id:'S11'}, trasf:{fase:'sedicesimi',id:'S12'} },
-  'O7': { casa:{fase:'sedicesimi',id:'S13'}, trasf:{fase:'sedicesimi',id:'S14'} },
-  'O8': { casa:{fase:'sedicesimi',id:'S15'}, trasf:{fase:'sedicesimi',id:'S16'} },
-  // Quarti ← vincitori ottavi
+  // Ottavi (M89-M96) ← vincitori sedicesimi
+  // O1=M89: Vin(M74/S02) vs Vin(M77/S05)
+  'O1': { casa:{fase:'sedicesimi',id:'S02'}, trasf:{fase:'sedicesimi',id:'S05'} },
+  // O2=M90: Vin(M73/S01) vs Vin(M75/S03)
+  'O2': { casa:{fase:'sedicesimi',id:'S01'}, trasf:{fase:'sedicesimi',id:'S03'} },
+  // O3=M93: Vin(M83/S11) vs Vin(M84/S12)
+  'O3': { casa:{fase:'sedicesimi',id:'S11'}, trasf:{fase:'sedicesimi',id:'S12'} },
+  // O4=M94: Vin(M81/S09) vs Vin(M82/S10)
+  'O4': { casa:{fase:'sedicesimi',id:'S09'}, trasf:{fase:'sedicesimi',id:'S10'} },
+  // O5=M91: Vin(M76/S04) vs Vin(M78/S06)
+  'O5': { casa:{fase:'sedicesimi',id:'S04'}, trasf:{fase:'sedicesimi',id:'S06'} },
+  // O6=M92: Vin(M79/S07) vs Vin(M80/S08)
+  'O6': { casa:{fase:'sedicesimi',id:'S07'}, trasf:{fase:'sedicesimi',id:'S08'} },
+  // O7=M95: Vin(M86/S14) vs Vin(M88/S16)
+  'O7': { casa:{fase:'sedicesimi',id:'S14'}, trasf:{fase:'sedicesimi',id:'S16'} },
+  // O8=M96: Vin(M85/S13) vs Vin(M87/S15)
+  'O8': { casa:{fase:'sedicesimi',id:'S13'}, trasf:{fase:'sedicesimi',id:'S15'} },
+  // Quarti (M97-M100) ← vincitori ottavi
+  // Q1=M97: Vin(M89/O1) vs Vin(M90/O2)
   'Q1': { casa:{fase:'ottavi',id:'O1'}, trasf:{fase:'ottavi',id:'O2'} },
+  // Q2=M98: Vin(M93/O3) vs Vin(M94/O4)
   'Q2': { casa:{fase:'ottavi',id:'O3'}, trasf:{fase:'ottavi',id:'O4'} },
+  // Q3=M99: Vin(M91/O5) vs Vin(M92/O6)
   'Q3': { casa:{fase:'ottavi',id:'O5'}, trasf:{fase:'ottavi',id:'O6'} },
+  // Q4=M100: Vin(M95/O7) vs Vin(M96/O8)
   'Q4': { casa:{fase:'ottavi',id:'O7'}, trasf:{fase:'ottavi',id:'O8'} },
-  // Semifinali ← vincitori quarti
+  // Semifinali (M101-M102) ← vincitori quarti
   'SF1': { casa:{fase:'quarti',id:'Q1'}, trasf:{fase:'quarti',id:'Q2'} },
   'SF2': { casa:{fase:'quarti',id:'Q3'}, trasf:{fase:'quarti',id:'Q4'} },
-  // Finale ← vincitori semifinali
+  // Finale (M104) ← vincitori semifinali
   'F':   { casa:{fase:'semifinali',id:'SF1'}, trasf:{fase:'semifinali',id:'SF2'} },
 };
 
