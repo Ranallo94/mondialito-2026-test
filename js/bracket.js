@@ -4,24 +4,27 @@
  * di rendering read-only (usato da profilo.js per la scheda altrui).
  */
 
-// ── BRACKET SEDICESIMI ────────────────────────────────
+// ── BRACKET SEDICESIMI (ordine bracket ufficiale FIFA 2026) ──────────────
+// Coppie adiacenti alimentano lo stesso ottavo:
+// O1: S02+S05 | O2: S01+S03 | O3: S11+S12 | O4: S09+S10
+// O5: S04+S06 | O6: S07+S08 | O7: S14+S16 | O8: S13+S15
 export const SEDICESIMI_BRACKET = [
-  { id:'S01', casa:{t:'2',g:'A'}, trasf:{t:'2',g:'B'} },
-  { id:'S02', casa:{t:'1',g:'E'}, trasf:{t:'3slot',slot:'E'} },
-  { id:'S03', casa:{t:'1',g:'F'}, trasf:{t:'2',g:'C'} },
-  { id:'S04', casa:{t:'1',g:'C'}, trasf:{t:'2',g:'F'} },
-  { id:'S05', casa:{t:'1',g:'I'}, trasf:{t:'3slot',slot:'I'} },
-  { id:'S06', casa:{t:'2',g:'E'}, trasf:{t:'2',g:'I'} },
-  { id:'S07', casa:{t:'1',g:'A'}, trasf:{t:'3slot',slot:'A'} },
-  { id:'S08', casa:{t:'1',g:'L'}, trasf:{t:'3slot',slot:'L'} },
-  { id:'S09', casa:{t:'1',g:'D'}, trasf:{t:'3slot',slot:'D'} },
-  { id:'S10', casa:{t:'1',g:'G'}, trasf:{t:'3slot',slot:'G'} },
-  { id:'S11', casa:{t:'2',g:'K'}, trasf:{t:'2',g:'L'} },
-  { id:'S12', casa:{t:'1',g:'H'}, trasf:{t:'2',g:'J'} },
-  { id:'S13', casa:{t:'1',g:'B'}, trasf:{t:'3slot',slot:'B'} },
-  { id:'S14', casa:{t:'1',g:'J'}, trasf:{t:'2',g:'H'} },
-  { id:'S15', casa:{t:'1',g:'K'}, trasf:{t:'3slot',slot:'K'} },
-  { id:'S16', casa:{t:'2',g:'D'}, trasf:{t:'2',g:'G'} },
+  { id:'S02', casa:{t:'1',g:'E'}, trasf:{t:'3slot',slot:'E'} },  // M74
+  { id:'S05', casa:{t:'1',g:'I'}, trasf:{t:'3slot',slot:'I'} },  // M77
+  { id:'S01', casa:{t:'2',g:'A'}, trasf:{t:'2',g:'B'} },         // M73
+  { id:'S03', casa:{t:'1',g:'F'}, trasf:{t:'2',g:'C'} },         // M75
+  { id:'S11', casa:{t:'2',g:'K'}, trasf:{t:'2',g:'L'} },         // M83
+  { id:'S12', casa:{t:'1',g:'H'}, trasf:{t:'2',g:'J'} },         // M84
+  { id:'S09', casa:{t:'1',g:'D'}, trasf:{t:'3slot',slot:'D'} },  // M81
+  { id:'S10', casa:{t:'1',g:'G'}, trasf:{t:'3slot',slot:'G'} },  // M82
+  { id:'S04', casa:{t:'1',g:'C'}, trasf:{t:'2',g:'F'} },         // M76
+  { id:'S06', casa:{t:'2',g:'E'}, trasf:{t:'2',g:'I'} },         // M78
+  { id:'S07', casa:{t:'1',g:'A'}, trasf:{t:'3slot',slot:'A'} },  // M79
+  { id:'S08', casa:{t:'1',g:'L'}, trasf:{t:'3slot',slot:'L'} },  // M80
+  { id:'S14', casa:{t:'1',g:'J'}, trasf:{t:'2',g:'H'} },         // M86
+  { id:'S16', casa:{t:'2',g:'D'}, trasf:{t:'2',g:'G'} },         // M88
+  { id:'S13', casa:{t:'1',g:'B'}, trasf:{t:'3slot',slot:'B'} },  // M85
+  { id:'S15', casa:{t:'1',g:'K'}, trasf:{t:'3slot',slot:'K'} },  // M87
 ];
 
 // ── BRACKET FEEDS (ufficiale FIFA 2026) ───────────────

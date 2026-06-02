@@ -15,23 +15,26 @@ import { showToast, showSpinner } from './ui.js';
 // SEDICESIMI: template bracket ufficiale FIFA 2026
 // Slot '1'=primo, '2'=secondo, '3slot'=miglior terzo (assegnato da COMB_3I)
 // ══════════════════════════════════════════
+// Ordine bracket ufficiale FIFA 2026 — coppie adiacenti alimentano lo stesso ottavo
+// O1(M89): S02+S05 | O2(M90): S01+S03 | O3(M93): S11+S12 | O4(M94): S09+S10
+// O5(M91): S04+S06 | O6(M92): S07+S08 | O7(M95): S14+S16 | O8(M96): S13+S15
 const SEDICESIMI_BRACKET = [
-  { id:'S01', match:'M73', desc:'2° Girone A vs 2° Girone B', casa:{t:'2',g:'A'}, trasf:{t:'2',g:'B'} },
   { id:'S02', match:'M74', desc:'1° Girone E vs Miglior 3° (A/B/C/D/F)', casa:{t:'1',g:'E'}, trasf:{t:'3slot',slot:'E'} },
-  { id:'S03', match:'M75', desc:'1° Girone F vs 2° Girone C', casa:{t:'1',g:'F'}, trasf:{t:'2',g:'C'} },
-  { id:'S04', match:'M76', desc:'1° Girone C vs 2° Girone F', casa:{t:'1',g:'C'}, trasf:{t:'2',g:'F'} },
   { id:'S05', match:'M77', desc:'1° Girone I vs Miglior 3° (C/D/F/G/H)', casa:{t:'1',g:'I'}, trasf:{t:'3slot',slot:'I'} },
+  { id:'S01', match:'M73', desc:'2° Girone A vs 2° Girone B', casa:{t:'2',g:'A'}, trasf:{t:'2',g:'B'} },
+  { id:'S03', match:'M75', desc:'1° Girone F vs 2° Girone C', casa:{t:'1',g:'F'}, trasf:{t:'2',g:'C'} },
+  { id:'S11', match:'M83', desc:'2° Girone K vs 2° Girone L', casa:{t:'2',g:'K'}, trasf:{t:'2',g:'L'} },
+  { id:'S12', match:'M84', desc:'1° Girone H vs 2° Girone J', casa:{t:'1',g:'H'}, trasf:{t:'2',g:'J'} },
+  { id:'S09', match:'M81', desc:'1° Girone D vs Miglior 3° (B/E/F/I/J)', casa:{t:'1',g:'D'}, trasf:{t:'3slot',slot:'D'} },
+  { id:'S10', match:'M82', desc:'1° Girone G vs Miglior 3° (A/E/H/I/J)', casa:{t:'1',g:'G'}, trasf:{t:'3slot',slot:'G'} },
+  { id:'S04', match:'M76', desc:'1° Girone C vs 2° Girone F', casa:{t:'1',g:'C'}, trasf:{t:'2',g:'F'} },
   { id:'S06', match:'M78', desc:'2° Girone E vs 2° Girone I', casa:{t:'2',g:'E'}, trasf:{t:'2',g:'I'} },
   { id:'S07', match:'M79', desc:'1° Girone A vs Miglior 3° (C/E/F/H/I)', casa:{t:'1',g:'A'}, trasf:{t:'3slot',slot:'A'} },
   { id:'S08', match:'M80', desc:'1° Girone L vs Miglior 3° (E/H/I/J/K)', casa:{t:'1',g:'L'}, trasf:{t:'3slot',slot:'L'} },
-  { id:'S09', match:'M81', desc:'1° Girone D vs Miglior 3° (B/E/F/I/J)', casa:{t:'1',g:'D'}, trasf:{t:'3slot',slot:'D'} },
-  { id:'S10', match:'M82', desc:'1° Girone G vs Miglior 3° (A/E/H/I/J)', casa:{t:'1',g:'G'}, trasf:{t:'3slot',slot:'G'} },
-  { id:'S11', match:'M83', desc:'2° Girone K vs 2° Girone L', casa:{t:'2',g:'K'}, trasf:{t:'2',g:'L'} },
-  { id:'S12', match:'M84', desc:'1° Girone H vs 2° Girone J', casa:{t:'1',g:'H'}, trasf:{t:'2',g:'J'} },
-  { id:'S13', match:'M85', desc:'1° Girone B vs Miglior 3° (E/F/G/I/J)', casa:{t:'1',g:'B'}, trasf:{t:'3slot',slot:'B'} },
   { id:'S14', match:'M86', desc:'1° Girone J vs 2° Girone H', casa:{t:'1',g:'J'}, trasf:{t:'2',g:'H'} },
-  { id:'S15', match:'M87', desc:'1° Girone K vs Miglior 3° (D/E/I/J/L)', casa:{t:'1',g:'K'}, trasf:{t:'3slot',slot:'K'} },
   { id:'S16', match:'M88', desc:'2° Girone D vs 2° Girone G', casa:{t:'2',g:'D'}, trasf:{t:'2',g:'G'} },
+  { id:'S13', match:'M85', desc:'1° Girone B vs Miglior 3° (E/F/G/I/J)', casa:{t:'1',g:'B'}, trasf:{t:'3slot',slot:'B'} },
+  { id:'S15', match:'M87', desc:'1° Girone K vs Miglior 3° (D/E/I/J/L)', casa:{t:'1',g:'K'}, trasf:{t:'3slot',slot:'K'} },
 ];
 
 // Tabella 495 combinazioni FIFA (Annex C del regolamento)
