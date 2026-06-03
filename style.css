@@ -1882,3 +1882,30 @@ select.field-input option { background: var(--bg-card2); }
 .spareggio-save-msg { font-size: 13px; }
 .spareggio-save-msg.ssm-ok    { color: #4caf50; font-weight: 600; }
 .spareggio-save-msg.ssm-error { color: #e74c3c; font-weight: 600; }
+
+/* ── TOGGLE VISIBILITÀ SCHEDA ── */
+.visibility-toggle-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.vt-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+.vt-icon { font-size: 1.1rem; line-height: 1; }
+.vt-text strong { color: var(--text); }
+
+/* Stato locked nel profilo altrui */
+.empty-state--locked .empty-icon { font-size: 2.5rem; }
+.empty-state--locked p { color: var(--text-muted); font-size: 0.9rem; }
