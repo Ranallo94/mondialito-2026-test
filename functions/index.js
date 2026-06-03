@@ -76,7 +76,30 @@ exports.ricalcolaClassifica = onDocumentWritten(
   }
 );
 
-// ── 4. ELIMINA UTENTE (callable, solo admin) ─────────
+// ── 4. RESET PASSWORD (callable, solo admin) ──────────
+exports.resetPasswordAdmin = onCall(
+  { region: 'europe-west1' },
+  async (request) => {
+    const callerUid = request.auth?.uid;
+    if (!callerUid) throw new HttpsError('unauthenticated', 'Autenticazione richiesta.');
+
+    const callerSnap = await db.doc(`partecipanti/${callerUid}`).get();
+    if (!callerSnap.exists() || !callerSnap.data().isAdmin) {
+      throw new HttpsError('permission-denied', 'Solo gli admin possono resettare le password.');
+    }
+
+    const { uid, newPassword } = request.data;
+    if (!uid)          throw new HttpsError('invalid-argument', 'uid mancante.');
+    if (!newPassword || newPassword.length < 6) {
+      throw new HttpsError('invalid-argument', 'La password deve essere di almeno 6 caratteri.');
+    }
+
+    await getAuth().updateUser(uid, { password: newPassword });
+    return { ok: true };
+  }
+);
+
+// ── 5. ELIMINA UTENTE (callable, solo admin) ─────────
 exports.eliminaUtente = onCall(
   { region: 'europe-west1' },
   async (request) => {
