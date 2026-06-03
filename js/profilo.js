@@ -304,9 +304,10 @@ function _renderSchedaPronostici() {
     return;
   }
 
-  // Se la scheda è nascosta e stiamo guardando il profilo altrui, mostra placeholder
+  // Se la scheda è nascosta, i pronostici sono ancora aperti, e stiamo guardando il profilo altrui → placeholder
+  // Una volta che i pronostici sono chiusi, la privacy decade e tutti possono vedere le schede
   const isAltrui = STATE.profiloUid && STATE.profiloUid !== STATE.utente?.id;
-  if (isAltrui && _pronostici.pronostico_nascosto) {
+  if (isAltrui && _pronostici.pronostico_nascosto && STATE.pronosticiAperti) {
     el.innerHTML = `
       <div class="empty-state empty-state--locked">
         <div class="empty-icon">🔒</div>

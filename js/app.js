@@ -16,6 +16,7 @@ export const STATE = {
   utente: null,       // { id, nome, cognome, isAdmin, approvato }
   pagina: 'classifica',
   profiloUid: null,   // uid del profilo visualizzato (null = profilo personale)
+  pronosticiAperti: true, // false quando i pronostici sono chiusi (aggiornato da pronostici.js)
   db: null,
   _appInizializzata: false,
 };

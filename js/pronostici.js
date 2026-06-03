@@ -806,6 +806,7 @@ export async function initPronostici() {
   showSpinner('gironi-container', 'Caricamento pronostici...');
   _sistemaUnsub = onSistemaSnapshot((cfg) => {
     _pronosticiAperti = cfg.pronostici_aperti !== false;
+    STATE.pronosticiAperti = _pronosticiAperti;
     _aggiornaStatoBanner();
     _aggiornaBtnSalva();
   });
