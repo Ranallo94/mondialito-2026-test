@@ -342,6 +342,8 @@ async function _renderPartecipanti() {
 
       const nickBtn = `<button class="btn btn-sm btn-secondary" data-uid="${p.id}" data-action="nickname" data-current="${p.nickname || ''}">✏️ Nickname</button>`;
 
+      const resetPwdBtn = `<button class="btn btn-sm btn-secondary" data-uid="${p.id}" data-action="reset-password">🔑 Reset pwd</button>`;
+
       const badgeDisab = isDisab ? ' <span class="badge-disab">Disabilitato</span>' : '';
       const badgeLabel = isOwner ? ' <span class="badge-owner">👑 Proprietario</span>'
                        : p.isAdmin ? ' <span class="badge-admin">Admin</span>' : '';
@@ -356,7 +358,7 @@ async function _renderPartecipanti() {
             <span class="ap-stato">${stato}</span>
             ${p.haPronostici ? `<span class="ap-date">Salvato: ${aggiornato}</span>` : ''}
           </div>
-          <div class="ap-actions">${nickBtn} ${adminBtn} ${disabBtn} ${deleteBtn}</div>
+          <div class="ap-actions">${nickBtn} ${resetPwdBtn} ${adminBtn} ${disabBtn} ${deleteBtn}</div>
         </div>`;
     }).join('');
 
@@ -497,6 +499,47 @@ async function _renderPartecipanti() {
           } catch (e) {
             showToast('Errore: ' + e.message, 'error');
           }
+        }
+
+        if (action === 'reset-password') {
+          const inputId = 'modal-reset-pwd-input';
+          openModal({
+            title: `Reset password — ${nome}`,
+            body: `
+              <p style="margin-bottom:12px;color:var(--text-muted);font-size:13px">
+                Imposta una nuova password per <strong>${nome}</strong>.<br>
+                Comunicagliela direttamente (es. via WhatsApp). Nessuna email verrà inviata.
+              </p>
+              <input id="${inputId}" type="text" class="field-input"
+                placeholder="Nuova password (min. 6 caratteri)"
+                maxlength="30" style="width:100%">`,
+            buttons: [
+              {
+                label: 'Salva',
+                cls: 'btn btn-primary',
+                onClick: async () => {
+                  const newPassword = document.getElementById(inputId)?.value.trim();
+                  if (!newPassword || newPassword.length < 6) {
+                    showToast('La password deve essere di almeno 6 caratteri.', 'error');
+                    return;
+                  }
+                  try {
+                    const fn = httpsCallable(window._firebase.functions, 'resetPasswordAdmin');
+                    await fn({ uid, newPassword });
+                    closeModal();
+                    showToast(`Password di ${nome} aggiornata ✓`, 'success');
+                  } catch (e) {
+                    showToast('Errore: ' + (e.message || 'impossibile resettare la password'), 'error');
+                  }
+                },
+              },
+              { label: 'Annulla', cls: 'btn btn-secondary', onClick: closeModal },
+            ],
+          });
+          setTimeout(() => {
+            const inp = document.getElementById(inputId);
+            if (inp) { inp.focus(); }
+          }, 50);
         }
 
         if (action === 'elimina') {
