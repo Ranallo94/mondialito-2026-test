@@ -304,6 +304,17 @@ function _renderSchedaPronostici() {
     return;
   }
 
+  // Se la scheda è nascosta e stiamo guardando il profilo altrui, mostra placeholder
+  const isAltrui = STATE.profiloUid && STATE.profiloUid !== STATE.utente?.id;
+  if (isAltrui && _pronostici.pronostico_nascosto) {
+    el.innerHTML = `
+      <div class="empty-state empty-state--locked">
+        <div class="empty-icon">🔒</div>
+        <p>Questo partecipante ha scelto di nascondere la propria scheda pronostici.</p>
+      </div>`;
+    return;
+  }
+
   const pGironi = _pronostici.gironi              || {};
   const pCannon = _pronostici.capocannoniere      || {};
   const rGironi = _risultati.gironi               || {};

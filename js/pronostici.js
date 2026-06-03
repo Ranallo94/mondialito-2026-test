@@ -823,6 +823,7 @@ export async function initPronostici() {
   _ricalcolaBracket();
   _renderRiepilogoGironi();
   _renderTabellone();
+  _initVisibilitaToggle();
 
   // Applica lo stato aperti/chiusi ai campi ora che il form è renderizzato
   _aggiornaBtnSalva();
@@ -1756,6 +1757,49 @@ function _fmtData(iso) {
   if (!iso) return '';
   const d = new Date(iso);
   return d.toLocaleDateString('it-IT', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+}
+
+// ── TOGGLE VISIBILITÀ SCHEDA ────────────────────────────────────────────
+function _initVisibilitaToggle() {
+  // Inserisce il contenitore del toggle dopo il banner, se non già presente
+  const bannerEl = document.getElementById('pronostici-banner');
+  if (bannerEl && !document.getElementById('pronostici-visibility-toggle')) {
+    const div = document.createElement('div');
+    div.id = 'pronostici-visibility-toggle';
+    bannerEl.insertAdjacentElement('afterend', div);
+  }
+  _renderVisibilitaToggle();
+}
+
+function _renderVisibilitaToggle() {
+  const el = document.getElementById('pronostici-visibility-toggle');
+  if (!el) return;
+  const nascosto = !!_pronostici.pronostico_nascosto;
+  el.innerHTML = `
+    <div class="visibility-toggle-bar">
+      <div class="vt-info">
+        <span class="vt-icon">${nascosto ? '🔒' : '👁️'}</span>
+        <span class="vt-text">La tua scheda è <strong>${nascosto ? 'nascosta' : 'visibile'}</strong> agli altri partecipanti</span>
+      </div>
+      <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-visibilita">
+        ${nascosto ? '👁️ Rendi visibile' : '🔒 Nascondi scheda'}
+      </button>
+    </div>`;
+
+  document.getElementById('btn-toggle-visibilita')?.addEventListener('click', async () => {
+    const btn = document.getElementById('btn-toggle-visibilita');
+    if (btn) btn.disabled = true;
+    const nuovoValore = !_pronostici.pronostico_nascosto;
+    _pronostici.pronostico_nascosto = nuovoValore;
+    try {
+      await savePronostici(STATE.utente.id, _pronostici);
+      showToast(nuovoValore ? '🔒 Scheda nascosta agli altri' : '👁️ Scheda ora visibile', 'success');
+    } catch (e) {
+      _pronostici.pronostico_nascosto = !nuovoValore; // rollback
+      showToast('Errore: ' + e.message, 'error');
+    }
+    _renderVisibilitaToggle();
+  });
 }
 
 export { _salvaPronostici };
