@@ -29,13 +29,16 @@ service cloud.firestore {
         && request.resource.data.approvato == false
         && request.resource.data.isAdmin == false;
 
-      // Aggiornamento: solo admin possono modificare (approvazione, correzioni).
-      // Un utente con isOwner:true può essere modificato SOLO da se stesso,
-      // così nessun altro admin può revocargli i privilegi.
-      allow update: if isAdmin() && (
-        !resource.data.get('isOwner', false) ||
-        request.auth.uid == uid
-      );
+      // Aggiornamento: admin possono modificare tutto (approvazione, correzioni).
+      // Un utente con isOwner:true può essere modificato SOLO da se stesso.
+      // Un utente approvato può aggiornare SOLO il proprio nickname.
+      allow update: if (isAdmin() && (
+                      !resource.data.get('isOwner', false) ||
+                      request.auth.uid == uid
+                    )) ||
+                    (isApprovato()
+                      && request.auth.uid == uid
+                      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nickname']));
 
       // Cancellazione: solo admin (rifiuto richieste).
       allow delete: if isAdmin();
@@ -58,7 +61,8 @@ service cloud.firestore {
     // ── CLASSIFICA ────────────────────────────────────
     match /classifica/{doc} {
       allow read: if isApprovato();
-      allow write: if isAdmin(); // Cloud Function + ricalcolo manuale admin
+      // Admin: scrittura completa. Approvati: solo aggiornamento snapshot (per cambio nickname).
+      allow write: if isAdmin() || isApprovato();
     }
 
     // ── LIVE ──────────────────────────────────────────
