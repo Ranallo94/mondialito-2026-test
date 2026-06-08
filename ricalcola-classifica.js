@@ -155,7 +155,7 @@
         if (!rMatch?.modalita) return;
         const pMatch = pFase[matchId];
         if (!pMatch) return;
-        if (pMatch.modalita === rMatch.modalita && pMatch.vincitore === rMatch.vincitore) {
+        if (pMatch.modalita === rMatch.modalita) {
           bd.modalita.punti   += REG.fasi_eliminatorie.modalita_passaggio_turno.punti;
           bd.modalita.corretti++;
         }
@@ -211,7 +211,8 @@
   // ── Calcola punteggi per tutti i partecipanti ─────────
   const lista = [];
   for (const [uid, pr] of Object.entries(pronostici)) {
-    const nome = partecipanti[uid]?.nome || uid;
+    if (!partecipanti[uid]) continue; // salta pronostici orfani (utenti eliminati)
+    const nome = partecipanti[uid].nome;
     const { totale, breakdown } = calcolaPunteggio(pr, risultati);
     const spareggio = calcolaSparegnio(pr, risultati);
     lista.push({ id: uid, nome, totale, breakdown, spareggio });
