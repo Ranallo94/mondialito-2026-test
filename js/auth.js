@@ -121,13 +121,6 @@ export function getCurrentUser() {
   return _utente;
 }
 
-/**
- * Aggiorna il nickname nella cache locale dell'utente corrente.
- * Da chiamare dopo aver salvato su Firestore.
- */
-export function aggiornaUtenteLocale(patch) {
-  if (_utente) Object.assign(_utente, patch);
-}
 
 export async function logout() {
   await signOut(auth());

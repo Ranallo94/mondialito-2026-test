@@ -115,21 +115,6 @@ export async function updatePartecipante(uid, patch) {
   await updateDoc(doc(db(), 'partecipanti', uid), patch);
 }
 
-/**
- * Aggiorna il nome visualizzato di un partecipante nello snapshot classifica,
- * senza dover rieseguire ricalcola-classifica.
- */
-export async function aggiornaNomeClassifica(uid, nuovoNome) {
-  const ref  = doc(db(), 'classifica', 'snapshot');
-  const snap = await getDoc(ref);
-  if (!snap.exists()) return;
-  const lista = snap.data().partecipanti || [];
-  const idx   = lista.findIndex(p => p.id === uid);
-  if (idx === -1) return;
-  lista[idx] = { ...lista[idx], nome: nuovoNome };
-  await updateDoc(ref, { partecipanti: lista });
-}
-
 // ── SISTEMA ───────────────────────────────────────────
 
 /**
