@@ -6,7 +6,7 @@
 
 import DB from '../mondialito_db.json' with { type: 'json' };
 import { STATE, navigaA } from './app.js';
-import { getPronostici, onRisultatiSnapshot, onClassificaSnapshot, updatePartecipante } from './db.js';
+import { getPronostici, onRisultatiSnapshot, onClassificaSnapshot, updatePartecipante, aggiornaNomeClassifica } from './db.js';
 import { calcolaPunteggio } from './punteggi.js';
 import { showSpinner } from './ui.js';
 import { renderRiepilogoGironi, renderTabellone } from './bracket.js';
@@ -446,6 +446,7 @@ function _renderImpostazioni() {
 
     try {
       await updatePartecipante(utente.id, { nickname: val });
+      await aggiornaNomeClassifica(utente.id, val);
       aggiornaUtenteLocale({ nickname: val });
       // Aggiorna il display name nell'header se presente
       const headerName = document.getElementById('header-user-name');
