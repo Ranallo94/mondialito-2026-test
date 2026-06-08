@@ -62,19 +62,19 @@ exports.syncManuale = onCall(
 );
 
 // ── 3. RICALCOLA CLASSIFICA (triggered) ───────────────
-// Si attiva ogni volta che il documento risultati/ufficiali cambia.
-exports.ricalcolaClassifica = onDocumentWritten(
-  { document: 'risultati/ufficiali', region: 'europe-west1' },
-  async (event) => {
-    try {
-      const data = event.data.after?.data();
-      if (!data) return; // documento eliminato, nulla da fare
-      await _aggiornaClassifica(data);
-    } catch (e) {
-      console.error('[ricalcolaClassifica] Errore:', e.message);
-    }
-  }
-);
+// TEMPORANEAMENTE COMMENTATO — da riattivare dopo il primo deploy pulito
+// exports.ricalcolaClassifica = onDocumentWritten(
+//   { document: 'risultati/ufficiali', region: 'europe-west1' },
+//   async (event) => {
+//     try {
+//       const data = event.data.after?.data();
+//       if (!data) return;
+//       await _aggiornaClassifica(data);
+//     } catch (e) {
+//       console.error('[ricalcolaClassifica] Errore:', e.message);
+//     }
+//   }
+// );
 
 // ── 4. ELIMINA UTENTE (callable, solo admin) ─────────
 exports.eliminaUtente = onCall(
