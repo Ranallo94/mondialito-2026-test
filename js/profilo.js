@@ -6,10 +6,11 @@
 
 import DB from '../mondialito_db.json' with { type: 'json' };
 import { STATE, navigaA } from './app.js';
-import { getPronostici, onRisultatiSnapshot, onClassificaSnapshot } from './db.js';
+import { getPronostici, onRisultatiSnapshot, onClassificaSnapshot, updatePartecipante } from './db.js';
 import { calcolaPunteggio } from './punteggi.js';
 import { showSpinner } from './ui.js';
 import { renderRiepilogoGironi, renderTabellone } from './bracket.js';
+import { aggiornaUtenteLocale } from './auth.js';
 
 let _pronostici  = null;
 let _risultati   = {};
@@ -55,7 +56,13 @@ export async function initProfilo() {
     _renderProfilo();
   });
 
-  // Tab interni: Riepilogo / Scheda
+  // Tab interni: Riepilogo / Scheda / Impostazioni
+  const isAltrui = STATE.profiloUid && STATE.profiloUid !== STATE.utente?.id;
+
+  // Mostra/nascondi tab Impostazioni (solo profilo proprio)
+  const tabImpostazioni = document.getElementById('tab-btn-impostazioni');
+  if (tabImpostazioni) tabImpostazioni.style.display = isAltrui ? 'none' : '';
+
   document.getElementById('profilo-inner-tabs')?.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-tab]');
     if (!btn) return;
@@ -64,8 +71,9 @@ export async function initProfilo() {
     document.querySelectorAll('#page-profilo .tab-content').forEach(el => {
       el.classList.toggle('active', el.id === tabId);
     });
-    // Rendering lazy della scheda al primo accesso
+    // Rendering lazy
     if (tabId === 'tab-profilo-scheda') _renderSchedaPronostici();
+    if (tabId === 'tab-profilo-impostazioni') _renderImpostazioni();
   });
 
   // Titolo pagina
@@ -394,4 +402,62 @@ function _renderSchedaPronostici() {
   // Renderizza riepilogo e tabellone nei loro container
   renderRiepilogoGironi(document.getElementById('scheda-riepilogo-container'), _pronostici, DB);
   renderTabellone(document.getElementById('scheda-tabellone-container'), _pronostici, DB);
+}
+
+// ── IMPOSTAZIONI (solo profilo proprio) ───────────────
+function _renderImpostazioni() {
+  const el = document.getElementById('profilo-impostazioni-container');
+  if (!el) return;
+
+  const utente = STATE.utente;
+  const nickAttuale = utente?.nickname || utente?.nome || '';
+
+  el.innerHTML = `
+    <div class="breakdown-section">
+      <h3 class="section-title">✏️ Modifica nickname</h3>
+      <div class="impostazioni-form">
+        <p class="impostazioni-desc">Il nickname è il nome che appare in classifica e sulle schede.</p>
+        <div class="field-group">
+          <label class="field-label" for="input-nickname-new">Nuovo nickname</label>
+          <input id="input-nickname-new" type="text" class="field-input"
+            value="${nickAttuale}" maxlength="20" placeholder="es. Roby, Il Fenomeno, MrGol…">
+          <div class="field-hint">2–20 caratteri</div>
+        </div>
+        <div id="nickname-feedback" class="field-feedback"></div>
+        <button id="btn-salva-nickname" class="btn btn-primary btn-sm">Salva nickname</button>
+      </div>
+    </div>`;
+
+  document.getElementById('btn-salva-nickname')?.addEventListener('click', async () => {
+    const input = document.getElementById('input-nickname-new');
+    const feedback = document.getElementById('nickname-feedback');
+    const val = input?.value?.trim() || '';
+
+    if (val.length < 2) {
+      feedback.textContent = 'Il nickname deve avere almeno 2 caratteri.';
+      feedback.className = 'field-feedback field-feedback--error';
+      return;
+    }
+
+    const btn = document.getElementById('btn-salva-nickname');
+    btn.disabled = true;
+    btn.textContent = 'Salvataggio…';
+    feedback.textContent = '';
+
+    try {
+      await updatePartecipante(utente.id, { nickname: val });
+      aggiornaUtenteLocale({ nickname: val });
+      // Aggiorna il display name nell'header se presente
+      const headerName = document.getElementById('header-user-name');
+      if (headerName) headerName.textContent = val;
+      feedback.textContent = 'Nickname aggiornato!';
+      feedback.className = 'field-feedback field-feedback--ok';
+    } catch (e) {
+      feedback.textContent = 'Errore durante il salvataggio. Riprova.';
+      feedback.className = 'field-feedback field-feedback--error';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Salva nickname';
+    }
+  });
 }
