@@ -88,6 +88,13 @@ a { color: var(--oro); text-decoration: none; }
   border: 1px solid rgba(229,62,62,0.3);
 }
 
+.login-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: -8px;
+}
+
 /* ════════════════════════════════════════
    FORM FIELDS
 ════════════════════════════════════════ */
