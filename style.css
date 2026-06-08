@@ -923,6 +923,10 @@ select.field-input option { background: var(--bg-card2); }
   .ris-gironi-grid { grid-template-columns: 1fr; }
 }
 
+@media (max-width: 480px) {
+  .tab { flex: none; padding: 8px 10px; font-size: 12px; min-width: unset; }
+}
+
 /* ── TABELLONE ELIMINATORIE ── */
 .tb-wrapper {
   overflow-x: auto;
