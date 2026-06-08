@@ -6,11 +6,12 @@
 
 import DB from '../mondialito_db.json' with { type: 'json' };
 import { STATE, navigaA } from './app.js';
-import { getPronostici, onRisultatiSnapshot, onClassificaSnapshot, updatePartecipante, aggiornaNomeClassifica } from './db.js';
+import { getPronostici, onRisultatiSnapshot, onClassificaSnapshot } from './db.js';
 import { calcolaPunteggio } from './punteggi.js';
 import { showSpinner } from './ui.js';
 import { renderRiepilogoGironi, renderTabellone } from './bracket.js';
 import { aggiornaUtenteLocale } from './auth.js';
+import { httpsCallable } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js';
 
 let _pronostici  = null;
 let _risultati   = {};
@@ -445,10 +446,9 @@ function _renderImpostazioni() {
     feedback.textContent = '';
 
     try {
-      await updatePartecipante(utente.id, { nickname: val });
-      await aggiornaNomeClassifica(utente.id, val);
+      const fn = httpsCallable(window._firebase.functions, 'cambiaNickname');
+      await fn({ nickname: val });
       aggiornaUtenteLocale({ nickname: val });
-      // Aggiorna il display name nell'header se presente
       const headerName = document.getElementById('header-user-name');
       if (headerName) headerName.textContent = val;
       feedback.textContent = 'Nickname aggiornato!';

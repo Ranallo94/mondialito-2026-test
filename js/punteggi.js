@@ -132,7 +132,7 @@ export function calcolaPunteggio(pronostici, risultati) {
       if (!rMatch?.modalita) return;
       const pMatch = pFase[matchId];
       if (!pMatch) return;
-      if (pMatch.modalita === rMatch.modalita && pMatch.vincitore === rMatch.vincitore) {
+      if (pMatch.modalita === rMatch.modalita) {
         bd.modalita.punti += REG.fasi_eliminatorie.modalita_passaggio_turno.punti;
         bd.modalita.corretti++;
       }
