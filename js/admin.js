@@ -365,7 +365,24 @@ async function _renderPartecipanti() {
         ${partecipanti.length} partecipanti —
         ${schede.filter(p => p.haPronostici).length} schede compilate
       </div>
+      <div class="admin-partecipanti-search-wrap">
+        <input type="search" id="admin-partecipanti-search" class="admin-search-input"
+               placeholder="🔍 Cerca per nome, nickname…" autocomplete="off">
+      </div>
       <div class="admin-partecipanti-list">${rows}</div>`;
+
+    // Ricerca live
+    const searchInput = container.querySelector('#admin-partecipanti-search');
+    const listEl = container.querySelector('.admin-partecipanti-list');
+    const allRows = listEl.querySelectorAll('.admin-partecipante-row');
+    searchInput.addEventListener('input', () => {
+      const q = searchInput.value.trim().toLowerCase();
+      allRows.forEach(row => {
+        const text = row.querySelector('.ap-nome')?.textContent.toLowerCase() || '';
+        row.style.display = (!q || text.includes(q)) ? '' : 'none';
+      });
+    });
+    searchInput.focus();
 
     // Gestione clic pulsanti admin
     container.querySelectorAll('[data-action]').forEach(btn => {
