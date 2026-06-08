@@ -287,6 +287,7 @@ const GIOCATORI = [
   { cognome: 'De Ketelaere', nome: 'Charles', squadra: 'BEL' },
   { cognome: 'Castagne', nome: 'Timothy', squadra: 'BEL' },
   { cognome: 'Witsel', nome: 'Axel', squadra: 'BEL' },
+  { cognome: 'Openda', nome: 'Lois', squadra: 'BEL' },
   // BOSNIA
   { cognome: 'Džeko', nome: 'Edin', squadra: 'BIH' },
   { cognome: 'Kolašinac', nome: 'Sead', squadra: 'BIH' },
@@ -309,6 +310,7 @@ const GIOCATORI = [
   { cognome: 'David', nome: 'Jonathan', squadra: 'CAN' },
   { cognome: 'Eustáquio', nome: 'Stephen', squadra: 'CAN' },
   { cognome: 'Larin', nome: 'Cyle', squadra: 'CAN' },
+  { cognome: 'Buchanan', nome: 'Tajon', squadra: 'CAN' },
   // COSTA D'AVORIO
   { cognome: 'Kessié', nome: 'Franck', squadra: 'CIV' },
   { cognome: 'Sangaré', nome: 'Ibrahim', squadra: 'CIV' },
@@ -416,6 +418,8 @@ const GIOCATORI = [
   { cognome: 'Schlotterbeck', nome: 'Nico', squadra: 'GER' },
   { cognome: 'Tah', nome: 'Jonathan', squadra: 'GER' },
   { cognome: 'Thiaw', nome: 'Malick', squadra: 'GER' },
+  { cognome: 'Undav', nome: 'Deniz', squadra: 'GER' },
+  { cognome: 'Woltemade', nome: 'Nick', squadra: 'GER' },
   // GHANA
   { cognome: 'Kudus', nome: 'Mohammed', squadra: 'GHA' },
   { cognome: 'Partey', nome: 'Thomas', squadra: 'GHA' },
@@ -447,6 +451,7 @@ const GIOCATORI = [
   { cognome: 'Lee', nome: 'Kang-in', squadra: 'KOR' },
   { cognome: 'Hwang', nome: 'Hee-chan', squadra: 'KOR' },
   { cognome: 'Hwang', nome: 'In-beom', squadra: 'KOR' },
+  { cognome: 'Cho', nome: 'Gue-sung', squadra: 'KOR' },
   // ARABIA SAUDITA
   { cognome: 'Al-Dawsari', nome: 'Salem', squadra: 'KSA' },
   { cognome: 'Al-Ghannam', nome: '', squadra: 'KSA' },
@@ -462,6 +467,7 @@ const GIOCATORI = [
   { cognome: 'Lozano', nome: 'Hirving', squadra: 'MEX' },
   { cognome: 'Alvarado', nome: 'Erik', squadra: 'MEX' },
   { cognome: 'Vega', nome: 'Alexis', squadra: 'MEX' },
+  { cognome: 'Jiménez', nome: 'Raúl', squadra: 'MEX' },
   // PAESI BASSI
   { cognome: 'Van Dijk', nome: 'Virgil', squadra: 'NED' },
   { cognome: 'De Jong', nome: 'Frenkie', squadra: 'NED' },
@@ -518,15 +524,16 @@ const GIOCATORI = [
   { cognome: 'Afif', nome: 'Akram', squadra: 'QAT' },
   { cognome: 'Muntari', nome: 'Almoez', squadra: 'QAT' },
   // SUDAFRICA
-  { cognome: 'Foster', nome: 'Bongani', squadra: 'RSA' },
+  { cognome: 'Foster', nome: 'Lyle', squadra: 'RSA' },
   { cognome: 'Mokoena', nome: 'Teboho', squadra: 'RSA' },
-  { cognome: 'Tau', nome: 'Percy', squadra: 'RSA' },
+  { cognome: 'Appollis', nome: 'Oswin', squadra: 'RSA' },
   // SCOZIA
   { cognome: 'McTominay', nome: 'Scott', squadra: 'SCO' },
   { cognome: 'Robertson', nome: 'Andy', squadra: 'SCO' },
   { cognome: 'McGinn', nome: 'John', squadra: 'SCO' },
   { cognome: 'Christie', nome: 'Ryan', squadra: 'SCO' },
   { cognome: 'Shankland', nome: 'Lawrence', squadra: 'SCO' },
+  { cognome: 'Adams', nome: 'Ché', squadra: 'SCO' },
   // SENEGAL
   { cognome: 'Mané', nome: 'Sadio', squadra: 'SEN' },
   { cognome: 'Gueye', nome: 'Idrissa', squadra: 'SEN' },
@@ -539,6 +546,8 @@ const GIOCATORI = [
   { cognome: 'Embolo', nome: 'Breel', squadra: 'SUI' },
   { cognome: 'Ndoye', nome: 'Dan', squadra: 'SUI' },
   { cognome: 'Okafor', nome: 'Noah', squadra: 'SUI' },
+  { cognome: 'Amdouni', nome: 'Zeki', squadra: 'SUI' },
+  { cognome: 'Vargas', nome: 'Rubén', squadra: 'SUI' },
   // SVEZIA
   { cognome: 'Isak', nome: 'Alexander', squadra: 'SWE' },
   { cognome: 'Gyökeres', nome: 'Viktor', squadra: 'SWE' },
@@ -553,6 +562,7 @@ const GIOCATORI = [
   { cognome: 'Demiral', nome: 'Merih', squadra: 'TUR' },
   { cognome: 'Çalhanoğlu', nome: 'Hakan', squadra: 'TUR' },
   { cognome: 'Yıldız', nome: 'Kenan', squadra: 'TUR' },
+  { cognome: 'Aktürkoğlu', nome: 'Kerem', squadra: 'TUR' },
   // URUGUAY
   { cognome: 'Valverde', nome: 'Federico', squadra: 'URU' },
   { cognome: 'Núñez', nome: 'Darwin', squadra: 'URU' },
@@ -568,6 +578,7 @@ const GIOCATORI = [
   { cognome: 'Balogun', nome: 'Folarin', squadra: 'USA' },
   { cognome: 'Weah', nome: 'Tim', squadra: 'USA' },
   { cognome: 'McKennie', nome: 'Weston', squadra: 'USA' },
+  { cognome: 'Pepi', nome: 'Ricardo', squadra: 'USA' },
   // ALGERIA
   { cognome: 'Mahrez', nome: 'Riyad', squadra: 'ALG' },
   { cognome: 'Bennacer', nome: 'Ismaël', squadra: 'ALG' },
@@ -801,6 +812,12 @@ function _ricalcolaBracket() {
 let _pronostici = {};
 let _sistemaUnsub = null;
 let _pronosticiAperti = true;
+
+export function cleanupPronostici() {
+  if (_sistemaUnsub) { _sistemaUnsub(); _sistemaUnsub = null; }
+  _pronostici = {};
+  _pronosticiAperti = true;
+}
 
 export async function initPronostici() {
   showSpinner('gironi-container', 'Caricamento pronostici...');
