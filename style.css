@@ -1902,24 +1902,18 @@ select.field-input option { background: var(--bg-card2); }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 10px 14px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  margin-bottom: 14px;
-  flex-wrap: wrap;
-}
-.vt-info {
-  display: flex;
-  align-items: center;
   gap: 8px;
-  font-size: 0.875rem;
-  color: var(--text-muted);
+  padding: 10px 14px;
+  background: var(--bg-card2);
+  border-radius: 10px;
+  margin-bottom: 12px;
 }
-.vt-icon { font-size: 1.1rem; line-height: 1; }
-.vt-text strong { color: var(--text); }
+.visibility-toggle-label { font-size: 14px; font-weight: 600; }
+.visibility-toggle-desc  { font-size: 12px; color: var(--text-muted); }
 
-/* Stato locked nel profilo altrui */
-.empty-state--locked .empty-icon { font-size: 2.5rem; }
-.empty-state--locked p { color: var(--text-muted); font-size: 0.9rem; }
+/* ── IMPOSTAZIONI PROFILO ── */
+.impostazioni-form { max-width: 400px; }
+.impostazioni-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
+.field-feedback { font-size: 13px; min-height: 18px; margin: 6px 0; }
+.field-feedback--ok    { color: #4caf50; font-weight: 600; }
+.field-feedback--error { color: #e74c3c; font-weight: 600; }
