@@ -62,19 +62,19 @@ exports.syncManuale = onCall(
 );
 
 // ── 3. RICALCOLA CLASSIFICA (triggered) ───────────────
-// TEMPORANEAMENTE COMMENTATO — da riattivare dopo il primo deploy pulito
-// exports.ricalcolaClassifica = onDocumentWritten(
-//   { document: 'risultati/ufficiali', region: 'europe-west1' },
-//   async (event) => {
-//     try {
-//       const data = event.data.after?.data();
-//       if (!data) return;
-//       await _aggiornaClassifica(data);
-//     } catch (e) {
-//       console.error('[ricalcolaClassifica] Errore:', e.message);
-//     }
-//   }
-// );
+// Si attiva ogni volta che il documento risultati/ufficiali cambia.
+exports.ricalcolaClassifica = onDocumentWritten(
+  { document: 'risultati/ufficiali', region: 'europe-west1' },
+  async (event) => {
+    try {
+      const data = event.data.after?.data();
+      if (!data) return; // documento eliminato, nulla da fare
+      await _aggiornaClassifica(data);
+    } catch (e) {
+      console.error('[ricalcolaClassifica] Errore:', e.message);
+    }
+  }
+);
 
 // ── 4. ELIMINA UTENTE (callable, solo admin) ─────────
 exports.eliminaUtente = onCall(
@@ -97,44 +97,7 @@ exports.eliminaUtente = onCall(
   }
 );
 
-// ── 5. CAMBIA NICKNAME (callable) ─────────────────────
-exports.cambiaNickname = onCall(
-  { region: 'europe-west1' },
-  async (request) => {
-    const uid = request.auth?.uid;
-    if (!uid) throw new HttpsError('unauthenticated', 'Autenticazione richiesta.');
-
-    const partSnap = await db.doc(`partecipanti/${uid}`).get();
-    if (!partSnap.exists()) throw new HttpsError('not-found', 'Utente non trovato.');
-    const data = partSnap.data();
-    if (!data.approvato)    throw new HttpsError('permission-denied', 'Utente non approvato.');
-    if (data.disabilitato)  throw new HttpsError('permission-denied', 'Utente disabilitato.');
-
-    const { nickname } = request.data;
-    const val = (nickname || '').trim();
-    if (val.length < 2 || val.length > 20) {
-      throw new HttpsError('invalid-argument', 'Nickname non valido (2–20 caratteri).');
-    }
-
-    // Aggiorna partecipanti
-    await db.doc(`partecipanti/${uid}`).update({ nickname: val });
-
-    // Aggiorna nome nello snapshot classifica
-    const classSnap = await db.doc('classifica/snapshot').get();
-    if (classSnap.exists()) {
-      const lista = classSnap.data().partecipanti || [];
-      const idx   = lista.findIndex(p => p.id === uid);
-      if (idx !== -1) {
-        lista[idx] = { ...lista[idx], nome: val };
-        await db.doc('classifica/snapshot').update({ partecipanti: lista });
-      }
-    }
-
-    return { ok: true };
-  }
-);
-
-// ── 6. CHECK API (callable) ───────────────────────────
+// ── 5. CHECK API (callable) ───────────────────────────
 exports.checkApiStatus = onCall(
   { region: 'europe-west1' },
   async (request) => {
