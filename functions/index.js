@@ -97,7 +97,44 @@ exports.eliminaUtente = onCall(
   }
 );
 
-// ── 5. CHECK API (callable) ───────────────────────────
+// ── 5. CAMBIA NICKNAME (callable) ─────────────────────
+exports.cambiaNickname = onCall(
+  { region: 'europe-west1' },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) throw new HttpsError('unauthenticated', 'Autenticazione richiesta.');
+
+    const partSnap = await db.doc(`partecipanti/${uid}`).get();
+    if (!partSnap.exists()) throw new HttpsError('not-found', 'Utente non trovato.');
+    const data = partSnap.data();
+    if (!data.approvato)    throw new HttpsError('permission-denied', 'Utente non approvato.');
+    if (data.disabilitato)  throw new HttpsError('permission-denied', 'Utente disabilitato.');
+
+    const { nickname } = request.data;
+    const val = (nickname || '').trim();
+    if (val.length < 2 || val.length > 20) {
+      throw new HttpsError('invalid-argument', 'Nickname non valido (2–20 caratteri).');
+    }
+
+    // Aggiorna partecipanti
+    await db.doc(`partecipanti/${uid}`).update({ nickname: val });
+
+    // Aggiorna nome nello snapshot classifica
+    const classSnap = await db.doc('classifica/snapshot').get();
+    if (classSnap.exists()) {
+      const lista = classSnap.data().partecipanti || [];
+      const idx   = lista.findIndex(p => p.id === uid);
+      if (idx !== -1) {
+        lista[idx] = { ...lista[idx], nome: val };
+        await db.doc('classifica/snapshot').update({ partecipanti: lista });
+      }
+    }
+
+    return { ok: true };
+  }
+);
+
+// ── 6. CHECK API (callable) ───────────────────────────
 exports.checkApiStatus = onCall(
   { region: 'europe-west1' },
   async (request) => {
@@ -378,16 +415,16 @@ const NOME_API_TO_ID = {
   'Saudi Arabia':     'ksa', 'Uruguay':           'uru', 'France':           'fra',
   'Senegal':          'sen', 'Iraq':              'irq', 'Norway':           'nor',
   'Argentina':        'arg', 'Algeria':           'alg', 'Austria':          'aut',
-  'Jordan':           'jor', 'Portugal':          'por', 'DR Congo':         'cod',
-  'Uzbekistan':       'uzb', 'Colombia':          'col', 'England':          'eng',
-  'Croatia':          'cro', 'Ghana':             'gha', 'Panama':           'pan',
+  'Jordan':           'jor',
+  'Portugal':          'por', 'DR Congo':         'cod', 'Uzbekistan':       'uzb',
+  'Colombia':          'col', 'England':           'eng', 'Croatia':          'cro',
+  'Ghana':             'gha', 'Panama':            'pan',
 };
 
 function _teamNameToId(name) {
   return NOME_API_TO_ID[name] || (name || '').toLowerCase().replace(/\s+/g, '_');
 }
 
-// Cerca nel DB il match corrispondente tramite le squadre
 const DB_LOCAL = require('../mondialito_db.json');
 
 function _trovaMatchId(apiMatch) {
@@ -413,12 +450,12 @@ function _mapModalita(duration) {
 
 function _mapFase(stage) {
   const map = {
-    'GROUP_STAGE':          'gironi',
-    'ROUND_OF_32':          'sedicesimi',
-    'ROUND_OF_16':          'ottavi',
-    'QUARTER_FINALS':       'quarti',
-    'SEMI_FINALS':          'semifinali',
-    'FINAL':                'finale',
+    'GROUP_STAGE':    'gironi',
+    'ROUND_OF_32':    'sedicesimi',
+    'ROUND_OF_16':    'ottavi',
+    'QUARTER_FINALS': 'quarti',
+    'SEMI_FINALS':    'semifinali',
+    'FINAL':          'finale',
   };
   return map[stage] || stage?.toLowerCase() || 'gironi';
 }
