@@ -5,7 +5,7 @@
 
 import { initAuth, registra, getCurrentUser, onAuthChange, logout } from './auth.js';
 import { initClassifica, renderClassifica } from './classifica.js';
-import { initPronostici } from './pronostici.js';
+import { initPronostici, cleanupPronostici } from './pronostici.js';
 import { initLive } from './live.js';
 import { initAdmin } from './admin.js';
 import { initProfilo } from './profilo.js';
@@ -28,6 +28,9 @@ export async function initApp() {
   // Ascolta i cambi di autenticazione
   onAuthChange(async (utente) => {
     if (!utente) {
+      cleanupPronostici();
+      STATE._appInizializzata = false;
+      STATE.utente = null;
       mostraLogin();
       return;
     }
