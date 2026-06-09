@@ -1551,6 +1551,11 @@ function _renderTabellone() {
   }
 
   // Renderizza una cella del bracket
+  const _MODALITA_LABEL = { '90min':'90', 'supplementari':'S', 'rigori':'R' };
+  function _getModalita(fase, matchId) {
+    return _pronostici?.fase_eliminatoria?.[fase]?.[matchId]?.modalita || null;
+  }
+
   function cell(id, rowStart, rowEnd, casaId, trasfId, vincitoreId, faseId, matchId) {
     const casa = casaId ? SQUADRE_BY_ID[casaId] : null;
     const trasf = trasfId ? SQUADRE_BY_ID[trasfId] : null;
@@ -1559,8 +1564,12 @@ function _renderTabellone() {
       const w = vincitoreId === tid ? ' tb-winner' : '';
       return '<div class="tb-team' + w + '">' + (sq?.flag || '') + ' <span>' + tid + '</span></div>';
     };
+    const modalita = _getModalita(faseId, matchId);
+    const badgeLabel = vincitoreId && modalita ? _MODALITA_LABEL[modalita] : null;
+    const badge = badgeLabel ? '<div class="tb-modalita tb-modalita-' + modalita + '">' + badgeLabel + '</div>' : '';
     return '<div class="tb-cell" style="grid-row:' + rowStart + '/' + rowEnd + ';grid-column:' + _colOf(faseId) + '">'
       + mkTeam(casaId, casa)
+      + badge
       + '<div class="tb-sep"></div>'
       + mkTeam(trasfId, trasf)
       + '</div>';
