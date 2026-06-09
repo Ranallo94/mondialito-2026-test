@@ -276,6 +276,13 @@ function getVincitore(fase, matchId, pronostici) {
   return pronostici?.fase_eliminatoria?.[fase]?.[matchId]?.vincitore || null;
 }
 
+/** Recupera la modalità di passaggio del turno. */
+function getModalita(fase, matchId, pronostici) {
+  return pronostici?.fase_eliminatoria?.[fase]?.[matchId]?.modalita || null;
+}
+
+const MODALITA_LABEL = { '90min':'90', 'supplementari':'S', 'rigori':'R' };
+
 // ══════════════════════════════════════════════════════
 // RENDER RIEPILOGO GIRONI (read-only)
 // ══════════════════════════════════════════════════════
@@ -330,6 +337,7 @@ export function renderTabellone(container, pronostici, db) {
   const terziSlots = calcola3rdiSlots(pGironi, db);
 
   function vinc(fase, matchId) { return getVincitore(fase, matchId, pronostici); }
+  function mod(fase, matchId)  { return getModalita(fase, matchId, pronostici); }
 
   function teamId(slotOrFeed, fromFase) {
     if (!slotOrFeed) return null;
@@ -337,7 +345,7 @@ export function renderTabellone(container, pronostici, db) {
     return resolveSlot(slotOrFeed, standings, terziSlots) || null;
   }
 
-  function cell(id, rowStart, rowEnd, casaId, trasfId, vincitoreId, faseId) {
+  function cell(id, rowStart, rowEnd, casaId, trasfId, vincitoreId, faseId, modalita) {
     const casa = casaId ? squadre[casaId] : null;
     const trasf = trasfId ? squadre[trasfId] : null;
     const colOf = { sedicesimi:1, ottavi:2, quarti:3, semifinali:4, finale:5 };
@@ -346,8 +354,10 @@ export function renderTabellone(container, pronostici, db) {
       const w = vincitoreId === tid ? ' tb-winner' : '';
       return '<div class="tb-team' + w + '">' + (sq?.flag || '') + ' <span>' + (sq?.nome || tid) + '</span></div>';
     };
+    const badgeLabel = vincitoreId && modalita ? MODALITA_LABEL[modalita] : null;
+    const badge = badgeLabel ? '<div class="tb-modalita tb-modalita-' + modalita + '">' + badgeLabel + '</div>' : '';
     return '<div class="tb-cell" style="grid-row:' + rowStart + '/' + rowEnd + ';grid-column:' + colOf[faseId] + '">'
-      + mkTeam(casaId, casa) + '<div class="tb-sep"></div>' + mkTeam(trasfId, trasf) + '</div>';
+      + mkTeam(casaId, casa) + badge + '<div class="tb-sep"></div>' + mkTeam(trasfId, trasf) + '</div>';
   }
 
   let html = '<div class="tb-wrapper"><div class="tb-header">';
@@ -361,7 +371,7 @@ export function renderTabellone(container, pronostici, db) {
     const row = i + 1;
     const casaId  = teamId(b.casa,  null);
     const trasfId = teamId(b.trasf, null);
-    html += cell(b.id, row, row + 1, casaId, trasfId, vinc('sedicesimi', b.id), 'sedicesimi');
+    html += cell(b.id, row, row + 1, casaId, trasfId, vinc('sedicesimi', b.id), 'sedicesimi', mod('sedicesimi', b.id));
   });
 
   // Ottavi
@@ -370,7 +380,7 @@ export function renderTabellone(container, pronostici, db) {
     const feed = BRACKET_FEEDS[oid];
     html += cell(oid, row, row + 2,
       vinc('sedicesimi', feed.casa.id), vinc('sedicesimi', feed.trasf.id),
-      vinc('ottavi', oid), 'ottavi');
+      vinc('ottavi', oid), 'ottavi', mod('ottavi', oid));
   });
 
   // Quarti
@@ -379,7 +389,7 @@ export function renderTabellone(container, pronostici, db) {
     const feed = BRACKET_FEEDS[qid];
     html += cell(qid, row, row + 4,
       vinc('ottavi', feed.casa.id), vinc('ottavi', feed.trasf.id),
-      vinc('quarti', qid), 'quarti');
+      vinc('quarti', qid), 'quarti', mod('quarti', qid));
   });
 
   // Semifinali
@@ -387,7 +397,7 @@ export function renderTabellone(container, pronostici, db) {
     const feed = BRACKET_FEEDS[sfid];
     html += cell(sfid, row, row + 8,
       vinc('quarti', feed.casa.id), vinc('quarti', feed.trasf.id),
-      vinc('semifinali', sfid), 'semifinali');
+      vinc('semifinali', sfid), 'semifinali', mod('semifinali', sfid));
   });
 
   // Finale
@@ -395,7 +405,7 @@ export function renderTabellone(container, pronostici, db) {
     const feed = BRACKET_FEEDS['F'];
     html += cell('F', 1, 17,
       vinc('semifinali', feed.casa.id), vinc('semifinali', feed.trasf.id),
-      vinc('finale', 'F'), 'finale');
+      vinc('finale', 'F'), 'finale', mod('finale', 'F'));
   }
 
   html += '</div>';
