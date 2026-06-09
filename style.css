@@ -1285,6 +1285,11 @@ select.field-input option { background: var(--bg-card2); }
 .admin-api-badge { font-size: 11px; padding: 2px 8px; border-radius: 20px; }
 .badge-ok      { background: rgba(42,138,71,.2); color: var(--verde-light); }
 .badge-pending { background: rgba(240,180,41,.15); color: var(--oro); }
+.badge-warning { background: rgba(234,88,12,.15); color: #f97316; }
+.scheda-det-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.scheda-det-list li { font-size: 13px; padding: 4px 6px; border-radius: 4px; }
+.scheda-det-ok    { background: rgba(42,138,71,.1); color: var(--verde-light); }
+.scheda-det-issue { background: rgba(234,88,12,.1); color: #f97316; }
 .badge-admin   { background: var(--oro); color: var(--text-dark); font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 20px; margin-left: 4px; vertical-align: middle; }
 .badge-owner   { background: linear-gradient(135deg, #f0b429, #e07b00); color: #fff; font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 20px; margin-left: 4px; vertical-align: middle; }
 .badge-disab   { background: rgba(229,62,62,.15); color: var(--rosso); font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 20px; margin-left: 4px; vertical-align: middle; }
