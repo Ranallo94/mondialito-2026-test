@@ -1304,9 +1304,9 @@ select.field-input option { background: var(--bg-card2); }
 .admin-search-input { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-card); color: var(--text); font-size: 14px; outline: none; box-sizing: border-box; }
 .admin-search-input:focus { border-color: var(--verde); }
 .admin-partecipanti-list  { display: flex; flex-direction: column; gap: 8px; }
-.admin-partecipante-row   { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; flex-wrap: wrap; }
-.ap-info    { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; flex: 1; }
-.ap-actions  { flex-shrink: 0; }
+.admin-partecipante-row   { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; flex-wrap: wrap; }
+.ap-info    { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; flex: 1; min-width: 0; }
+.ap-actions { display: flex; flex-wrap: wrap; gap: 6px; flex-shrink: 0; align-items: center; }
 .ap-nome     { font-weight: 600; font-size: 14px; }
 .ap-nickname { color: var(--verde-light); font-weight: 700; }
 .ap-stato    { font-size: 12px; }
@@ -1798,6 +1798,17 @@ select.field-input option { background: var(--bg-card2); }
   .riepilogo-grid {
     grid-template-columns: 1fr 1fr;
   }
+}
+
+@media (max-width: 600px) {
+  .admin-partecipante-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .ap-info    { width: 100%; }
+  .ap-actions { width: 100%; justify-content: flex-start; }
+  .ap-actions .btn { flex: 1 1 auto; min-width: calc(50% - 3px); text-align: center; font-size: 12px; padding: 7px 6px; }
 }
 
 /* ── SPAREGGIO MIGLIORI TERZE (admin) ── */
