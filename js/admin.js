@@ -297,7 +297,6 @@ function _apriModalCorreggi(matchId, tipo, risultati) {
 }
 
 // ── VALIDAZIONE SCHEDA ───────────────────────────────
-const _GIRONI_LETTERE = ['A','B','C','D','E','F','G','H','I','J','K','L'];
 const _SEDICESIMI_IDS = ['S01','S02','S03','S04','S05','S06','S07','S08',
                          'S09','S10','S11','S12','S13','S14','S15','S16'];
 const _OTTAVI_IDS     = ['O1','O2','O3','O4','O5','O6','O7','O8'];
@@ -313,7 +312,7 @@ function _validaScheda(pr) {
   // 1. Gironi (72 partite)
   const gironi = pr?.gironi || {};
   const mancGironi = [];
-  _GIRONI_LETTERE.forEach(l => {
+  Object.keys(DB.gironi).forEach(l => {
     const girone = DB.gironi[l];
     if (!girone) return;
     girone.partite.forEach(p => {
@@ -328,16 +327,7 @@ function _validaScheda(pr) {
   if (mancGironi.length === 0) ok.push('Gironi 72/72');
   else issues.push(`Gironi: ${72 - mancGironi.length}/72 — mancanti: ${mancGironi.join(', ')}`);
 
-  // 2. Posizioni girone (12 gironi × 4 squadre)
-  const posGirone = pr?.posizioni_girone || {};
-  const mancPos = _GIRONI_LETTERE.filter(l => {
-    const pos = posGirone[l];
-    return !Array.isArray(pos) || pos.length !== 4 || pos.some(sq => !sq);
-  });
-  if (mancPos.length === 0) ok.push('Posizioni girone 12/12');
-  else issues.push(`Posizioni girone: ${12 - mancPos.length}/12 — incompleti: ${mancPos.join(', ')}`);
-
-  // 3. Fase eliminatoria
+  // 2. Fase eliminatoria
   const fe = pr?.fase_eliminatoria || {};
 
   const mancSed = _SEDICESIMI_IDS.filter(id => !fe.sedicesimi?.[id]?.vincitore);
