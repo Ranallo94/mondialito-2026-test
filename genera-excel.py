@@ -1173,7 +1173,9 @@ def main():
     # Filtra e ordina utenti (escludi admin se vuoi, qui li includiamo)
     users = []
     for uid, p in partecipanti.items():
-        nome = p.get('nome', uid)
+        nickname     = (p.get('nickname') or '').strip()
+        nome_cognome = ' '.join(filter(None, [p.get('nome', ''), p.get('cognome', '')])).strip()
+        nome         = nickname if nickname else (nome_cognome or uid)
         users.append({
             'uid':        uid,
             'nome':       nome,
