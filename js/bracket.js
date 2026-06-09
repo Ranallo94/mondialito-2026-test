@@ -349,15 +349,15 @@ export function renderTabellone(container, pronostici, db) {
     const casa = casaId ? squadre[casaId] : null;
     const trasf = trasfId ? squadre[trasfId] : null;
     const colOf = { sedicesimi:1, ottavi:2, quarti:3, semifinali:4, finale:5 };
+    const badgeLabel = vincitoreId && modalita ? MODALITA_LABEL[modalita] : null;
     const mkTeam = (tid, sq) => {
       if (!tid) return '<div class="tb-team tb-unknown">?</div>';
       const w = vincitoreId === tid ? ' tb-winner' : '';
-      return '<div class="tb-team' + w + '">' + (sq?.flag || '') + ' <span>' + (sq?.nome || tid) + '</span></div>';
+      const badge = (w && badgeLabel) ? ' <span class="tb-modalita tb-modalita-' + modalita + '">' + badgeLabel + '</span>' : '';
+      return '<div class="tb-team' + w + '">' + (sq?.flag || '') + ' <span>' + (sq?.nome || tid) + '</span>' + badge + '</div>';
     };
-    const badgeLabel = vincitoreId && modalita ? MODALITA_LABEL[modalita] : null;
-    const badge = badgeLabel ? '<div class="tb-modalita tb-modalita-' + modalita + '">' + badgeLabel + '</div>' : '';
     return '<div class="tb-cell" style="grid-row:' + rowStart + '/' + rowEnd + ';grid-column:' + colOf[faseId] + '">'
-      + mkTeam(casaId, casa) + badge + '<div class="tb-sep"></div>' + mkTeam(trasfId, trasf) + '</div>';
+      + mkTeam(casaId, casa) + '<div class="tb-sep"></div>' + mkTeam(trasfId, trasf) + '</div>';
   }
 
   let html = '<div class="tb-wrapper"><div class="tb-header">';

@@ -1559,17 +1559,16 @@ function _renderTabellone() {
   function cell(id, rowStart, rowEnd, casaId, trasfId, vincitoreId, faseId, matchId) {
     const casa = casaId ? SQUADRE_BY_ID[casaId] : null;
     const trasf = trasfId ? SQUADRE_BY_ID[trasfId] : null;
+    const modalita = _getModalita(faseId, matchId);
+    const badgeLabel = vincitoreId && modalita ? _MODALITA_LABEL[modalita] : null;
     const mkTeam = (tid, sq) => {
       if (!tid) return '<div class="tb-team tb-unknown">?</div>';
       const w = vincitoreId === tid ? ' tb-winner' : '';
-      return '<div class="tb-team' + w + '">' + (sq?.flag || '') + ' <span>' + tid + '</span></div>';
+      const badge = (w && badgeLabel) ? ' <span class="tb-modalita tb-modalita-' + modalita + '">' + badgeLabel + '</span>' : '';
+      return '<div class="tb-team' + w + '">' + (sq?.flag || '') + ' <span>' + tid + '</span>' + badge + '</div>';
     };
-    const modalita = _getModalita(faseId, matchId);
-    const badgeLabel = vincitoreId && modalita ? _MODALITA_LABEL[modalita] : null;
-    const badge = badgeLabel ? '<div class="tb-modalita tb-modalita-' + modalita + '">' + badgeLabel + '</div>' : '';
     return '<div class="tb-cell" style="grid-row:' + rowStart + '/' + rowEnd + ';grid-column:' + _colOf(faseId) + '">'
       + mkTeam(casaId, casa)
-      + badge
       + '<div class="tb-sep"></div>'
       + mkTeam(trasfId, trasf)
       + '</div>';
