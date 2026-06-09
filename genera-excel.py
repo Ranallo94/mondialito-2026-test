@@ -147,10 +147,37 @@ def _calcola_gironi(prono, risultati, db):
             }
     return out
 
+def _derive_posizioni_girone(prono, db):
+    """Calcola le posizioni previste nel girone partendo dai pronostici delle partite.
+    Usato come fallback se posizioni_girone non è salvato nei pronostici."""
+    gironi_prono = prono.get('gironi') or {}
+    result = {}
+    for lettera, girone in db['gironi'].items():
+        standings = {sq: {'pts': 0, 'gd': 0, 'gf': 0} for sq in girone['squadre']}
+        for partita in girone['partite']:
+            p = gironi_prono.get(partita['id'], {}) or {}
+            try:
+                gc = int(p['gol_casa'])
+                gt = int(p['gol_trasferta'])
+            except (KeyError, TypeError, ValueError):
+                continue
+            casa = partita['casa']; trasf = partita['trasferta']
+            if gc > gt:   standings[casa]['pts'] += 3
+            elif gc < gt: standings[trasf]['pts'] += 3
+            else:         standings[casa]['pts'] += 1; standings[trasf]['pts'] += 1
+            standings[casa]['gd']  += gc - gt; standings[trasf]['gd']  += gt - gc
+            standings[casa]['gf']  += gc;      standings[trasf]['gf']  += gt
+        result[lettera] = sorted(
+            girone['squadre'],
+            key=lambda sq: (-standings[sq]['pts'], -standings[sq]['gd'], -standings[sq]['gf'], sq)
+        )
+    return result
+
+
 def _calcola_griglia(prono, risultati, db):
     """Ritorna { girone: { team: { pos_prono, pos_reale, ok, punti } } }"""
     rg   = (risultati.get('posizioni_finali_gironi') or {})
-    pg   = (prono.get('posizioni_girone') or {})
+    pg   = (prono.get('posizioni_girone') or {}) or _derive_posizioni_girone(prono, db)
     rElim = (risultati.get('fase_eliminatoria') or {})
     # squadre ai sedicesimi (se i risultati ci sono)
     sed_teams = set()
@@ -662,7 +689,7 @@ def _build_griglia(ws, db, users, risultati):
             c.font = _font(bold=bool(pr), size=10); c.alignment = _align('center'); c.border = _border()
 
             for i, user in enumerate(users):
-                pg   = user['pronostici'].get('posizioni_girone', {})
+                pg   = user['pronostici'].get('posizioni_girone') or _derive_posizioni_girone(user['pronostici'], db)
                 pos  = pg.get(lettera, [])
                 pp   = pos.index(sq) + 1 if sq in pos else None
                 ok   = (pp is not None and pr is not None and pp == pr)
@@ -704,7 +731,7 @@ def _build_griglia(ws, db, users, risultati):
             for sq in girone['squadre']:
                 rg = risultati.get('posizioni_finali_gironi', {})
                 pos_reale = rg.get(lettera, [])
-                pg = user['pronostici'].get('posizioni_girone', {})
+                pg = user['pronostici'].get('posizioni_girone') or _derive_posizioni_girone(user['pronostici'], db)
                 pos = pg.get(lettera, [])
                 pp = pos.index(sq) + 1 if sq in pos else None
                 pr = pos_reale.index(sq) + 1 if sq in pos_reale else None
@@ -1230,6 +1257,7 @@ def main():
     print(f'\n✅ Excel salvato: {out_path.name}')
     print(f'   Apri il file e vai su RISULTATI → inserisci i gol nelle celle gialle.')
     print(f'   Il foglio GIRONI si aggiorna automaticamente.')
+
 
 if __name__ == '__main__':
     main()
