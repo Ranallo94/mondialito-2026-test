@@ -99,22 +99,10 @@ function calcolaPunteggio(pronostici, risultati) {
     );
     const squadreP = Object.values(pFase).map(m => m && m.vincitore).filter(Boolean);
 
-    if (key !== 'finale') {
-      squadreP.forEach(sq => {
-        if (squadreR.has(sq)) { field.punti += pti; field.corretti++; }
-      });
-    }
-
-    if (key === 'finale') {
-      const finalR = (rElim.finale && rElim.finale.partita) || {};
-      const finalP = pElim.finale || {};
-      [finalR.casa, finalR.trasferta].filter(Boolean).forEach(sq => {
-        if (finalP.squadre && finalP.squadre.includes(sq)) {
-          field.punti += REG.fasi_eliminatorie.finale;
-          field.corretti++;
-        }
-      });
-    }
+    // Punti per squadra avanzata correttamente (tutte le fasi, finale inclusa)
+    squadreP.forEach(sq => {
+      if (squadreR.has(sq)) { field.punti += pti; field.corretti++; }
+    });
 
     Object.entries(rFase).forEach(([matchId, rMatch]) => {
       if (!rMatch || !rMatch.modalita) return;
@@ -128,8 +116,8 @@ function calcolaPunteggio(pronostici, risultati) {
   });
 
   // ── 4. VINCITORE TORNEO ───────────────────────────────
-  const vincitoreR = rElim.finale && rElim.finale.risultato && rElim.finale.risultato.vincitore;
-  if (vincitoreR && pElim.finale && pElim.finale.vincitore === vincitoreR) {
+  const vincitoreR = rElim.finale && rElim.finale.F && rElim.finale.F.vincitore;
+  if (vincitoreR && pElim.finale && pElim.finale.F && pElim.finale.F.vincitore === vincitoreR) {
     bd.vincitore.punti = REG.fasi_eliminatorie.vincitore_torneo;
     bd.vincitore.corretto = true;
   }
@@ -146,7 +134,10 @@ function calcolaPunteggio(pronostici, risultati) {
     if (cp1 && pp1 === cp1) { bd.capocannoniere.punti += REG.capocannoniere.primo_classificato;   bd.capocannoniere.dettaglio += '1°✓ '; }
     if (cp2 && pp2 === cp2) { bd.capocannoniere.punti += REG.capocannoniere.secondo_classificato; bd.capocannoniere.dettaglio += '2°✓ '; }
     if (cp3 && pp3 === cp3) { bd.capocannoniere.punti += REG.capocannoniere.terzo_classificato;   bd.capocannoniere.dettaglio += '3°✓ '; }
-    const nellaTerna = ternaP.filter(p => ternaR.includes(p) && p !== pp1 && p !== pp2 && p !== pp3);
+    const nellaTerna = ternaP.filter((p, i) => {
+      const exactMatch = [cp1, cp2, cp3][i];
+      return ternaR.includes(p) && p !== exactMatch;
+    });
     if (nellaTerna.length > 0) { bd.capocannoniere.punti += REG.capocannoniere.nella_terna; bd.capocannoniere.dettaglio += 'terna✓'; }
   }
 
@@ -168,12 +159,12 @@ function calcolaSparegnio(pronostici, risultati) {
   const rCannon = (risultati  && risultati.capocannoniere_finale) || {};
   const pCannon = (pronostici && pronostici.capocannoniere)     || {};
 
-  const vincR  = rElim.finale && rElim.finale.risultato && rElim.finale.risultato.vincitore;
+  const vincR  = rElim.finale && rElim.finale.F && rElim.finale.F.vincitore;
   const ternaR = [rCannon.primo, rCannon.secondo, rCannon.terzo].filter(Boolean);
   const pp1    = pCannon.primo;
 
   return [
-    vincR && pElim.finale && pElim.finale.vincitore === vincR ? 1 : 0,  // 1. Vincitore
+    vincR && pElim.finale && pElim.finale.F && pElim.finale.F.vincitore === vincR ? 1 : 0,  // 1. Vincitore
     bd.finale.corretti,                                                  // 2. Finaliste
     bd.semifinali.corretti,                                              // 3. Semifinaliste
     bd.quarti.corretti,                                                  // 4. Quarti
