@@ -1286,6 +1286,8 @@ select.field-input option { background: var(--bg-card2); }
 .badge-ok      { background: rgba(42,138,71,.2); color: var(--verde-light); }
 .badge-pending { background: rgba(240,180,41,.15); color: var(--oro); }
 .badge-warning { background: rgba(234,88,12,.15); color: #f97316; }
+.btn-wa { background: #25d366; color: #fff; border-color: #25d366; text-decoration: none; }
+.btn-wa:hover { background: #1ebe5d; border-color: #1ebe5d; color: #fff; }
 .scheda-det-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .scheda-det-list li { font-size: 13px; padding: 4px 6px; border-radius: 4px; }
 .scheda-det-ok    { background: rgba(42,138,71,.1); color: var(--verde-light); }
