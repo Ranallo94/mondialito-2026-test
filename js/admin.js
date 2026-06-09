@@ -423,6 +423,12 @@ async function _renderPartecipanti() {
         ? `<button class="btn btn-sm btn-secondary" data-uid="${p.id}" data-action="scheda-dettaglio">🔍 Dettaglio</button>`
         : '';
 
+      const tel = (p.telefono || '').replace(/[\s\-().]/g, '');
+      const waNum = tel.startsWith('+') ? tel.slice(1) : tel.startsWith('00') ? tel.slice(2) : tel ? '39' + tel : '';
+      const waBtn = waNum
+        ? `<a class="btn btn-sm btn-wa" href="https://wa.me/${waNum}" target="_blank" rel="noopener">💬 WhatsApp</a>`
+        : '';
+
       const badgeDisab = isDisab ? ' <span class="badge-disab">Disabilitato</span>' : '';
       const badgeLabel = isOwner ? ' <span class="badge-owner">👑 Proprietario</span>'
                        : p.isAdmin ? ' <span class="badge-admin">Admin</span>' : '';
@@ -437,7 +443,7 @@ async function _renderPartecipanti() {
             <span class="ap-stato">${stato}</span>
             ${p.pr ? `<span class="ap-date">Salvato: ${aggiornato}</span>` : ''}
           </div>
-          <div class="ap-actions">${dettaglioBtn} ${nickBtn} ${adminBtn} ${disabBtn} ${deleteBtn}</div>
+          <div class="ap-actions">${waBtn} ${dettaglioBtn} ${nickBtn} ${adminBtn} ${disabBtn} ${deleteBtn}</div>
         </div>`;
     }).join('');
 
