@@ -296,6 +296,81 @@ function _apriModalCorreggi(matchId, tipo, risultati) {
   });
 }
 
+// ── VALIDAZIONE SCHEDA ───────────────────────────────
+const _GIRONI_LETTERE = ['A','B','C','D','E','F','G','H','I','J','K','L'];
+const _SEDICESIMI_IDS = ['S01','S02','S03','S04','S05','S06','S07','S08',
+                         'S09','S10','S11','S12','S13','S14','S15','S16'];
+const _OTTAVI_IDS     = ['O1','O2','O3','O4','O5','O6','O7','O8'];
+const _QUARTI_IDS     = ['Q1','Q2','Q3','Q4'];
+const _SEMIFINALI_IDS = ['SF1','SF2'];
+
+function _validaScheda(pr) {
+  if (!pr) return { completa: false, issues: ['Nessuna scheda salvata'], ok: [], pct: 0 };
+
+  const issues = [];
+  const ok     = [];
+
+  // 1. Gironi (72 partite)
+  const gironi = pr?.gironi || {};
+  const mancGironi = [];
+  _GIRONI_LETTERE.forEach(l => {
+    const girone = DB.gironi[l];
+    if (!girone) return;
+    girone.partite.forEach(p => {
+      const g = gironi[p.id];
+      if (!g || g.gol_casa === '' || g.gol_casa == null ||
+                g.gol_trasferta === '' || g.gol_trasferta == null ||
+                isNaN(Number(g.gol_casa)) || isNaN(Number(g.gol_trasferta))) {
+        mancGironi.push(p.id);
+      }
+    });
+  });
+  if (mancGironi.length === 0) ok.push('Gironi 72/72');
+  else issues.push(`Gironi: ${72 - mancGironi.length}/72 — mancanti: ${mancGironi.join(', ')}`);
+
+  // 2. Posizioni girone (12 gironi × 4 squadre)
+  const posGirone = pr?.posizioni_girone || {};
+  const mancPos = _GIRONI_LETTERE.filter(l => {
+    const pos = posGirone[l];
+    return !Array.isArray(pos) || pos.length !== 4 || pos.some(sq => !sq);
+  });
+  if (mancPos.length === 0) ok.push('Posizioni girone 12/12');
+  else issues.push(`Posizioni girone: ${12 - mancPos.length}/12 — incompleti: ${mancPos.join(', ')}`);
+
+  // 3. Fase eliminatoria
+  const fe = pr?.fase_eliminatoria || {};
+
+  const mancSed = _SEDICESIMI_IDS.filter(id => !fe.sedicesimi?.[id]?.vincitore);
+  if (mancSed.length === 0) ok.push('Sedicesimi 16/16');
+  else issues.push(`Sedicesimi: ${16 - mancSed.length}/16 — mancanti: ${mancSed.join(', ')}`);
+
+  const mancOtt = _OTTAVI_IDS.filter(id => !fe.ottavi?.[id]?.vincitore);
+  if (mancOtt.length === 0) ok.push('Ottavi 8/8');
+  else issues.push(`Ottavi: ${8 - mancOtt.length}/8 — mancanti: ${mancOtt.join(', ')}`);
+
+  const mancQuar = _QUARTI_IDS.filter(id => !fe.quarti?.[id]?.vincitore);
+  if (mancQuar.length === 0) ok.push('Quarti 4/4');
+  else issues.push(`Quarti: ${4 - mancQuar.length}/4 — mancanti: ${mancQuar.join(', ')}`);
+
+  const mancSemi = _SEMIFINALI_IDS.filter(id => !fe.semifinali?.[id]?.vincitore);
+  if (mancSemi.length === 0) ok.push('Semifinali 2/2');
+  else issues.push(`Semifinali: ${2 - mancSemi.length}/2 — mancanti: ${mancSemi.join(', ')}`);
+
+  if (fe.finale?.F?.vincitore || fe.finale?.vincitore) ok.push('Finale');
+  else issues.push('Finale: non compilato');
+
+  // 4. Capocannoniere
+  const cap = pr?.capocannoniere || {};
+  const mancCap = ['primo','secondo','terzo'].filter(k => !cap[k]);
+  if (mancCap.length === 0) ok.push('Capocannoniere 3/3');
+  else issues.push(`Capocannoniere: ${3 - mancCap.length}/3 — mancanti: ${mancCap.join(', ')}`);
+
+  const totSezioni = ok.length + issues.length;
+  const pct = totSezioni > 0 ? Math.round((ok.length / totSezioni) * 100) : 0;
+
+  return { completa: issues.length === 0, issues, ok, pct };
+}
+
 // ── TAB PARTECIPANTI ──────────────────────────────────
 async function _initTabPartecipanti() {
   await _renderPartecipanti();
@@ -306,20 +381,32 @@ async function _renderPartecipanti() {
   if (!container) return;
 
   try {
-    const partecipanti = await getPartecipanti();
-
-    // Carica stato schede
-    const schede = await Promise.all(
-      partecipanti.map(async (p) => {
-        const pr = await getPronostici(p.id);
-        return { ...p, haPronostici: !!pr, updatedAt: pr?.updatedAt };
-      })
+    const { collection, getDocs } = await import(
+      'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js'
     );
 
+    // Carica partecipanti e tutti i pronostici in parallelo (batch)
+    const [partecipanti, proSnap] = await Promise.all([
+      getPartecipanti(),
+      getDocs(collection(db(), 'pronostici')),
+    ]);
+
+    const pronosticiMap = {};
+    proSnap.forEach(d => { pronosticiMap[d.id] = d.data(); });
+
+    const schede = partecipanti.map(p => {
+      const pr = pronosticiMap[p.id] || null;
+      const validazione = _validaScheda(pr);
+      return { ...p, pr, validazione, updatedAt: pr?.updatedAt };
+    });
+
     const rows = schede.map(p => {
-      const stato = p.haPronostici
-        ? `<span class="badge-ok">✅ Compilata</span>`
-        : `<span class="badge-pending">⏳ Non compilata</span>`;
+      const { completa, issues, ok, pct } = p.validazione;
+      const stato = !p.pr
+        ? `<span class="badge-pending">❌ Non compilata</span>`
+        : completa
+          ? `<span class="badge-ok">✅ Completa</span>`
+          : `<span class="badge-warning">⚠️ Incompleta (${issues.length} sezioni)</span>`;
 
       const aggiornato = p.updatedAt?.toDate
         ? p.updatedAt.toDate().toLocaleString('it-IT')
@@ -342,6 +429,10 @@ async function _renderPartecipanti() {
 
       const nickBtn = `<button class="btn btn-sm btn-secondary" data-uid="${p.id}" data-action="nickname" data-current="${p.nickname || ''}">✏️ Nickname</button>`;
 
+      const dettaglioBtn = (!p.pr || !completa)
+        ? `<button class="btn btn-sm btn-secondary" data-uid="${p.id}" data-action="scheda-dettaglio">🔍 Dettaglio</button>`
+        : '';
+
       const badgeDisab = isDisab ? ' <span class="badge-disab">Disabilitato</span>' : '';
       const badgeLabel = isOwner ? ' <span class="badge-owner">👑 Proprietario</span>'
                        : p.isAdmin ? ' <span class="badge-admin">Admin</span>' : '';
@@ -354,16 +445,20 @@ async function _renderPartecipanti() {
           <div class="ap-info">
             <span class="ap-nome">${nicknameLabel}${p.nome} ${p.cognome || ''}${badgeLabel}${badgeDisab}</span>
             <span class="ap-stato">${stato}</span>
-            ${p.haPronostici ? `<span class="ap-date">Salvato: ${aggiornato}</span>` : ''}
+            ${p.pr ? `<span class="ap-date">Salvato: ${aggiornato}</span>` : ''}
           </div>
-          <div class="ap-actions">${nickBtn} ${adminBtn} ${disabBtn} ${deleteBtn}</div>
+          <div class="ap-actions">${dettaglioBtn} ${nickBtn} ${adminBtn} ${disabBtn} ${deleteBtn}</div>
         </div>`;
     }).join('');
+
+    const nComplete   = schede.filter(p => p.validazione.completa).length;
+    const nParziali   = schede.filter(p => p.pr && !p.validazione.completa).length;
+    const nAssenti    = schede.filter(p => !p.pr).length;
 
     container.innerHTML = `
       <div class="admin-partecipanti-header">
         ${partecipanti.length} partecipanti —
-        ${schede.filter(p => p.haPronostici).length} schede compilate
+        ✅ ${nComplete} complete · ⚠️ ${nParziali} parziali · ❌ ${nAssenti} assenti
       </div>
       <div class="admin-partecipanti-search-wrap">
         <input type="search" id="admin-partecipanti-search" class="admin-search-input"
@@ -391,6 +486,22 @@ async function _renderPartecipanti() {
         const action = btn.dataset.action;
         const p      = schede.find(s => s.id === uid);
         const nome   = `${p?.nome || ''} ${p?.cognome || ''}`.trim();
+
+        if (action === 'scheda-dettaglio') {
+          const { validazione } = p;
+          const okHtml = validazione.ok.map(s =>
+            `<li class="scheda-det-ok">✅ ${s}</li>`).join('');
+          const issueHtml = validazione.issues.map(s =>
+            `<li class="scheda-det-issue">⚠️ ${s}</li>`).join('');
+          const body = validazione.issues.length === 0
+            ? `<p style="color:var(--color-success)">Scheda completamente compilata!</p><ul class="scheda-det-list">${okHtml}</ul>`
+            : `<ul class="scheda-det-list">${issueHtml}${okHtml}</ul>`;
+          openModal({
+            title: `Scheda — ${nome}`,
+            body: `<div style="max-height:360px;overflow-y:auto">${body}</div>`,
+            buttons: [{ label: 'Chiudi', cls: 'btn btn-secondary', onClick: closeModal }],
+          });
+        }
 
         if (action === 'nickname') {
           const current = btn.dataset.current || '';
