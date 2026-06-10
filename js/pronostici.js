@@ -253,7 +253,6 @@ const GIOCATORI = [
   { cognome: 'Mac Allister', nome: 'Alexis', squadra: 'ARG' },
   { cognome: 'Molina', nome: 'Nahuel', squadra: 'ARG' },
   { cognome: 'Paredes', nome: 'Leandro', squadra: 'ARG' },
-  { cognome: 'Garnacho', nome: 'Alejandro', squadra: 'ARG' },
   { cognome: 'Álvarez', nome: 'Julián', squadra: 'ARG' },
   { cognome: 'De Paul', nome: 'Rodrigo', squadra: 'ARG' },
   { cognome: 'Fernández', nome: 'Enzo', squadra: 'ARG' },
@@ -269,7 +268,6 @@ const GIOCATORI = [
   { cognome: 'Almada', nome: 'Thiago', squadra: 'ARG' },
   // AUSTRALIA
   { cognome: 'Hrustić', nome: 'Ajdin', squadra: 'AUS' },
-  { cognome: 'Goodwin', nome: 'Cameron', squadra: 'AUS' },
   { cognome: 'Leckie', nome: 'Mathew', squadra: 'AUS' },
   { cognome: 'Irvine', nome: 'Jackson', squadra: 'AUS' },
   // AUSTRIA
@@ -287,7 +285,6 @@ const GIOCATORI = [
   { cognome: 'De Ketelaere', nome: 'Charles', squadra: 'BEL' },
   { cognome: 'Castagne', nome: 'Timothy', squadra: 'BEL' },
   { cognome: 'Witsel', nome: 'Axel', squadra: 'BEL' },
-  { cognome: 'Openda', nome: 'Lois', squadra: 'BEL' },
   // BOSNIA
   { cognome: 'Džeko', nome: 'Edin', squadra: 'BIH' },
   { cognome: 'Kolašinac', nome: 'Sead', squadra: 'BIH' },
@@ -328,6 +325,12 @@ const GIOCATORI = [
   { cognome: 'Quintero', nome: 'Juan Fernando', squadra: 'COL' },
   { cognome: 'Sánchez', nome: 'Dávinson', squadra: 'COL' },
   { cognome: 'Ríos', nome: 'Richard', squadra: 'COL' },
+  { cognome: 'Suárez', nome: 'Luis', squadra: 'COL' },
+  { cognome: 'Hernández', nome: 'Cucho', squadra: 'COL' },
+  { cognome: 'Córdoba', nome: 'Jhon', squadra: 'COL' },
+  { cognome: 'Arias', nome: 'Jhon', squadra: 'COL' },
+  { cognome: 'Lerma', nome: 'Jefferson', squadra: 'COL' },
+  { cognome: 'Carrascal', nome: 'Jorge', squadra: 'COL' },
   // CAPO VERDE
   { cognome: 'Pina', nome: 'Kelvin', squadra: 'CPV' },
   { cognome: 'Rodrigues', nome: 'Garry', squadra: 'CPV' },
@@ -352,7 +355,6 @@ const GIOCATORI = [
   // EGITTO
   { cognome: 'Salah', nome: 'Mohamed', squadra: 'EGY' },
   { cognome: 'Marmoush', nome: 'Omar', squadra: 'EGY' },
-  { cognome: 'Trezeguet', nome: '', squadra: 'EGY' },
   // INGHILTERRA
   { cognome: 'Bellingham', nome: 'Jude', squadra: 'ENG' },
   { cognome: 'Kane', nome: 'Harry', squadra: 'ENG' },
@@ -421,7 +423,6 @@ const GIOCATORI = [
   { cognome: 'Undav', nome: 'Deniz', squadra: 'GER' },
   { cognome: 'Woltemade', nome: 'Nick', squadra: 'GER' },
   // GHANA
-  { cognome: 'Kudus', nome: 'Mohammed', squadra: 'GHA' },
   { cognome: 'Partey', nome: 'Thomas', squadra: 'GHA' },
   { cognome: 'Fatawu', nome: 'Abdul Fatawu', squadra: 'GHA' },
   { cognome: 'Ayew', nome: 'Jordan', squadra: 'GHA' },
@@ -431,11 +432,9 @@ const GIOCATORI = [
   { cognome: 'Bellegarde', nome: 'Jean-Ricner', squadra: 'HAI' },
   // IRAN
   { cognome: 'Taremi', nome: 'Mehdi', squadra: 'IRN' },
-  { cognome: 'Azmoun', nome: 'Sardar', squadra: 'IRN' },
-  { cognome: 'Gholizadeh', nome: 'Ali', squadra: 'IRN' },
   // IRAQ
-  { cognome: 'Adnan', nome: 'Humam', squadra: 'IRQ' },
   { cognome: 'Ali', nome: 'Mohanad', squadra: 'IRQ' },
+  { cognome: 'Iqbal', nome: 'Zidane', squadra: 'IRQ' },
   // GIAPPONE
   { cognome: 'Kubo', nome: 'Takefusa', squadra: 'JPN' },
   { cognome: 'Doan', nome: 'Ritsu', squadra: 'JPN' },
@@ -444,8 +443,7 @@ const GIOCATORI = [
   { cognome: 'Kamada', nome: 'Daichi', squadra: 'JPN' },
   { cognome: 'Ueda', nome: 'Ayase', squadra: 'JPN' },
   // GIORDANIA
-  { cognome: 'Al-Naimat', nome: '', squadra: 'JOR' },
-  { cognome: 'Baha', nome: 'Faisal', squadra: 'JOR' },
+  { cognome: 'Al-Taamari', nome: 'Musa', squadra: 'JOR' },
   // COREA DEL SUD
   { cognome: 'Son', nome: 'Heung-min', squadra: 'KOR' },
   { cognome: 'Lee', nome: 'Kang-in', squadra: 'KOR' },
@@ -464,8 +462,7 @@ const GIOCATORI = [
   { cognome: 'El Kaabi', nome: 'Ayoub', squadra: 'MAR' },
   // MESSICO
   { cognome: 'Giménez', nome: 'Santiago', squadra: 'MEX' },
-  { cognome: 'Lozano', nome: 'Hirving', squadra: 'MEX' },
-  { cognome: 'Alvarado', nome: 'Erik', squadra: 'MEX' },
+  { cognome: 'Alvarado', nome: 'Roberto', squadra: 'MEX' },
   { cognome: 'Vega', nome: 'Alexis', squadra: 'MEX' },
   { cognome: 'Jiménez', nome: 'Raúl', squadra: 'MEX' },
   // PAESI BASSI
@@ -568,9 +565,13 @@ const GIOCATORI = [
   { cognome: 'Núñez', nome: 'Darwin', squadra: 'URU' },
   { cognome: 'Araújo', nome: 'Ronald', squadra: 'URU' },
   { cognome: 'Pellistri', nome: 'Facundo', squadra: 'URU' },
+  { cognome: 'De Arrascaeta', nome: 'Giorgian', squadra: 'URU' },
+  { cognome: 'Ugarte', nome: 'Manuel', squadra: 'URU' },
+  { cognome: 'Bentancur', nome: 'Rodrigo', squadra: 'URU' },
+  { cognome: 'De la Cruz', nome: 'Nicolás', squadra: 'URU' },
   // UZBEKISTAN
   { cognome: 'Shomurodov', nome: 'Eldor', squadra: 'UZB' },
-  { cognome: 'Tursunov', nome: 'Jaloliddin', squadra: 'UZB' },
+  { cognome: 'Fayzullayev', nome: 'Abbosbek', squadra: 'UZB' },
   // STATI UNITI
   { cognome: 'Pulisic', nome: 'Christian', squadra: 'USA' },
   { cognome: 'Reyna', nome: 'Giovanni', squadra: 'USA' },
@@ -581,8 +582,8 @@ const GIOCATORI = [
   { cognome: 'Pepi', nome: 'Ricardo', squadra: 'USA' },
   // ALGERIA
   { cognome: 'Mahrez', nome: 'Riyad', squadra: 'ALG' },
-  { cognome: 'Bennacer', nome: 'Ismaël', squadra: 'ALG' },
-  { cognome: 'Bounedjah', nome: 'Baghdad', squadra: 'ALG' },
+  { cognome: 'Gouiri', nome: 'Amine', squadra: 'ALG' },
+  { cognome: 'Amoura', nome: 'Mohamed', squadra: 'ALG' },
 ]
 
 // ── CRITERI FIFA 2026 PER PARITÀ DI PUNTI ──────────────────────────────
