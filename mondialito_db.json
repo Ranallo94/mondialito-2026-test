@@ -17,8 +17,8 @@
       },
       "posto_in_griglia": {
         "punti_per_posizione_corretta": 10,
-        "applicazione": "Calcolato solo per le squadre che raggiungono i sedicesimi di finale",
-        "note": "Si pronostica il piazzamento finale di ciascuna squadra nel proprio girone (1°, 2°, 3°, 4°)."
+        "applicazione": "Calcolato per ogni slot del tabellone dei sedicesimi (32 slot totali)",
+        "note": "10pt per ogni squadra di cui si indovina lo slot esatto nel tabellone. Per le prime e seconde classificate il posto è determinato dalla posizione nel girone; per le terze classificate dipende dalla combinazione delle 8 terze qualificate (tabella FIFA COMB_3I)."
       },
       "fasi_eliminatorie": {
         "sedicesimi": 5,
