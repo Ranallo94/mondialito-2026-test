@@ -221,7 +221,7 @@ function _getClassificaGirone(lettera, pronosticiGironi) {
     .sort((a,b) => (b.pt-a.pt) || (b.gd-a.gd) || (b.gf-a.gf));
 }
 
-function _calcola3rdiSlots(pronosticiGironi) {
+function _calcola3rdiSlots(pronosticiGironi, overrideOrder) {
   const terzi = {};
   Object.keys(DB.gironi).forEach(lettera => {
     const cl = _getClassificaGirone(lettera, pronosticiGironi);
@@ -229,7 +229,17 @@ function _calcola3rdiSlots(pronosticiGironi) {
     const t = cl[2];
     terzi[lettera] = { teamId: t.id, pt: t.pt, gd: t.gd, gf: t.gf };
   });
-  const sorted = Object.entries(terzi).sort(([,a],[,b]) => b.pt-a.pt || b.gd-a.gd || b.gf-a.gf);
+  let sorted = Object.entries(terzi).sort(([,a],[,b]) => b.pt-a.pt || b.gd-a.gd || b.gf-a.gf);
+  // Override manuale (spareggio admin) — sincronizzato con js/bracket.js:
+  // usato SOLO come ultimo criterio, a parità di pt/GD/GF.
+  if (Array.isArray(overrideOrder) && overrideOrder.length) {
+    const pos = {};
+    overrideOrder.forEach((id, i) => { pos[id] = i; });
+    sorted = sorted.slice().sort(([,a],[,b]) =>
+      b.pt - a.pt || b.gd - a.gd || b.gf - a.gf ||
+      ((pos[a.teamId] !== undefined ? pos[a.teamId] : Infinity) -
+       (pos[b.teamId] !== undefined ? pos[b.teamId] : Infinity)));
+  }
   if (sorted.length < 8) return null;
   const qualGroups = sorted.slice(0,8).map(([l]) => l).sort().join('');
   const comb = COMB_3I[qualGroups];
@@ -283,7 +293,7 @@ function calcolaPunteggio(pronostici, risultati) {
     girone.partite.forEach(partita => {
       const r = rGironi[partita.id];
       const p = pGironi[partita.id];
-      if (!r || r.gol_casa == null || !p) return;
+      if (!r || r.gol_casa == null || r.gol_trasferta == null || !p) return;
 
       bd.gironi_segno.totale++;
       bd.gironi_esatto.totale++;
@@ -318,7 +328,7 @@ function calcolaPunteggio(pronostici, risultati) {
   });
 
   if (grigliaPronta) {
-    const terziSlotsR = _calcola3rdiSlots(rGironi);
+    const terziSlotsR = _calcola3rdiSlots(rGironi, (risultati && risultati.spareggio_terze) || null);
     const standingsP  = pPosiz;
     const terziSlotsP = _calcola3rdiSlots(pGironi);
 
