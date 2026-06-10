@@ -304,37 +304,40 @@ function calcolaPunteggio(pronostici, risultati) {
 
   // ── 2. POSTO IN GRIGLIA ───────────────────────────────
   // 10pt per ogni squadra di cui si indovina lo slot esatto nel tabellone
-  // dei sedicesimi. Non basta indovinare la posizione nel girone: per le
-  // terze classificate conta anche quale combinazione di 8 terze si qualifica.
+  // dei sedicesimi. Calcolato SOLO quando tutte le classifiche ufficiali
+  // dei gironi sono disponibili in posizioni_finali_gironi.
 
   const standingsR = {};
+  let grigliaPronta = true;
   Object.keys(DB.gironi).forEach(function(l) {
     if (rGriglia[l] && rGriglia[l].length) {
       standingsR[l] = rGriglia[l];
     } else {
-      standingsR[l] = _getClassificaGirone(l, rGironi).map(function(t) { return t.id; });
+      grigliaPronta = false;
     }
   });
-  const terziSlotsR = _calcola3rdiSlots(rGironi);
 
-  const standingsP = pPosiz;
-  const terziSlotsP = _calcola3rdiSlots(pGironi);
+  if (grigliaPronta) {
+    const terziSlotsR = _calcola3rdiSlots(rGironi);
+    const standingsP  = pPosiz;
+    const terziSlotsP = _calcola3rdiSlots(pGironi);
 
-  SEDICESIMI_BRACKET.forEach(function(slot) {
-    const actualCasa  = _resolveSlot(slot.casa,  standingsR, terziSlotsR);
-    const actualTrasf = _resolveSlot(slot.trasf, standingsR, terziSlotsR);
-    const predCasa    = _resolveSlot(slot.casa,  standingsP, terziSlotsP);
-    const predTrasf   = _resolveSlot(slot.trasf, standingsP, terziSlotsP);
+    SEDICESIMI_BRACKET.forEach(function(slot) {
+      const actualCasa  = _resolveSlot(slot.casa,  standingsR, terziSlotsR);
+      const actualTrasf = _resolveSlot(slot.trasf, standingsR, terziSlotsR);
+      const predCasa    = _resolveSlot(slot.casa,  standingsP, terziSlotsP);
+      const predTrasf   = _resolveSlot(slot.trasf, standingsP, terziSlotsP);
 
-    if (predCasa  && actualCasa  && predCasa  === actualCasa)  {
-      bd.posto_griglia.punti += REG.posto_in_griglia.punti_per_posizione_corretta;
-      bd.posto_griglia.corretti++;
-    }
-    if (predTrasf && actualTrasf && predTrasf === actualTrasf) {
-      bd.posto_griglia.punti += REG.posto_in_griglia.punti_per_posizione_corretta;
-      bd.posto_griglia.corretti++;
-    }
-  });
+      if (predCasa  && actualCasa  && predCasa  === actualCasa)  {
+        bd.posto_griglia.punti += REG.posto_in_griglia.punti_per_posizione_corretta;
+        bd.posto_griglia.corretti++;
+      }
+      if (predTrasf && actualTrasf && predTrasf === actualTrasf) {
+        bd.posto_griglia.punti += REG.posto_in_griglia.punti_per_posizione_corretta;
+        bd.posto_griglia.corretti++;
+      }
+    });
+  }
 
   // ── 3. FASI ELIMINATORIE ──────────────────────────────
   const fasi = [
