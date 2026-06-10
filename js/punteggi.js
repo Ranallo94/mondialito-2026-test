@@ -5,6 +5,7 @@
  */
 
 import DB from '../mondialito_db.json' with { type: 'json' };
+import { SEDICESIMI_BRACKET, resolveSlot, calcola3rdiSlots, getClassificaGirone } from './bracket.js';
 
 const REG = DB.regolamento.punteggi;
 
@@ -67,24 +68,40 @@ export function calcolaPunteggio(pronostici, risultati) {
   });
 
   // ── 2. POSTO IN GRIGLIA ───────────────────────────────
-  // 10pt per ogni squadra qualificata ai sedicesimi di cui
-  // si indovina la posizione finale nel girone.
-  const sedAvanzate = new Set(
-    Object.values(rElim['sedicesimi']?.partite || {})
-      .flatMap(p => [p.casa, p.trasferta])
-      .filter(Boolean)
-  );
+  // 10pt per ogni squadra di cui si indovina lo slot esatto nel tabellone
+  // dei sedicesimi. Non basta indovinare la posizione nel girone: per le
+  // terze classificate conta anche quale combinazione di 8 terze si qualifica
+  // (che determina il loro slot tramite COMB_3I).
 
-  Object.entries(rGriglia).forEach(([lettera, posizioni]) => {
-    const pPos = pPosiz[lettera];
-    if (!pPos || !posizioni.length) return;
-    posizioni.forEach((squadra, i) => {
-      if (!sedAvanzate.has(squadra)) return; // solo chi arriva ai sedicesimi
-      if (pPos[i] === squadra) {
-        bd.posto_griglia.punti += REG.posto_in_griglia.punti_per_posizione_corretta;
-        bd.posto_griglia.corretti++;
-      }
-    });
+  // Standings reali (da posizioni_finali_gironi se disponibili, altrimenti calcolate)
+  const standingsR = {};
+  Object.keys(DB.gironi).forEach(l => {
+    if (rGriglia[l]?.length) {
+      standingsR[l] = rGriglia[l];
+    } else {
+      standingsR[l] = getClassificaGirone(l, rGironi, DB).map(t => t.id);
+    }
+  });
+  const terziSlotsR = calcola3rdiSlots(rGironi, DB);
+
+  // Standings previste dall'utente (da posizioni_girone)
+  const standingsP = pPosiz;
+  const terziSlotsP = calcola3rdiSlots(pGironi, DB);
+
+  SEDICESIMI_BRACKET.forEach(slot => {
+    const actualCasa  = resolveSlot(slot.casa,  standingsR, terziSlotsR);
+    const actualTrasf = resolveSlot(slot.trasf, standingsR, terziSlotsR);
+    const predCasa    = resolveSlot(slot.casa,  standingsP, terziSlotsP);
+    const predTrasf   = resolveSlot(slot.trasf, standingsP, terziSlotsP);
+
+    if (predCasa  && actualCasa  && predCasa  === actualCasa)  {
+      bd.posto_griglia.punti += REG.posto_in_griglia.punti_per_posizione_corretta;
+      bd.posto_griglia.corretti++;
+    }
+    if (predTrasf && actualTrasf && predTrasf === actualTrasf) {
+      bd.posto_griglia.punti += REG.posto_in_griglia.punti_per_posizione_corretta;
+      bd.posto_griglia.corretti++;
+    }
   });
 
   // ── 3. FASI ELIMINATORIE ──────────────────────────────
@@ -105,27 +122,13 @@ export function calcolaPunteggio(pronostici, risultati) {
     );
     const squadreP = Object.values(pFase).map(m => m?.vincitore).filter(Boolean);
 
-    // Per sedicesimi/ottavi/quarti/semifinali: punti per squadra qualificata corretta
-    if (key !== 'finale') {
-      squadreP.forEach(sq => {
-        if (squadreR.has(sq)) {
-          field.punti += pti;
-          field.corretti++;
-        }
-      });
-    }
-
-    // Per la finale: punti per ogni finalista indovinata
-    if (key === 'finale') {
-      const finalR = rElim.finale?.partita || {};
-      const finalP = pElim.finale || {};
-      [finalR.casa, finalR.trasferta].filter(Boolean).forEach(sq => {
-        if (finalP.squadre?.includes(sq)) {
-          field.punti += REG.fasi_eliminatorie.finale;
-          field.corretti++;
-        }
-      });
-    }
+    // Punti per squadra avanzata correttamente (tutte le fasi, finale inclusa)
+    squadreP.forEach(sq => {
+      if (squadreR.has(sq)) {
+        field.punti += pti;
+        field.corretti++;
+      }
+    });
 
     // Modalità passaggio turno
     Object.entries(rFase).forEach(([matchId, rMatch]) => {
@@ -140,8 +143,8 @@ export function calcolaPunteggio(pronostici, risultati) {
   });
 
   // ── 4. VINCITORE TORNEO ───────────────────────────────
-  const vincitoreR = rElim.finale?.risultato?.vincitore;
-  if (vincitoreR && pElim.finale?.vincitore === vincitoreR) {
+  const vincitoreR = rElim.finale?.F?.vincitore;
+  if (vincitoreR && pElim.finale?.F?.vincitore === vincitoreR) {
     bd.vincitore.punti = REG.fasi_eliminatorie.vincitore_torneo;
     bd.vincitore.corretto = true;
   }
@@ -159,7 +162,10 @@ export function calcolaPunteggio(pronostici, risultati) {
     if (cp2 && pp2 === cp2) { bd.capocannoniere.punti += REG.capocannoniere.secondo_classificato; bd.capocannoniere.dettaglio += '2°✓ '; }
     if (cp3 && pp3 === cp3) { bd.capocannoniere.punti += REG.capocannoniere.terzo_classificato; bd.capocannoniere.dettaglio += '3°✓ '; }
     // Bonus terna: +10 se almeno uno nella terna ma non nel posto esatto
-    const nellaTerna = ternaP.filter(p => ternaR.includes(p) && p !== pp1 && p !== pp2 && p !== pp3);
+    const nellaTerna = ternaP.filter((p, i) => {
+      const exactMatch = [cp1, cp2, cp3][i];
+      return ternaR.includes(p) && p !== exactMatch;
+    });
     if (nellaTerna.length > 0) { bd.capocannoniere.punti += REG.capocannoniere.nella_terna; bd.capocannoniere.dettaglio += 'terna✓'; }
   }
 
@@ -181,12 +187,12 @@ export function calcolaSparegnio(pronostici, risultati) {
   const rCannon = risultati?.capocannoniere_finale || {};
   const pCannon = pronostici?.capocannoniere || {};
 
-  const vincR = rElim.finale?.risultato?.vincitore;
+  const vincR = rElim.finale?.F?.vincitore;
   const ternaR = [rCannon.primo, rCannon.secondo, rCannon.terzo].filter(Boolean);
   const pp1 = pCannon.primo;
 
   return [
-    vincR && pElim.finale?.vincitore === vincR ? 1 : 0,  // 1. Vincitore
+    vincR && pElim.finale?.F?.vincitore === vincR ? 1 : 0,  // 1. Vincitore
     bd.finale.corretti,                                   // 2. Finaliste
     bd.semifinali.corretti,                               // 3. Semifinaliste
     bd.quarti.corretti,                                   // 4. Quarti
