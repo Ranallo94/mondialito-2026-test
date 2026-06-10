@@ -243,7 +243,7 @@ export function getClassificaGirone(lettera, pronosticiGironi, db) {
 }
 
 /** Determina i terzi classificati qualificati e i loro slot nel bracket. */
-export function calcola3rdiSlots(pronosticiGironi, db) {
+export function calcola3rdiSlots(pronosticiGironi, db, overrideOrder = null) {
   const terzi = {};
   Object.keys(db.gironi).forEach(lettera => {
     const cl = getClassificaGirone(lettera, pronosticiGironi, db);
@@ -251,7 +251,15 @@ export function calcola3rdiSlots(pronosticiGironi, db) {
     const t = cl[2];
     terzi[lettera] = { teamId: t.id, pt: t.pt, gd: t.gd, gf: t.gf };
   });
-  const sorted = Object.entries(terzi).sort(([,a],[,b]) => b.pt-a.pt || b.gd-a.gd || b.gf-a.gf);
+  let sorted = Object.entries(terzi).sort(([,a],[,b]) => b.pt-a.pt || b.gd-a.gd || b.gf-a.gf);
+  // Override manuale (spareggio admin): usato SOLO come ultimo criterio,
+  // a parità di pt/GD/GF — non può scavalcare la classifica oggettiva.
+  if (Array.isArray(overrideOrder) && overrideOrder.length) {
+    const pos = Object.fromEntries(overrideOrder.map((id, i) => [id, i]));
+    sorted = [...sorted].sort(([,a],[,b]) =>
+      b.pt - a.pt || b.gd - a.gd || b.gf - a.gf ||
+      ((pos[a.teamId] ?? Infinity) - (pos[b.teamId] ?? Infinity)));
+  }
   if (sorted.length < 8) return null;
   const qualGroups = sorted.slice(0,8).map(([l]) => l).sort().join('');
   const combo = COMB_3I[qualGroups];

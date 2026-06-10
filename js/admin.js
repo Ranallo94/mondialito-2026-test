@@ -818,6 +818,8 @@ async function _initSparteggioTerze(cfg) {
     if (msgEl) { msgEl.textContent = ''; msgEl.className = 'spareggio-save-msg'; }
     try {
       await updateSistema({ spareggio_terze: newOrder });
+      // Salva anche in risultati/ufficiali: il motore punteggi legge da lì
+      await patchRisultati({ spareggio_terze: newOrder });
       cfg.spareggio_terze = newOrder;
       if (msgEl) { msgEl.textContent = '✓ Ordine salvato!'; msgEl.classList.add('ssm-ok'); }
       setTimeout(() => { if (msgEl) { msgEl.textContent = ''; msgEl.className = 'spareggio-save-msg'; } }, 3000);

@@ -46,7 +46,7 @@ export function calcolaPunteggio(pronostici, risultati) {
     girone.partite.forEach(partita => {
       const r = rGironi[partita.id];
       const p = pGironi[partita.id];
-      if (!r || r.gol_casa == null || !p) return;
+      if (!r || r.gol_casa == null || r.gol_trasferta == null || !p) return;
 
       bd.gironi_segno.totale++;
       bd.gironi_esatto.totale++;
@@ -83,7 +83,7 @@ export function calcolaPunteggio(pronostici, risultati) {
   });
 
   if (grigliaPronta) {
-    const terziSlotsR = calcola3rdiSlots(rGironi, DB);
+    const terziSlotsR = calcola3rdiSlots(rGironi, DB, risultati?.spareggio_terze || null);
     const standingsP  = pPosiz;
     const terziSlotsP = calcola3rdiSlots(pGironi, DB);
 
