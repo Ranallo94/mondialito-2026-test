@@ -771,6 +771,10 @@ select.field-input option { background: var(--bg-card2); }
 .empty-icon  { font-size: 36px; margin-bottom: 10px; }
 
 /* ── CLASSIFICA ── */
+.classifica-search-wrap  { margin-bottom: 12px; }
+.classifica-search-input { width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-card); color: var(--text); font-size: 14px; outline: none; box-sizing: border-box; }
+.classifica-search-input:focus { border-color: var(--verde); }
+.classifica-search-empty { padding: 24px 14px; text-align: center; color: var(--text-muted); font-size: 14px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); }
 .classifica-list   { display: flex; flex-direction: column; gap: 8px; }
 .classifica-header { display: grid; grid-template-columns: 48px 1fr 72px; gap: 12px; padding: 8px 16px; color: var(--text-muted); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
 .classifica-row    { display: grid; grid-template-columns: 48px 1fr 72px; gap: 12px; align-items: center; padding: 14px 16px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); transition: background .15s, transform .15s; }
@@ -1951,3 +1955,39 @@ select.field-input option { background: var(--bg-card2); }
 .field-feedback { font-size: 13px; min-height: 18px; margin: 6px 0; }
 .field-feedback--ok    { color: #4caf50; font-weight: 600; }
 .field-feedback--error { color: #e74c3c; font-weight: 600; }
+
+/* ── FRECCE SPAREGGIO MANUALE (parità totale) ── */
+.tie-btns {
+  display: inline-flex;
+  gap: 2px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+.tie-btn {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  font-size: 9px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-card2);
+  color: var(--oro);
+  border: 1px solid var(--oro-dark);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background var(--transition), transform var(--transition);
+}
+.tie-btn:hover:not(:disabled) {
+  background: var(--oro-dark);
+  color: var(--text-dark);
+  transform: translateY(-1px);
+}
+.tie-btn:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+.tie-hint {
+  color: var(--oro);
+}
