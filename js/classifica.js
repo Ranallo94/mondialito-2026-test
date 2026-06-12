@@ -9,13 +9,25 @@ import { onClassificaSnapshot, getClassificaUpdatedAt } from './db.js';
 import { showSpinner, showEmpty, formatDate } from './ui.js';
 
 let _unsub = null;
+let _partecipanti = [];
+let _query = '';
 
 // ── INIT ──────────────────────────────────────────────
 export async function initClassifica() {
   showSpinner('classifica-container', 'Caricamento classifica…');
 
+  // Barra di ricerca
+  const search = document.getElementById('classifica-search');
+  if (search) {
+    search.addEventListener('input', () => {
+      _query = search.value.trim().toLowerCase();
+      renderClassifica(_partecipanti);
+    });
+  }
+
   // Ascolta in real-time
   _unsub = onClassificaSnapshot((partecipanti) => {
+    _partecipanti = partecipanti;
     renderClassifica(partecipanti);
   });
 
@@ -64,7 +76,21 @@ export function renderClassifica(partecipanti) {
 
   const isMe = (uid) => uid === STATE.utente?.id;
 
-  const rows = sorted.map(p => {
+  // Filtro ricerca (le posizioni restano quelle reali)
+  const visibili = _query
+    ? sorted.filter(p => (p.nome || '').toLowerCase().includes(_query))
+    : sorted;
+
+  if (!visibili.length) {
+    container.innerHTML = `
+      <div class="classifica-list">
+        <div class="classifica-search-empty">Nessun partecipante trovato per «${_query}».</div>
+      </div>`;
+    _aggiornaProfilo(sorted);
+    return;
+  }
+
+  const rows = visibili.map(p => {
     const posClass = p._pos === 1 ? 'pos-1'
                    : p._pos === 2 ? 'pos-2'
                    : p._pos === 3 ? 'pos-3'
