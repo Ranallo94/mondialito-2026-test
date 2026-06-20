@@ -113,6 +113,31 @@ exports.checkApiStatus = onCall(
   }
 );
 
+// ── 6. SYNC MARCATORI (callable, solo admin) ──────────
+// Pesca la classifica marcatori dall'API e scrive live/marcatori.
+// Usato dal bottone "Sync automatico da API" nel pannello admin.
+exports.syncMarcatori = onCall(
+  { region: 'europe-west1' },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) throw new HttpsError('unauthenticated', 'Autenticazione richiesta.');
+
+    const partSnap = await db.doc(`partecipanti/${uid}`).get();
+    if (!partSnap.exists() || !partSnap.data().isAdmin) {
+      throw new HttpsError('permission-denied', 'Solo gli admin possono sincronizzare i marcatori.');
+    }
+
+    const marcatori = await _fetchMarcatori();
+    if (marcatori.length > 0) {
+      await db.doc('live/marcatori').set({
+        lista: marcatori,
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+    }
+    return { ok: true, count: marcatori.length };
+  }
+);
+
 // ══════════════════════════════════════════════════════
 // LOGICA INTERNA
 // ══════════════════════════════════════════════════════
