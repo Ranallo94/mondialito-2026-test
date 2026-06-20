@@ -168,17 +168,22 @@ async function _salvaMarcatori(btn) {
     rigori:     parseInt(tr.querySelector('.marc-f-rigori').value, 10) || 0,
   })).filter(m => m.nome);
 
-  // Ordina per gol, poi assist; assegna posizione e nome squadra.
+  // Ordina per gol, poi assist; assegna posizione a pari merito (stesso gol → stessa pos).
   lista.sort((a, b) => (b.gol - a.gol) || (b.assist - a.assist));
-  lista = lista.map((m, i) => ({
-    pos:          i + 1,
-    nome:         m.nome,
-    squadra_id:   m.squadra_id,
-    squadra_nome: map[m.squadra_id]?.nome || '',
-    gol:          m.gol,
-    assist:       m.assist,
-    rigori:       m.rigori,
-  }));
+  let posCorrente = 0;
+  let golPrec = null;
+  lista = lista.map((m, i) => {
+    if (m.gol !== golPrec) { posCorrente = i + 1; golPrec = m.gol; }
+    return {
+      pos:          posCorrente,
+      nome:         m.nome,
+      squadra_id:   m.squadra_id,
+      squadra_nome: map[m.squadra_id]?.nome || '',
+      gol:          m.gol,
+      assist:       m.assist,
+      rigori:       m.rigori,
+    };
+  });
 
   const msg = document.querySelector('.marc-save-msg');
   btn.disabled = true; btn.textContent = '⏳ Salvataggio…';

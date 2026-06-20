@@ -255,16 +255,33 @@ function _renderMarcatori() {
     return;
   }
 
-  const rows = _marcatori.map(m => {
-    const sq = DB.squadre[m.squadra_id];
+  // Mappa squadre id → {nome, flag}, robusta sia che DB.squadre sia array sia oggetto.
+  const squadre = Array.isArray(DB.squadre)
+    ? Object.fromEntries(DB.squadre.map(s => [s.id, s]))
+    : (DB.squadre || {});
+
+  // Ordina per gol (desc), poi assist (desc) per l'ordine di visualizzazione.
+  const ordinati = [..._marcatori].sort((a, b) => (b.gol - a.gol) || (b.assist - a.assist));
+
+  // Posizione a pari merito: stesso numero di gol → stessa posizione (es. 1, 2, 2, 4).
+  let posCorrente = 0;
+  let golPrec = null;
+  const conPos = ordinati.map((m, i) => {
+    if (m.gol !== golPrec) { posCorrente = i + 1; golPrec = m.gol; }
+    return { ...m, pos: posCorrente };
+  });
+
+  const rows = conPos.map(m => {
+    const sq = squadre[m.squadra_id];
     const flag = sq?.flag || '';
     const squadraNome = sq?.nome || m.squadra_nome || '—';
     const assistHtml = m.assist > 0 ? `<span class="marc-assist">${m.assist} ast</span>` : '';
     const rigoriHtml = m.rigori > 0 ? `<span class="marc-rigori">(${m.rigori} rig)</span>` : '';
+    const medaglia = m.pos === 1 ? '🥇' : m.pos === 2 ? '🥈' : m.pos === 3 ? '🥉' : m.pos;
 
     return `
       <div class="marc-row${m.pos <= 3 ? ' marc-podio' : ''}">
-        <div class="marc-pos">${m.pos === 1 ? '🥇' : m.pos === 2 ? '🥈' : m.pos === 3 ? '🥉' : m.pos}</div>
+        <div class="marc-pos">${medaglia}</div>
         <div class="marc-info">
           <div class="marc-nome">${m.nome}</div>
           <div class="marc-squadra">${flag} ${squadraNome}</div>
