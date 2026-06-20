@@ -1991,3 +1991,90 @@ select.field-input option { background: var(--bg-card2); }
 .tie-hint {
   color: var(--oro);
 }
+
+/* ── ADMIN: form marcatori ───────────────────────────── */
+.marc-admin-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+.marc-edit-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.marc-edit-table th {
+  text-align: left;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--text-muted);
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+}
+.marc-edit-table td {
+  padding: 6px 8px;
+  vertical-align: middle;
+}
+.marc-edit-table input,
+.marc-edit-table select {
+  width: 100%;
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: 8px 10px;
+  font-size: 14px;
+}
+.marc-edit-table input.marc-f-gol,
+.marc-edit-table input.marc-f-assist,
+.marc-edit-table input.marc-f-rigori {
+  max-width: 80px;
+  text-align: center;
+}
+.marc-admin-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+.marc-admin-sync {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--border);
+  font-size: 13px;
+}
+.marc-save-msg { font-size: 13px; }
+.marc-save-msg.ok  { color: var(--verde-light); }
+.marc-save-msg.err { color: var(--rosso); }
+
+@media (max-width: 640px) {
+  .marc-edit-table thead { display: none; }
+  .marc-edit-table,
+  .marc-edit-table tbody,
+  .marc-edit-table tr,
+  .marc-edit-table td { display: block; width: 100%; }
+  .marc-edit-table tr {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px;
+    margin-bottom: 10px;
+  }
+  .marc-edit-table td { padding: 4px 0; }
+  .marc-edit-table td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 2px;
+  }
+  .marc-edit-table input.marc-f-gol,
+  .marc-edit-table input.marc-f-assist,
+  .marc-edit-table input.marc-f-rigori { max-width: 100%; text-align: left; }
+}

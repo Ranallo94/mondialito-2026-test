@@ -69,7 +69,9 @@ service cloud.firestore {
     // ── LIVE ──────────────────────────────────────────
     match /live/{doc} {
       allow read: if isApprovato();
-      allow write: if false;
+      // Admin può scrivere (form marcatori manuale); la Cloud Function usa
+      // l'Admin SDK e bypassa comunque le regole.
+      allow write: if isAdmin();
     }
 
     // ── SISTEMA / CONFIG ──────────────────────────────
