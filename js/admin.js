@@ -19,7 +19,8 @@ import { showToast, openModal, closeModal, showSpinner, formatDate } from './ui.
 import { calcolaPunteggio, calcolaSparegnio } from './punteggi.js';
 import { httpsCallable } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js';
 import {
-  collection, onSnapshot, doc, updateDoc, deleteDoc, query, where,
+  collection, onSnapshot, doc, getDoc, setDoc, updateDoc, deleteDoc,
+  query, where, serverTimestamp,
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const db = () => window._firebase.db;
@@ -34,6 +35,7 @@ export async function initAdmin() {
   await Promise.all([
     _initTabApprovazioni(),
     _initTabRisultati(),
+    _initTabMarcatori(),
     _initTabPartecipanti(),
     _initTabSistema(),
   ]);
@@ -61,6 +63,152 @@ function _initAutoRicalcolo() {
       console.warn('[auto-ricalcolo]', e.message);
     }
   });
+}
+
+// ── TAB MARCATORI ─────────────────────────────────────
+// Form editabile della classifica marcatori. "Aggiorna Marcatori" scrive
+// live/marcatori, che alimenta in tempo reale il tab Risultati › Marcatori.
+
+// Normalizza DB.squadre in mappa id → {nome, flag}, sia che l'origine
+// sia un array sia che sia già un oggetto.
+function _squadreMap() {
+  const sq = DB.squadre;
+  if (Array.isArray(sq)) return Object.fromEntries(sq.map(s => [s.id, s]));
+  return sq || {};
+}
+
+function _marcSquadraOptions(selected) {
+  const items = Object.values(_squadreMap())
+    .sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'it'));
+  return ['<option value="">— squadra —</option>']
+    .concat(items.map(s =>
+      `<option value="${s.id}"${s.id === selected ? ' selected' : ''}>${s.flag || ''} ${s.nome}</option>`))
+    .join('');
+}
+
+function _marcRigaHtml(m = {}) {
+  const nome = (m.nome || '').replace(/"/g, '&quot;');
+  return `
+    <tr class="marc-edit-row">
+      <td data-label="Giocatore"><input type="text" class="marc-f-nome" value="${nome}" placeholder="Nome giocatore"></td>
+      <td data-label="Squadra"><select class="marc-f-squadra">${_marcSquadraOptions(m.squadra_id)}</select></td>
+      <td data-label="Gol"><input type="number" class="marc-f-gol" min="0" value="${m.gol ?? 0}"></td>
+      <td data-label="Assist"><input type="number" class="marc-f-assist" min="0" value="${m.assist ?? 0}"></td>
+      <td data-label="Rigori"><input type="number" class="marc-f-rigori" min="0" value="${m.rigori ?? 0}"></td>
+      <td><button type="button" class="btn-icon marc-del" title="Rimuovi riga">🗑️</button></td>
+    </tr>`;
+}
+
+async function _initTabMarcatori() {
+  const container = document.getElementById('admin-marcatori-container');
+  if (!container) return;
+
+  let lista = [];
+  try {
+    const snap = await getDoc(doc(db(), 'live', 'marcatori'));
+    if (snap.exists()) lista = snap.data().lista || [];
+  } catch (e) {
+    console.warn('[marcatori] lettura iniziale:', e.message);
+  }
+
+  const righe = (lista.length ? lista : [{}]).map(_marcRigaHtml).join('');
+  container.innerHTML = `
+    <div class="marc-admin-card">
+      <table class="marc-edit-table">
+        <thead>
+          <tr><th>Giocatore</th><th>Squadra</th><th>Gol</th><th>Assist</th><th>Rigori</th><th></th></tr>
+        </thead>
+        <tbody id="marc-edit-body">${righe}</tbody>
+      </table>
+      <div class="marc-admin-actions">
+        <button type="button" class="btn btn-secondary marc-add">➕ Aggiungi riga</button>
+        <button type="button" class="btn btn-primary marc-save">💾 Aggiorna Marcatori</button>
+        <span class="marc-save-msg"></span>
+      </div>
+      <div class="marc-admin-sync">
+        <button type="button" class="btn btn-secondary marc-sync">🔄 Sync automatico da API</button>
+        <span class="text-muted">Pesca i marcatori da football-data.org. Richiede le Cloud Functions attive.</span>
+      </div>
+    </div>`;
+
+  // Event delegation: registrata una sola volta sul container.
+  if (container._marcWired) return;
+  container._marcWired = true;
+  container.addEventListener('click', async (e) => {
+    if (e.target.closest('.marc-add')) {
+      document.getElementById('marc-edit-body')
+        ?.insertAdjacentHTML('beforeend', _marcRigaHtml());
+    } else if (e.target.closest('.marc-del')) {
+      const tr = e.target.closest('tr');
+      const body = document.getElementById('marc-edit-body');
+      if (body && body.querySelectorAll('tr').length > 1) {
+        tr.remove();
+      } else {
+        // Ultima riga: svuotala invece di rimuoverla.
+        tr.querySelectorAll('input').forEach(i => { i.value = i.type === 'number' ? 0 : ''; });
+        const sel = tr.querySelector('select'); if (sel) sel.value = '';
+      }
+    } else if (e.target.closest('.marc-save')) {
+      await _salvaMarcatori(e.target.closest('.marc-save'));
+    } else if (e.target.closest('.marc-sync')) {
+      await _syncMarcatoriApi(e.target.closest('.marc-sync'));
+    }
+  });
+}
+
+async function _salvaMarcatori(btn) {
+  const map = _squadreMap();
+  const rows = [...document.querySelectorAll('#marc-edit-body tr')];
+
+  let lista = rows.map(tr => ({
+    nome:       tr.querySelector('.marc-f-nome').value.trim(),
+    squadra_id: tr.querySelector('.marc-f-squadra').value,
+    gol:        parseInt(tr.querySelector('.marc-f-gol').value, 10) || 0,
+    assist:     parseInt(tr.querySelector('.marc-f-assist').value, 10) || 0,
+    rigori:     parseInt(tr.querySelector('.marc-f-rigori').value, 10) || 0,
+  })).filter(m => m.nome);
+
+  // Ordina per gol, poi assist; assegna posizione e nome squadra.
+  lista.sort((a, b) => (b.gol - a.gol) || (b.assist - a.assist));
+  lista = lista.map((m, i) => ({
+    pos:          i + 1,
+    nome:         m.nome,
+    squadra_id:   m.squadra_id,
+    squadra_nome: map[m.squadra_id]?.nome || '',
+    gol:          m.gol,
+    assist:       m.assist,
+    rigori:       m.rigori,
+  }));
+
+  const msg = document.querySelector('.marc-save-msg');
+  btn.disabled = true; btn.textContent = '⏳ Salvataggio…';
+  try {
+    await setDoc(doc(db(), 'live', 'marcatori'), {
+      lista,
+      updatedAt: serverTimestamp(),
+    });
+    if (msg) { msg.textContent = `✓ Salvati ${lista.length} marcatori`; msg.className = 'marc-save-msg ok'; }
+    showToast('Marcatori aggiornati!', 'success');
+  } catch (e) {
+    if (msg) { msg.textContent = '❌ ' + e.message; msg.className = 'marc-save-msg err'; }
+    showToast('Errore salvataggio: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = '💾 Aggiorna Marcatori';
+  }
+}
+
+async function _syncMarcatoriApi(btn) {
+  btn.disabled = true; btn.textContent = '⏳ Sync…';
+  try {
+    const fn = httpsCallable(window._firebase.functions, 'syncMarcatori');
+    const res = await fn();
+    showToast(`Sync completato — ${res.data?.count ?? 0} marcatori dall'API`, 'success');
+    await _initTabMarcatori(); // ricarica la tabella con i dati freschi
+  } catch (e) {
+    showToast('Sync non riuscito: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = '🔄 Sync automatico da API';
+  }
 }
 
 // ── TAB APPROVAZIONI ──────────────────────────────────
