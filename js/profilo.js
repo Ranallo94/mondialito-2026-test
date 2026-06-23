@@ -19,6 +19,7 @@ let _unsubRis    = null;
 let _unsubClass  = null;
 let _targetUid   = null;   // uid visualizzato (null = utente corrente)
 let _targetNome  = null;
+let _cmpScheda   = false;   // toggle "Confronta con me" nel tab Scheda pronostici
 
 // True quando si sta guardando la scheda di un ALTRO partecipante.
 function _isAltrui() {
@@ -37,6 +38,7 @@ export async function initProfilo() {
 
   _targetUid  = STATE.profiloUid || STATE.utente?.id;
   _targetNome = null;  // verrà ricavato dalla classifica
+  _cmpScheda  = false; // il confronto nella scheda parte disattivato
 
   showSpinner('profilo-breakdown', 'Caricamento profilo…');
   _renderHeader();
@@ -541,39 +543,56 @@ function _renderSchedaPronostici() {
 
   const pGironi = _pronostici.gironi              || {};
   const pCannon = _pronostici.capocannoniere      || {};
+  const mGironi = _mioPronostici?.gironi          || {};
+  const mCannon = _mioPronostici?.capocannoniere  || {};
   const rGironi = _risultati.gironi               || {};
 
-  const sq = (id) => {
-    if (!id) return '<span class="scheda-tbd">—</span>';
-    const s = DB.squadre[id];
-    return s ? `${s.flag} ${s.nome}` : id;
+  // Confronto attivo solo se: guardo un altro, ho i miei pronostici, toggle ON.
+  const puoConfrontare = _isAltrui() && !!_mioPronostici;
+  const cmp = puoConfrontare && _cmpScheda;
+  const nomeAvv = _nomeAvversario();
+
+  // Cella pronostico (punteggio + segno + badge vs risultato reale) per un set.
+  const cellaScore = (pr, p, r) => {
+    const hasResult = r?.gol_casa != null;
+    const segnoR = hasResult ? (r.gol_casa > r.gol_trasferta ? '1' : r.gol_casa < r.gol_trasferta ? '2' : 'X') : null;
+    const ok = pr && segnoR && pr.segno === segnoR;
+    const esatto = pr && hasResult && pr.gol_casa == r.gol_casa && pr.gol_trasferta == r.gol_trasferta;
+    const score = pr
+      ? `<strong>${pr.gol_casa ?? '?'}–${pr.gol_trasferta ?? '?'}</strong> <span class="scheda-segno">(${pr.segno || '?'})</span>`
+      : '<span class="scheda-tbd">—</span>';
+    const badge = esatto ? ' 🎯' : ok ? ' ✓' : hasResult ? ' ✗' : '';
+    return { html: score + badge, ok, hasResult };
   };
 
   // ── 1. GIRONI ──────────────────────────────────────
   let htmlGironi = '';
   Object.entries(DB.gironi).forEach(([lettera, girone]) => {
     const matchRows = girone.partite.map(p => {
-      const pr = pGironi[p.id];
       const r  = rGironi[p.id];
       const casa  = DB.squadre[p.casa]      || { nome: p.casa,      flag: '' };
       const trasf = DB.squadre[p.trasferta] || { nome: p.trasferta, flag: '' };
 
-      const hasResult = r?.gol_casa != null;
-      const segnoR = hasResult ? (r.gol_casa > r.gol_trasferta ? '1' : r.gol_casa < r.gol_trasferta ? '2' : 'X') : null;
-      const ok = pr && segnoR && pr.segno === segnoR;
-      const esatto = pr && hasResult && pr.gol_casa == r.gol_casa && pr.gol_trasferta == r.gol_trasferta;
+      const them = cellaScore(pGironi[p.id], p, r);
 
-      const score = pr
-        ? `<strong>${pr.gol_casa ?? '?'}–${pr.gol_trasferta ?? '?'}</strong> <span class="scheda-segno">(${pr.segno || '?'})</span>`
-        : '<span class="scheda-tbd">—</span>';
+      if (cmp) {
+        const me = cellaScore(mGironi[p.id], p, r);
+        return `
+          <div class="scheda-match-row scheda-match-cmp">
+            <span class="scheda-team">${casa.flag} ${casa.nome}</span>
+            <span class="scheda-score-cmp">
+              <span class="scheda-cmp-me ${them.hasResult ? (me.ok ? 'scheda-ok' : 'scheda-ko') : ''}">Tu ${me.html}</span>
+              <span class="scheda-cmp-them ${them.hasResult ? (them.ok ? 'scheda-ok' : 'scheda-ko') : ''}">${nomeAvv} ${them.html}</span>
+            </span>
+            <span class="scheda-team scheda-team-away">${trasf.nome} ${trasf.flag}</span>
+          </div>`;
+      }
 
-      const badge = esatto ? ' 🎯' : ok ? ' ✓' : hasResult ? ' ✗' : '';
-      const rowClass = hasResult ? (ok ? 'scheda-ok' : 'scheda-ko') : '';
-
+      const rowClass = them.hasResult ? (them.ok ? 'scheda-ok' : 'scheda-ko') : '';
       return `
         <div class="scheda-match-row ${rowClass}">
           <span class="scheda-team">${casa.flag} ${casa.nome}</span>
-          <span class="scheda-score">${score}${badge}</span>
+          <span class="scheda-score">${them.html}</span>
           <span class="scheda-team scheda-team-away">${trasf.nome} ${trasf.flag}</span>
         </div>`;
     }).join('');
@@ -591,30 +610,77 @@ function _renderSchedaPronostici() {
     { pos: 'secondo', label: '🥈 2° marcatore' },
     { pos: 'terzo',   label: '🥉 3° marcatore' },
   ].map(({ pos, label }) => {
-    const id = pCannon[pos];
-    return `<div class="scheda-griglia-item"><span class="scheda-cannon-label">${label}</span> <strong>${id || '—'}</strong></div>`;
+    if (cmp) {
+      return `
+        <div class="scheda-griglia-item">
+          <span class="scheda-cannon-label">${label}</span>
+          <span class="scheda-cannon-cmp">
+            <span class="scheda-cmp-me">Tu: <strong>${mCannon[pos] || '—'}</strong></span>
+            <span class="scheda-cmp-them">${nomeAvv}: <strong>${pCannon[pos] || '—'}</strong></span>
+          </span>
+        </div>`;
+    }
+    return `<div class="scheda-griglia-item"><span class="scheda-cannon-label">${label}</span> <strong>${pCannon[pos] || '—'}</strong></div>`;
   }).join('');
+
+  // ── Barra toggle confronto ─────────────────────────
+  const toggleBar = puoConfrontare
+    ? `<div class="scheda-cmp-toggle-bar">
+         <button type="button" class="btn btn-secondary btn-sm scheda-cmp-toggle">
+           ${cmp ? '✕ Disattiva confronto' : '🆚 Confronta con me'}
+         </button>
+       </div>`
+    : '';
+
+  // ── 2 & 3: Classifica pronosticata + Tabellone ─────
+  const sezClassifica = cmp
+    ? `<div class="scheda-cmp-cols">
+         <div class="scheda-cmp-col"><div class="scheda-cmp-head me">La tua</div><div id="scheda-riepilogo-me"></div></div>
+         <div class="scheda-cmp-col"><div class="scheda-cmp-head them">${nomeAvv}</div><div id="scheda-riepilogo-them"></div></div>
+       </div>`
+    : `<div id="scheda-riepilogo-container"></div>`;
+
+  const sezTabellone = cmp
+    ? `<div class="scheda-cmp-head me">La tua schedina</div>
+       <div id="scheda-tabellone-me" class="tb-scroll-wrapper"></div>
+       <div class="scheda-cmp-head them" style="margin-top:14px">Schedina di ${nomeAvv}</div>
+       <div id="scheda-tabellone-them" class="tb-scroll-wrapper"></div>`
+    : `<div id="scheda-tabellone-container" class="tb-scroll-wrapper"></div>`;
 
   // ── Struttura contenitore ──────────────────────────
   el.innerHTML = `
+    ${toggleBar}
     <div class="scheda-section">
-      <h3 class="section-title">⚽ Pronostici gironi</h3>
+      <h3 class="section-title">⚽ Pronostici gironi${cmp ? ` <span class="text-muted">· Tu vs ${nomeAvv}</span>` : ''}</h3>
       <div class="scheda-gironi-grid">${htmlGironi || '<p class="text-muted">Non compilati</p>'}</div>
     </div>
     <div class="scheda-section">
       <h3 class="section-title">📊 Classifica gironi pronosticata</h3>
-      <div id="scheda-riepilogo-container"></div>
+      ${sezClassifica}
     </div>
     <div class="scheda-section">
       <h3 class="section-title">🏟️ Tabellone eliminatorie</h3>
-      <div id="scheda-tabellone-container" class="tb-scroll-wrapper"></div>
+      ${sezTabellone}
     </div>
     <div class="scheda-section">
       <h3 class="section-title">👟 Capocannoniere</h3>
       <div class="scheda-griglia-block">${cannonHtml}</div>
     </div>`;
 
+  // Toggle confronto
+  el.querySelector('.scheda-cmp-toggle')?.addEventListener('click', () => {
+    _cmpScheda = !_cmpScheda;
+    _renderSchedaPronostici();
+  });
+
   // Renderizza riepilogo e tabellone nei loro container
-  renderRiepilogoGironi(document.getElementById('scheda-riepilogo-container'), _pronostici, DB);
-  renderTabellone(document.getElementById('scheda-tabellone-container'), _pronostici, DB);
+  if (cmp) {
+    renderRiepilogoGironi(document.getElementById('scheda-riepilogo-me'),   _mioPronostici, DB);
+    renderRiepilogoGironi(document.getElementById('scheda-riepilogo-them'), _pronostici,    DB);
+    renderTabellone(document.getElementById('scheda-tabellone-me'),   _mioPronostici, DB);
+    renderTabellone(document.getElementById('scheda-tabellone-them'), _pronostici,    DB);
+  } else {
+    renderRiepilogoGironi(document.getElementById('scheda-riepilogo-container'), _pronostici, DB);
+    renderTabellone(document.getElementById('scheda-tabellone-container'), _pronostici, DB);
+  }
 }
