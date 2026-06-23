@@ -118,8 +118,97 @@ function _renderProfilo() {
   // Breakdown per categoria
   _renderBreakdown(bd);
 
-  // Dettaglio partite girone
+  // Partite nelle 24h precedenti/successive al caricamento pagina
+  _renderPartiteImminenti();
+
+  // Dettaglio partite girone (elenco completo)
   _renderDettaglioGironi(bd);
+}
+
+// ── PARTITE IMMINENTI (±24h dal caricamento) ──────────
+function _renderPartiteImminenti() {
+  const el = document.getElementById('profilo-imminenti');
+  if (!el) return;
+
+  const pGironi = _pronostici?.gironi || {};
+  const rGironi = _risultati?.gironi  || {};
+
+  const now = Date.now();
+  const DAY = 24 * 60 * 60 * 1000;
+  const da  = now - DAY;
+  const a   = now + DAY;
+
+  // Raccogli le partite con kickoff nella finestra ±24h, ordinate per data.
+  const items = [];
+  Object.values(DB.gironi).forEach(girone => {
+    girone.partite.forEach(p => {
+      if (!p.data) return;
+      const t = new Date(p.data).getTime();
+      if (isNaN(t) || t < da || t > a) return;
+      items.push({ p, t });
+    });
+  });
+  items.sort((x, y) => x.t - y.t);
+
+  if (!items.length) {
+    el.innerHTML = `
+      <div class="breakdown-section">
+        <h3 class="section-title">⏱️ Partite di oggi <span class="text-muted">(±24h)</span></h3>
+        <div class="empty-state"><div class="empty-icon">📅</div><p>Nessuna partita nelle 24 ore precedenti o successive.</p></div>
+      </div>`;
+    return;
+  }
+
+  const rows = items.map(({ p }) => {
+    const casa  = DB.squadre[p.casa]      || { nome: p.casa,      flag: '' };
+    const trasf = DB.squadre[p.trasferta] || { nome: p.trasferta, flag: '' };
+    const pr = pGironi[p.id];
+    const r  = rGironi[p.id];
+    const hasResult = r && r.gol_casa != null;
+
+    const quando = new Date(p.data).toLocaleString('it-IT', {
+      weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
+    });
+
+    const pronTxt = pr
+      ? `${pr.gol_casa ?? '?'}–${pr.gol_trasferta ?? '?'} (${pr.segno || '?'})`
+      : '<span class="scheda-tbd">non pronosticata</span>';
+
+    let resultHtml, ptiHtml, rowClass;
+    if (hasResult) {
+      const segnoR   = r.gol_casa > r.gol_trasferta ? '1' : r.gol_casa < r.gol_trasferta ? '2' : 'X';
+      const segnoOk  = pr && pr.segno === segnoR;
+      const esattoOk = pr && pr.gol_casa == r.gol_casa && pr.gol_trasferta == r.gol_trasferta;
+      const pti = (segnoOk ? 10 : 0) + (esattoOk ? 5 : 0);
+      rowClass = segnoOk ? 'match-ok' : 'match-ko';
+      resultHtml = `
+        <span class="pm-real">${r.gol_casa}–${r.gol_trasferta}</span>
+        <span class="pm-sep">·</span>
+        <span class="pm-pron ${segnoOk ? 'ok' : 'ko'}">${pronTxt}</span>
+        ${esattoOk ? '<span class="pm-esatto">🎯</span>' : ''}`;
+      ptiHtml = `<div class="pm-pts ${pti > 0 ? 'pts-pos' : ''}">${pti > 0 ? '+' + pti : '0'} pt</div>`;
+    } else {
+      rowClass = 'match-upcoming';
+      resultHtml = `<span class="pm-pron">${pronTxt}</span>`;
+      ptiHtml = `<div class="pm-pts pm-pts-attesa">⏳ da giocare</div>`;
+    }
+
+    return `
+      <div class="profilo-match-row ${rowClass}">
+        <div class="pm-teams">
+          ${casa.flag} ${casa.nome} vs ${trasf.nome} ${trasf.flag}
+          <span class="pm-quando">${quando}</span>
+        </div>
+        <div class="pm-result">${resultHtml}</div>
+        ${ptiHtml}
+      </div>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="breakdown-section">
+      <h3 class="section-title">⏱️ Partite di oggi <span class="text-muted">(±24h)</span></h3>
+      <div class="profilo-matches-list">${rows}</div>
+    </div>`;
 }
 
 // ── SCORE CARD ────────────────────────────────────────
