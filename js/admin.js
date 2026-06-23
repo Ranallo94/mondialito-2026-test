@@ -192,8 +192,12 @@ async function _salvaMarcatori(btn) {
       lista,
       updatedAt: serverTimestamp(),
     });
-    if (msg) { msg.textContent = `✓ Salvati ${lista.length} marcatori`; msg.className = 'marc-save-msg ok'; }
     showToast('Marcatori aggiornati!', 'success');
+    // Ricarica la tabella con i dati appena salvati: le righe si riordinano
+    // automaticamente per gol (chi ha segnato di più finisce in cima).
+    await _initTabMarcatori();
+    const msgNew = document.querySelector('.marc-save-msg');
+    if (msgNew) { msgNew.textContent = `✓ Salvati ${lista.length} marcatori`; msgNew.className = 'marc-save-msg ok'; }
   } catch (e) {
     if (msg) { msg.textContent = '❌ ' + e.message; msg.className = 'marc-save-msg err'; }
     showToast('Errore salvataggio: ' + e.message, 'error');
