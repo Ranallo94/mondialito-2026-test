@@ -833,6 +833,9 @@ select.field-input option { background: var(--bg-card2); }
 .pm-esatto   { font-size: 14px; }
 .pm-pts  { font-weight: 700; text-align: right; color: var(--text-muted); white-space: nowrap; }
 .pts-pos { color: var(--verde-light); }
+.pm-quando { display: block; font-size: 11px; font-weight: 400; color: var(--text-muted); margin-top: 2px; text-transform: capitalize; }
+.profilo-match-row.match-upcoming { border-color: var(--border); background: rgba(255,255,255,.02); }
+.pm-pts-attesa { color: var(--text-muted); font-weight: 600; font-size: 12px; }
 
 /* ── LIVE PARTITE ── */
 .match-card      { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 10px; }
