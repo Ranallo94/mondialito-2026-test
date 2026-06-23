@@ -19,7 +19,6 @@ let _unsubRis    = null;
 let _unsubClass  = null;
 let _targetUid   = null;   // uid visualizzato (null = utente corrente)
 let _targetNome  = null;
-let _cmpScheda   = false;   // toggle "Confronta con me" nel tab Scheda pronostici
 
 // True quando si sta guardando la scheda di un ALTRO partecipante.
 function _isAltrui() {
@@ -38,7 +37,6 @@ export async function initProfilo() {
 
   _targetUid  = STATE.profiloUid || STATE.utente?.id;
   _targetNome = null;  // verrà ricavato dalla classifica
-  _cmpScheda  = false; // il confronto nella scheda parte disattivato
 
   showSpinner('profilo-breakdown', 'Caricamento profilo…');
   _renderHeader();
@@ -547,9 +545,8 @@ function _renderSchedaPronostici() {
   const mCannon = _mioPronostici?.capocannoniere  || {};
   const rGironi = _risultati.gironi               || {};
 
-  // Confronto attivo solo se: guardo un altro, ho i miei pronostici, toggle ON.
-  const puoConfrontare = _isAltrui() && !!_mioPronostici;
-  const cmp = puoConfrontare && _cmpScheda;
+  // Confronto sempre attivo se guardo un altro e ho compilato i miei pronostici.
+  const cmp = _isAltrui() && !!_mioPronostici;
   const nomeAvv = _nomeAvversario();
 
   // Cella pronostico (punteggio + segno + badge vs risultato reale) per un set.
@@ -623,15 +620,6 @@ function _renderSchedaPronostici() {
     return `<div class="scheda-griglia-item"><span class="scheda-cannon-label">${label}</span> <strong>${pCannon[pos] || '—'}</strong></div>`;
   }).join('');
 
-  // ── Barra toggle confronto ─────────────────────────
-  const toggleBar = puoConfrontare
-    ? `<div class="scheda-cmp-toggle-bar">
-         <button type="button" class="btn btn-secondary btn-sm scheda-cmp-toggle">
-           ${cmp ? '✕ Disattiva confronto' : '🆚 Confronta con me'}
-         </button>
-       </div>`
-    : '';
-
   // ── 2 & 3: Classifica pronosticata + Tabellone ─────
   // In confronto raggruppo per girone (mia | avversario affiancate dentro lo
   // stesso girone) così su mobile restano sempre vicine e leggibili.
@@ -648,7 +636,6 @@ function _renderSchedaPronostici() {
 
   // ── Struttura contenitore ──────────────────────────
   el.innerHTML = `
-    ${toggleBar}
     <div class="scheda-section">
       <h3 class="section-title">⚽ Pronostici gironi${cmp ? ` <span class="text-muted">· Tu vs ${nomeAvv}</span>` : ''}</h3>
       <div class="scheda-gironi-grid">${htmlGironi || '<p class="text-muted">Non compilati</p>'}</div>
@@ -665,12 +652,6 @@ function _renderSchedaPronostici() {
       <h3 class="section-title">👟 Capocannoniere</h3>
       <div class="scheda-griglia-block">${cannonHtml}</div>
     </div>`;
-
-  // Toggle confronto
-  el.querySelector('.scheda-cmp-toggle')?.addEventListener('click', () => {
-    _cmpScheda = !_cmpScheda;
-    _renderSchedaPronostici();
-  });
 
   // Renderizza riepilogo e tabellone nei loro container
   if (cmp) {
