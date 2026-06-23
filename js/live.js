@@ -7,6 +7,7 @@
 import DB from '../mondialito_db.json' with { type: 'json' };
 import { onLiveSnapshot, onRisultatiSnapshot, onMarcatoriSnapshot } from './db.js';
 import { formatTime, formatDate } from './ui.js';
+import { getClassificaGirone } from './bracket.js';
 
 let _unsubLive      = null;
 let _unsubRis       = null;
@@ -144,11 +145,44 @@ function _renderGironi() {
           <span class="ris-girone-progress">${played}/${total}</span>
         </div>
         <div class="ris-girone-matches">${partiteHtml}</div>
+        ${_classificaGironeHtml(lettera)}
       </div>`;
   });
 
   html += '</div>';
   container.innerHTML = html;
+}
+
+// ── CLASSIFICA PROVVISORIA DEL GIRONE ─────────────────
+// Riusa getClassificaGirone passando i risultati reali (stessa forma dati dei
+// pronostici). Le prime due posizioni sono evidenziate come qualificate.
+function _classificaGironeHtml(lettera) {
+  const classifica = getClassificaGirone(lettera, _risultati.gironi || {}, DB);
+  if (!classifica.length) return '';
+
+  const righe = classifica.map((t, i) => {
+    const sq = DB.squadre[t.id] || { nome: t.id, flag: '' };
+    const gd = t.gd > 0 ? `+${t.gd}` : `${t.gd}`;
+    return `
+      <tr class="${i < 2 ? 'ris-cl-qual' : ''}">
+        <td class="ris-cl-pos">${i + 1}</td>
+        <td class="ris-cl-team">${sq.flag} ${sq.nome}</td>
+        <td>${t.g}</td>
+        <td>${gd}</td>
+        <td class="ris-cl-pt">${t.pt}</td>
+      </tr>`;
+  }).join('');
+
+  return `
+    <div class="ris-girone-classifica">
+      <div class="ris-cl-title">Classifica provvisoria</div>
+      <table class="ris-cl-table">
+        <thead>
+          <tr><th></th><th>Squadra</th><th title="Partite giocate">G</th><th title="Differenza reti">DR</th><th title="Punti">Pt</th></tr>
+        </thead>
+        <tbody>${righe}</tbody>
+      </table>
+    </div>`;
 }
 
 // ── CARD LIVE (in corso) ──────────────────────────────
