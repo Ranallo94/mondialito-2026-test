@@ -275,7 +275,7 @@ function _renderMarcatori() {
     const sq = squadre[m.squadra_id];
     const flag = sq?.flag || '';
     const squadraNome = sq?.nome || m.squadra_nome || '—';
-    const assistHtml = m.assist > 0 ? `<span class="marc-assist">${m.assist} ast</span>` : '';
+    const assistHtml = m.assist > 0 ? `<span class="marc-assist" title="Assist">${m.assist} 👟</span>` : '';
     const rigoriHtml = m.rigori > 0 ? `<span class="marc-rigori">(${m.rigori} rig)</span>` : '';
     const medaglia = m.pos === 1 ? '🥇' : m.pos === 2 ? '🥈' : m.pos === 3 ? '🥉' : m.pos;
 
