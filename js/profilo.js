@@ -9,7 +9,7 @@ import { STATE, navigaA } from './app.js';
 import { getPronostici, onRisultatiSnapshot, onClassificaSnapshot } from './db.js';
 import { calcolaPunteggio } from './punteggi.js';
 import { showSpinner } from './ui.js';
-import { renderRiepilogoGironi, renderTabellone } from './bracket.js';
+import { renderRiepilogoGironi, renderTabellone, getClassificaGirone } from './bracket.js';
 
 let _pronostici  = null;
 let _mioPronostici = null; // pronostici dell'utente loggato (per il confronto)
@@ -633,11 +633,10 @@ function _renderSchedaPronostici() {
     : '';
 
   // ── 2 & 3: Classifica pronosticata + Tabellone ─────
+  // In confronto raggruppo per girone (mia | avversario affiancate dentro lo
+  // stesso girone) così su mobile restano sempre vicine e leggibili.
   const sezClassifica = cmp
-    ? `<div class="scheda-cmp-cols">
-         <div class="scheda-cmp-col"><div class="scheda-cmp-head me">La tua</div><div id="scheda-riepilogo-me"></div></div>
-         <div class="scheda-cmp-col"><div class="scheda-cmp-head them">${nomeAvv}</div><div id="scheda-riepilogo-them"></div></div>
-       </div>`
+    ? _classificaCmpHtml(nomeAvv)
     : `<div id="scheda-riepilogo-container"></div>`;
 
   const sezTabellone = cmp
@@ -675,12 +674,51 @@ function _renderSchedaPronostici() {
 
   // Renderizza riepilogo e tabellone nei loro container
   if (cmp) {
-    renderRiepilogoGironi(document.getElementById('scheda-riepilogo-me'),   _mioPronostici, DB);
-    renderRiepilogoGironi(document.getElementById('scheda-riepilogo-them'), _pronostici,    DB);
+    // La classifica di confronto è già HTML inline (_classificaCmpHtml).
     renderTabellone(document.getElementById('scheda-tabellone-me'),   _mioPronostici, DB);
     renderTabellone(document.getElementById('scheda-tabellone-them'), _pronostici,    DB);
   } else {
     renderRiepilogoGironi(document.getElementById('scheda-riepilogo-container'), _pronostici, DB);
     renderTabellone(document.getElementById('scheda-tabellone-container'), _pronostici, DB);
   }
+}
+
+// Mini-classifica di un girone per un dato set di pronostici (stile riepilogo).
+function _miniClassificaTable(lettera, pron) {
+  const cl = getClassificaGirone(lettera, pron?.gironi || {}, DB);
+  const hasData = cl.some(t => t.g > 0);
+  let h = '<table class="riepilogo-table"><thead><tr><th>#</th><th>Squadra</th><th>Pt</th><th>GD</th></tr></thead><tbody>';
+  cl.forEach((t, i) => {
+    const sq = DB.squadre[t.id];
+    const gdStr = t.gd >= 0 ? '+' + t.gd : '' + t.gd;
+    const gdCls = t.gd > 0 ? 'gd-pos' : t.gd < 0 ? 'gd-neg' : '';
+    const rowCls = i < 2 ? 'qualificata' : i === 2 ? 'terza' : '';
+    h += `<tr class="${rowCls}"><td class="riepilogo-pos">${i + 1}</td>`
+       + `<td class="riepilogo-team">${sq?.flag || ''} ${sq?.nome || t.id}</td>`
+       + `<td class="riepilogo-pt">${hasData ? t.pt : '—'}</td>`
+       + `<td class="riepilogo-gd">${hasData ? `<span class="${gdCls}">${gdStr}</span>` : '—'}</td></tr>`;
+  });
+  return h + '</tbody></table>';
+}
+
+// Confronto classifiche pronosticate, raggruppate per girone (mia | avversario).
+function _classificaCmpHtml(nomeAvv) {
+  let grid = '<div class="riepilogo-cmp-grid">';
+  Object.keys(DB.gironi).forEach(lettera => {
+    grid += `
+      <div class="riepilogo-cmp-block">
+        <div class="riepilogo-cmp-title">Girone ${lettera}</div>
+        <div class="riepilogo-cmp-pair">
+          <div class="riepilogo-cmp-side">
+            <div class="scheda-cmp-head me">Tu</div>
+            ${_miniClassificaTable(lettera, _mioPronostici)}
+          </div>
+          <div class="riepilogo-cmp-side">
+            <div class="scheda-cmp-head them">${nomeAvv}</div>
+            ${_miniClassificaTable(lettera, _pronostici)}
+          </div>
+        </div>
+      </div>`;
+  });
+  return grid + '</div>';
 }
