@@ -1488,6 +1488,15 @@ select.field-input option { background: var(--bg-card2); }
 .scheda-cmp-head { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text-muted); margin-bottom: 6px; }
 .scheda-cmp-head.me   { color: var(--verde-light); }
 @media (max-width: 640px) { .scheda-cmp-cols { grid-template-columns: 1fr; } }
+
+/* ── CONFRONTO CLASSIFICHE PRONOSTICATE (raggruppate per girone) ── */
+.riepilogo-cmp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.riepilogo-cmp-block { min-width: 0; }
+.riepilogo-cmp-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text-muted); text-align: center; margin-bottom: 6px; }
+.riepilogo-cmp-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.riepilogo-cmp-side { min-width: 0; }
+.riepilogo-cmp-side .scheda-cmp-head { text-align: center; }
+@media (max-width: 640px) { .riepilogo-cmp-grid { grid-template-columns: 1fr; } }
 .scheda-tbd { color: var(--text-muted); }
 .scheda-griglia-item { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 13px; }
 .scheda-pos-num { font-weight: 700; color: var(--text-muted); min-width: 20px; }
