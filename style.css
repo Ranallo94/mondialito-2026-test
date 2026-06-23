@@ -909,6 +909,19 @@ select.field-input option { background: var(--bg-card2); }
   border-radius: 10px;
 }
 .ris-girone-matches { padding: 4px 0; }
+
+/* ── CLASSIFICA PROVVISORIA GIRONE ── */
+.ris-girone-classifica { border-top: 1px solid var(--border); padding: 10px 14px 12px; background: rgba(255,255,255,.02); }
+.ris-cl-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text-muted); margin-bottom: 6px; }
+.ris-cl-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.ris-cl-table th { font-size: 10px; font-weight: 600; color: var(--text-muted); text-align: center; padding: 2px 4px; }
+.ris-cl-table th:nth-child(2) { text-align: left; }
+.ris-cl-table td { text-align: center; padding: 4px; border-top: 1px solid var(--border); }
+.ris-cl-pos { color: var(--text-muted); width: 18px; }
+.ris-cl-team { text-align: left; font-weight: 500; }
+.ris-cl-pt { font-weight: 700; color: var(--text); }
+.ris-cl-table tr.ris-cl-qual .ris-cl-pos { color: var(--verde-light); font-weight: 700; }
+.ris-cl-table tr.ris-cl-qual { background: rgba(42,138,71,.07); }
 .ris-match-row {
   display: grid;
   grid-template-columns: 44px 1fr auto 1fr;
