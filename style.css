@@ -1471,6 +1471,23 @@ select.field-input option { background: var(--bg-card2); }
 .scheda-team-away { text-align: right; }
 .scheda-score { flex-shrink: 0; text-align: center; font-size: 13px; min-width: 70px; }
 .scheda-segno { color: var(--text-muted); font-size: 11px; }
+
+/* ── CONFRONTO SCHEDA PRONOSTICI ── */
+.scheda-cmp-toggle-bar { display: flex; justify-content: flex-end; margin-bottom: 14px; }
+.scheda-match-cmp { align-items: stretch; }
+.scheda-score-cmp { flex-shrink: 0; display: flex; flex-direction: column; gap: 2px; min-width: 124px; text-align: center; }
+.scheda-cmp-me, .scheda-cmp-them { font-size: 12px; padding: 1px 4px; border-radius: 4px; }
+.scheda-cmp-me  { color: var(--text); }
+.scheda-cmp-them { color: var(--text-muted); }
+.scheda-score-cmp .scheda-ok { background: rgba(34,197,94,.12); }
+.scheda-score-cmp .scheda-ko { opacity: .6; }
+.scheda-cannon-cmp { display: flex; flex-direction: column; gap: 2px; font-size: 12px; }
+.scheda-cannon-cmp .scheda-cmp-them { color: var(--text-muted); }
+.scheda-cmp-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.scheda-cmp-col { min-width: 0; }
+.scheda-cmp-head { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text-muted); margin-bottom: 6px; }
+.scheda-cmp-head.me   { color: var(--verde-light); }
+@media (max-width: 640px) { .scheda-cmp-cols { grid-template-columns: 1fr; } }
 .scheda-tbd { color: var(--text-muted); }
 .scheda-griglia-item { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 13px; }
 .scheda-pos-num { font-weight: 700; color: var(--text-muted); min-width: 20px; }
