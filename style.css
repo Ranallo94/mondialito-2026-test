@@ -837,6 +837,24 @@ select.field-input option { background: var(--bg-card2); }
 .profilo-match-row.match-upcoming { border-color: var(--border); background: rgba(255,255,255,.02); }
 .pm-pts-attesa { color: var(--text-muted); font-weight: 600; font-size: 12px; }
 
+/* ── CONFRONTO PUNTEGGIO (Dettaglio punteggio) ── */
+.bd-compare { display: flex; flex-direction: column; gap: 2px; text-align: right; white-space: nowrap; }
+.bd-cmp { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+.bd-cmp.cmp-win { color: var(--verde-light); }
+.bd-compare-total .bd-cmp { font-size: 14px; }
+
+/* ── CONFRONTO PARTITE ── */
+.profilo-match-row.cmp { grid-template-columns: 1fr auto; align-items: stretch; }
+.pm-real-inline { display: inline-block; margin-left: 8px; font-size: 12px; color: var(--text-muted); }
+.pm-cmp-block { display: flex; flex-direction: column; gap: 4px; justify-content: center; }
+.pm-cmp-line { display: flex; align-items: center; gap: 6px; font-size: 12px; justify-content: flex-end; }
+.pm-cmp-who { min-width: 64px; font-weight: 600; color: var(--text-muted); text-align: right; }
+.pm-cmp-line.cmp-win .pm-cmp-who { color: var(--verde-light); }
+.pm-cmp-pron.ok { color: var(--verde-light); }
+.pm-cmp-pron.ko { color: var(--rosso); opacity: .7; }
+.pm-cmp-pts { font-weight: 700; color: var(--text-muted); white-space: nowrap; }
+.pm-cmp-pts.pts-pos { color: var(--verde-light); }
+
 /* ── LIVE PARTITE ── */
 .match-card      { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 10px; }
 .match-card-live { border-color: var(--rosso); box-shadow: 0 0 0 1px rgba(229,62,62,.3), 0 0 12px rgba(229,62,62,.15); }
