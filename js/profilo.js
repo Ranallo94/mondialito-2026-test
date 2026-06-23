@@ -12,12 +12,22 @@ import { showSpinner } from './ui.js';
 import { renderRiepilogoGironi, renderTabellone } from './bracket.js';
 
 let _pronostici  = null;
+let _mioPronostici = null; // pronostici dell'utente loggato (per il confronto)
 let _risultati   = {};
 let _classifica  = [];
 let _unsubRis    = null;
 let _unsubClass  = null;
 let _targetUid   = null;   // uid visualizzato (null = utente corrente)
 let _targetNome  = null;
+
+// True quando si sta guardando la scheda di un ALTRO partecipante.
+function _isAltrui() {
+  return !!(STATE.profiloUid && STATE.profiloUid !== STATE.utente?.id);
+}
+// Nome breve dell'avversario per le etichette di confronto.
+function _nomeAvversario() {
+  return (_targetNome || 'Avversario').split(' ')[0];
+}
 
 // ── INIT ──────────────────────────────────────────────
 export async function initProfilo() {
@@ -37,6 +47,18 @@ export async function initProfilo() {
   } catch (e) {
     console.warn('Errore caricamento pronostici:', e);
     _pronostici = null;
+  }
+
+  // Se sto guardando un altro partecipante, carico anche i MIEI pronostici
+  // per poter mostrare il confronto inline nel tab Riepilogo.
+  _mioPronostici = null;
+  if (_isAltrui()) {
+    try {
+      _mioPronostici = await getPronostici(STATE.utente?.id);
+    } catch (e) {
+      console.warn('Errore caricamento pronostici personali (confronto):', e);
+      _mioPronostici = null;
+    }
   }
 
   // Ascolta risultati per aggiornamento live
@@ -115,14 +137,79 @@ function _renderProfilo() {
   // Score card (aggiorna il div già nel DOM)
   _renderScoreCard(totale, pos);
 
+  // Breakdown della MIA scheda (per il confronto, solo se guardo un altro)
+  const bdMe = (_isAltrui() && _mioPronostici)
+    ? calcolaPunteggio(_mioPronostici, _risultati).breakdown
+    : null;
+
   // Breakdown per categoria
-  _renderBreakdown(bd);
+  _renderBreakdown(bd, bdMe);
 
   // Partite nelle 24h precedenti/successive al caricamento pagina
   _renderPartiteImminenti();
 
   // Dettaglio partite girone (elenco completo)
   _renderDettaglioGironi(bd);
+}
+
+// Calcola pronostico + punti di una partita per un dato set di pronostici-gironi.
+function _calcPron(prGironi, p, r) {
+  const pr = prGironi?.[p.id];
+  const hasResult = r && r.gol_casa != null;
+  const pronTxt = pr ? `${pr.gol_casa ?? '?'}–${pr.gol_trasferta ?? '?'} (${pr.segno || '?'})` : null;
+  if (!hasResult) return { pr, pronTxt, hasResult: false, pti: null };
+  const segnoR   = r.gol_casa > r.gol_trasferta ? '1' : r.gol_casa < r.gol_trasferta ? '2' : 'X';
+  const segnoOk  = !!(pr && pr.segno === segnoR);
+  const esattoOk = !!(pr && pr.gol_casa == r.gol_casa && pr.gol_trasferta == r.gol_trasferta);
+  const pti = (segnoOk ? 10 : 0) + (esattoOk ? 5 : 0);
+  return { pr, pronTxt, hasResult: true, segnoOk, esattoOk, pti };
+}
+
+// Riga partita in modalità CONFRONTO: pronostico mio vs avversario, con punti.
+function _matchCompareRow(p, { quando = '' } = {}) {
+  const r     = _risultati?.gironi?.[p.id];
+  const casa  = DB.squadre[p.casa]      || { nome: p.casa,      flag: '' };
+  const trasf = DB.squadre[p.trasferta] || { nome: p.trasferta, flag: '' };
+  const them  = _calcPron(_pronostici?.gironi, p, r);
+  const me    = _calcPron(_mioPronostici?.gironi, p, r);
+  const nomeAvv = _nomeAvversario();
+  const hasResult = them.hasResult;
+
+  const meWin   = hasResult && (me.pti   || 0) > (them.pti || 0);
+  const themWin = hasResult && (them.pti || 0) > (me.pti   || 0);
+
+  const realHtml = hasResult
+    ? `<span class="pm-real">${r.gol_casa}–${r.gol_trasferta}</span>`
+    : `<span class="pm-pts-attesa">⏳ da giocare</span>`;
+
+  const line = (who, x, cls, win) => {
+    const pron = x.pronTxt || '<span class="scheda-tbd">—</span>';
+    const pts  = hasResult
+      ? `<span class="pm-cmp-pts ${x.pti > 0 ? 'pts-pos' : ''}">${x.pti > 0 ? '+' + x.pti : '0'} pt</span>`
+      : '';
+    return `
+      <div class="pm-cmp-line ${cls} ${win ? 'cmp-win' : ''}">
+        <span class="pm-cmp-who">${who}</span>
+        <span class="pm-cmp-pron ${hasResult ? (x.segnoOk ? 'ok' : 'ko') : ''}">${pron}</span>
+        ${x.esattoOk ? '<span class="pm-esatto">🎯</span>' : ''}
+        ${pts}
+      </div>`;
+  };
+
+  const rowClass = hasResult ? (meWin ? 'match-ok' : themWin ? 'match-ko' : '') : 'match-upcoming';
+
+  return `
+    <div class="profilo-match-row cmp ${rowClass}">
+      <div class="pm-teams">
+        ${casa.flag} ${casa.nome} vs ${trasf.nome} ${trasf.flag}
+        ${quando ? `<span class="pm-quando">${quando}</span>` : ''}
+        <span class="pm-real-inline">${realHtml}</span>
+      </div>
+      <div class="pm-cmp-block">
+        ${line('Tu', me, 'me', meWin)}
+        ${line(nomeAvv, them, 'them', themWin)}
+      </div>
+    </div>`;
 }
 
 // ── PARTITE IMMINENTI (±24h dal caricamento) ──────────
@@ -150,25 +237,29 @@ function _renderPartiteImminenti() {
   });
   items.sort((x, y) => x.t - y.t);
 
+  const cmp = _isAltrui() && _mioPronostici;
+  const titoloCmp = cmp ? ` <span class="text-muted">· confronto con ${_nomeAvversario()}</span>` : '';
+
   if (!items.length) {
     el.innerHTML = `
       <div class="breakdown-section">
-        <h3 class="section-title">⏱️ Partite di oggi <span class="text-muted">(±24h)</span></h3>
+        <h3 class="section-title">⏱️ Partite di oggi <span class="text-muted">(±24h)</span>${titoloCmp}</h3>
         <div class="empty-state"><div class="empty-icon">📅</div><p>Nessuna partita nelle 24 ore precedenti o successive.</p></div>
       </div>`;
     return;
   }
 
   const rows = items.map(({ p }) => {
+    const quando = new Date(p.data).toLocaleString('it-IT', {
+      weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
+    });
+    if (cmp) return _matchCompareRow(p, { quando });
+
     const casa  = DB.squadre[p.casa]      || { nome: p.casa,      flag: '' };
     const trasf = DB.squadre[p.trasferta] || { nome: p.trasferta, flag: '' };
     const pr = pGironi[p.id];
     const r  = rGironi[p.id];
     const hasResult = r && r.gol_casa != null;
-
-    const quando = new Date(p.data).toLocaleString('it-IT', {
-      weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
-    });
 
     const pronTxt = pr
       ? `${pr.gol_casa ?? '?'}–${pr.gol_trasferta ?? '?'} (${pr.segno || '?'})`
@@ -206,7 +297,7 @@ function _renderPartiteImminenti() {
 
   el.innerHTML = `
     <div class="breakdown-section">
-      <h3 class="section-title">⏱️ Partite di oggi <span class="text-muted">(±24h)</span></h3>
+      <h3 class="section-title">⏱️ Partite di oggi <span class="text-muted">(±24h)</span>${titoloCmp}</h3>
       <div class="profilo-matches-list">${rows}</div>
     </div>`;
 }
@@ -229,12 +320,9 @@ function _renderScoreCard(totale, pos) {
     </div>`;
 }
 
-// ── BREAKDOWN CATEGORIE ───────────────────────────────
-function _renderBreakdown(bd) {
-  const el = document.getElementById('profilo-breakdown');
-  if (!el) return;
-
-  const categorie = [
+// Costruisce l'elenco categorie (con punti) da un oggetto breakdown.
+function _categorieFromBd(bd) {
+  return [
     {
       label: 'Fase a gironi — Segno 1X2',
       icon: '⚽',
@@ -302,26 +390,60 @@ function _renderBreakdown(bd) {
       desc: bd.capocannoniere.dettaglio || 'Nessun punto ancora',
     },
   ];
+}
 
+// ── BREAKDOWN CATEGORIE ───────────────────────────────
+// Se bdMe è valorizzato (sto guardando un altro utente) mostra il confronto
+// inline: punti miei vs punti dell'avversario, con evidenza di chi è avanti.
+function _renderBreakdown(bd, bdMe = null) {
+  const el = document.getElementById('profilo-breakdown');
+  if (!el) return;
+
+  const categorie = _categorieFromBd(bd);
+  const cmp = !!bdMe;
+  const mieCat = cmp ? _categorieFromBd(bdMe) : null;
+  const nomeAvv = _nomeAvversario();
+
+  const fmt = (n) => (n > 0 ? '+' + n : '—');
   const totale = categorie.reduce((s, c) => s + c.punti, 0);
+  const totaleMe = cmp ? mieCat.reduce((s, c) => s + c.punti, 0) : 0;
+
+  // Cella punti: singola (vista propria) o doppia (confronto).
+  const cellaPunti = (puntiAvv, puntiMe) => {
+    if (!cmp) {
+      return `<div class="bd-pts ${puntiAvv > 0 ? 'bd-pts-pos' : ''}">${fmt(puntiAvv)}</div>`;
+    }
+    const meWin   = puntiMe > puntiAvv;
+    const themWin = puntiAvv > puntiMe;
+    return `
+      <div class="bd-compare">
+        <span class="bd-cmp me ${meWin ? 'cmp-win' : ''}">Tu ${fmt(puntiMe)}</span>
+        <span class="bd-cmp them ${themWin ? 'cmp-win' : ''}">${nomeAvv} ${fmt(puntiAvv)}</span>
+      </div>`;
+  };
 
   el.innerHTML = `
     <div class="breakdown-section">
-      <h3 class="section-title">📈 Dettaglio punteggio</h3>
+      <h3 class="section-title">📈 Dettaglio punteggio${cmp ? ` <span class="text-muted">· confronto con ${nomeAvv}</span>` : ''}</h3>
       <div class="breakdown-list">
-        ${categorie.map(c => `
+        ${categorie.map((c, i) => `
           <div class="breakdown-row ${c.punti > 0 ? 'breakdown-has-pts' : ''}">
             <div class="bd-icon">${c.icon}</div>
             <div class="bd-info">
               <div class="bd-label">${c.label}</div>
               <div class="bd-desc">${c.desc}</div>
             </div>
-            <div class="bd-pts ${c.punti > 0 ? 'bd-pts-pos' : ''}">${c.punti > 0 ? '+' + c.punti : '—'}</div>
+            ${cellaPunti(c.punti, cmp ? mieCat[i].punti : 0)}
           </div>`).join('')}
         <div class="breakdown-row breakdown-total">
           <div class="bd-icon">🏅</div>
           <div class="bd-info"><div class="bd-label"><strong>Totale</strong></div></div>
-          <div class="bd-pts bd-pts-total"><strong>${totale}</strong></div>
+          ${cmp
+            ? `<div class="bd-compare bd-compare-total">
+                 <span class="bd-cmp me ${totaleMe > totale ? 'cmp-win' : ''}"><strong>Tu ${totaleMe}</strong></span>
+                 <span class="bd-cmp them ${totale > totaleMe ? 'cmp-win' : ''}"><strong>${nomeAvv} ${totale}</strong></span>
+               </div>`
+            : `<div class="bd-pts bd-pts-total"><strong>${totale}</strong></div>`}
         </div>
       </div>
     </div>`;
@@ -335,6 +457,9 @@ function _renderDettaglioGironi(bd) {
   const pGironi = _pronostici?.gironi || {};
   const rGironi = _risultati?.gironi  || {};
 
+  const cmp = _isAltrui() && _mioPronostici;
+  const titoloCmp = cmp ? ` <span class="text-muted">· confronto con ${_nomeAvversario()}</span>` : '';
+
   let rows = '';
   let count = 0;
 
@@ -342,6 +467,15 @@ function _renderDettaglioGironi(bd) {
     girone.partite.forEach(p => {
       const r = rGironi[p.id];
       if (!r || r.gol_casa == null) return; // non ancora giocata
+
+      // In modalità confronto mostro tutte le partite giocate (anche se uno dei
+      // due non l'ha pronosticata); in vista propria solo quelle pronosticate.
+      if (cmp) {
+        count++;
+        rows += _matchCompareRow(p);
+        return;
+      }
+
       const pr = pGironi[p.id];
       if (!pr) return;
 
@@ -379,7 +513,7 @@ function _renderDettaglioGironi(bd) {
 
   el.innerHTML = `
     <div class="breakdown-section">
-      <h3 class="section-title">⚽ Partite giocate — girone</h3>
+      <h3 class="section-title">⚽ Partite giocate — girone${titoloCmp}</h3>
       <div class="profilo-matches-list">${rows}</div>
     </div>`;
 }
