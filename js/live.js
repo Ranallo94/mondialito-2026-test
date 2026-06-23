@@ -298,7 +298,7 @@ function _renderMarcatori() {
     <div class="marc-list">
       <div class="marc-header">
         <span>Giocatore</span>
-        <span>Gol</span>
+        <span>GOL ⚽ · ASSIST 👟</span>
       </div>
       ${rows}
     </div>`;
