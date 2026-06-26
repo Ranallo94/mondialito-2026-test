@@ -2138,3 +2138,108 @@ select.field-input option { background: var(--bg-card2); }
   .marc-edit-table input.marc-f-assist,
   .marc-edit-table input.marc-f-rigori { max-width: 100%; text-align: left; }
 }
+
+/* ══════════════════════════════════════════════════════
+   TAB ADMIN — ELIMINATORIE
+   ══════════════════════════════════════════════════════ */
+.elim-section { margin-top: 20px; }
+.elim-sec-head { margin-bottom: 12px; }
+.elim-sec-title { font-size: 16px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+.elim-sec-head .text-muted { font-size: 13px; line-height: 1.45; }
+
+.elim-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 14px; }
+.elim-msg { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+.elim-msg.ok { color: var(--verde-light); }
+.elim-msg.err { color: var(--rosso); }
+
+/* — Sezione 1: classifiche gironi — */
+.elim-griglia-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+.elim-gcard {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+}
+.elim-gcard-inc { border-color: var(--oro-dark); }
+.elim-gcard-head {
+  font-size: 13px; font-weight: 800; color: var(--oro);
+  text-transform: uppercase; letter-spacing: .04em; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 8px;
+}
+.elim-badge-inc {
+  font-size: 10px; font-weight: 700; color: var(--text-dark);
+  background: var(--oro); border-radius: 10px; padding: 1px 7px;
+  text-transform: none; letter-spacing: 0;
+}
+.elim-glist { display: flex; flex-direction: column; gap: 4px; }
+.elim-grow {
+  display: grid;
+  grid-template-columns: 24px 1fr auto auto;
+  align-items: center; gap: 8px;
+  padding: 6px 8px;
+  background: var(--bg-card2);
+  border: 1px solid transparent;
+  border-radius: 6px;
+}
+.elim-grow-tied { border-color: var(--oro); }
+.elim-grow-pos {
+  width: 22px; height: 22px; line-height: 22px; text-align: center;
+  font-size: 12px; font-weight: 800; border-radius: 50%;
+  color: var(--text-dark);
+}
+.elim-pos-q   { background: var(--verde-light); color: #fff; }
+.elim-pos-t   { background: var(--oro); }
+.elim-pos-out { background: var(--border); color: var(--text-muted); }
+.elim-grow-team { font-size: 14px; font-weight: 600; color: var(--text); }
+.elim-grow-stats { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+.elim-grow-arrows { display: flex; gap: 2px; }
+
+/* — Sezione 2: risultati eliminatorie — */
+.elim-fase-block {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  margin-bottom: 12px;
+}
+.elim-fase-head {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 10px;
+}
+.elim-fase-title { font-size: 15px; font-weight: 800; color: var(--text); }
+.elim-fase-count {
+  font-size: 12px; font-weight: 700; color: var(--text-muted);
+  background: var(--bg-card2); border-radius: 10px; padding: 1px 9px;
+}
+.elim-fase-head .btn-elim-salva-fase { margin-left: auto; }
+.elim-matches { display: flex; flex-direction: column; gap: 6px; }
+.elim-match {
+  display: grid;
+  grid-template-columns: 40px 1fr minmax(260px, auto);
+  align-items: center; gap: 10px;
+  padding: 8px 10px;
+  background: var(--bg-card2);
+  border-radius: 6px;
+}
+.elim-match-tbd { opacity: .6; }
+.elim-mid { font-size: 12px; font-weight: 800; color: var(--text-muted); }
+.elim-pair { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.elim-team { font-size: 14px; font-weight: 600; color: var(--text); }
+.elim-team-win { color: var(--oro); font-weight: 800; }
+.elim-team-tbd { color: var(--text-muted); }
+.elim-vs { color: var(--text-muted); font-weight: 700; }
+.elim-ctrls { display: flex; gap: 8px; }
+.elim-ctrls .field-input { padding: 7px 10px; font-size: 13px; }
+.elim-ctrls .elim-vinc { min-width: 150px; }
+.elim-ctrls .elim-mod { min-width: 110px; }
+.elim-fase-msg { display: inline-block; margin-top: 8px; }
+
+@media (max-width: 720px) {
+  .elim-match { grid-template-columns: 32px 1fr; }
+  .elim-ctrls { grid-column: 1 / -1; }
+  .elim-ctrls .elim-vinc, .elim-ctrls .elim-mod { flex: 1; min-width: 0; }
+}
