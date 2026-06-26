@@ -221,9 +221,15 @@ const COMB_SLOT_ORDER = ['A','B','D','E','G','I','K','L'];
 // ══════════════════════════════════════════════════════
 
 /** Classifica di un girone calcolata dai pronostici (no risultati reali). */
-export function getClassificaGirone(lettera, pronosticiGironi, db) {
+export function getClassificaGirone(lettera, pronosticiGironi, db, spareggioOrder = null) {
   const girone = db.gironi[lettera];
   if (!girone) return [];
+  // Ordine di spareggio manuale (frecce ▲▼ / admin). Applicato SOLO come
+  // ultimo criterio a parità perfetta di pt/GD/GF: non può scavalcare la
+  // classifica oggettiva. Allinea questa vista read-only alla pagina pronostici.
+  const ord = Array.isArray(spareggioOrder)
+    ? Object.fromEntries(spareggioOrder.map((id, i) => [id, i]))
+    : null;
   const stats = {};
   girone.squadre.forEach(id => { stats[id] = { pt:0, gf:0, gs:0, gd:0, g:0 }; });
   girone.partite.forEach(p => {
@@ -239,7 +245,8 @@ export function getClassificaGirone(lettera, pronosticiGironi, db) {
   });
   return girone.squadre
     .map(id => ({ id, ...stats[id] }))
-    .sort((a,b) => (b.pt-a.pt) || (b.gd-a.gd) || (b.gf-a.gf));
+    .sort((a,b) => (b.pt-a.pt) || (b.gd-a.gd) || (b.gf-a.gf) ||
+      (ord ? ((ord[a.id] ?? Infinity) - (ord[b.id] ?? Infinity)) : 0));
 }
 
 /** Determina i terzi classificati qualificati e i loro slot nel bracket. */
@@ -302,7 +309,7 @@ export function renderRiepilogoGironi(container, pronostici, db) {
 
   let gridHtml = '<div class="riepilogo-grid">';
   lettere.forEach(lettera => {
-    const cl = getClassificaGirone(lettera, pGironi, db);
+    const cl = getClassificaGirone(lettera, pGironi, db, pronostici?.spareggi?.gironi?.[lettera]);
     const hasData = cl.some(t => t.g > 0);
     gridHtml += '<div class="riepilogo-card">'
       + '<div class="riepilogo-card-header">Girone ' + lettera + '</div>'
@@ -339,10 +346,10 @@ export function renderTabellone(container, pronostici, db) {
   // Calcola standings
   const standings = {};
   Object.keys(db.gironi).forEach(l => {
-    const cl = getClassificaGirone(l, pGironi, db);
+    const cl = getClassificaGirone(l, pGironi, db, pronostici?.spareggi?.gironi?.[l]);
     standings[l] = cl.map(t => t.id);
   });
-  const terziSlots = calcola3rdiSlots(pGironi, db);
+  const terziSlots = calcola3rdiSlots(pGironi, db, pronostici?.spareggi?.terze);
 
   function vinc(fase, matchId) { return getVincitore(fase, matchId, pronostici); }
   function mod(fase, matchId)  { return getModalita(fase, matchId, pronostici); }

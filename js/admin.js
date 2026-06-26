@@ -17,6 +17,9 @@ import {
 } from './db.js';
 import { showToast, openModal, closeModal, showSpinner, formatDate } from './ui.js';
 import { calcolaPunteggio, calcolaSparegnio } from './punteggi.js';
+import {
+  SEDICESIMI_BRACKET, BRACKET_FEEDS, resolveSlot, calcola3rdiSlots,
+} from './bracket.js';
 import { httpsCallable } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js';
 import {
   collection, onSnapshot, doc, getDoc, setDoc, updateDoc, deleteDoc,
@@ -35,6 +38,7 @@ export async function initAdmin() {
   await Promise.all([
     _initTabApprovazioni(),
     _initTabRisultati(),
+    _initTabEliminatorie(),
     _initTabMarcatori(),
     _initTabPartecipanti(),
     _initTabSistema(),
@@ -451,6 +455,344 @@ function _apriModalCorreggi(matchId, tipo, risultati) {
       { label: 'Annulla', cls: 'btn btn-secondary', onClick: closeModal },
     ],
   });
+}
+
+// ══════════════════════════════════════════════════════
+// TAB ELIMINATORIE — classifiche ufficiali + risultati bracket
+// ══════════════════════════════════════════════════════
+// Due responsabilità, entrambe via pannello (niente script console):
+//  1. Congelare le classifiche finali dei gironi → posizioni_finali_gironi
+//     (servono al motore punteggi per "posto in griglia" e per la griglia
+//      dei sedicesimi).
+//  2. Inserire i risultati ufficiali delle fasi eliminatorie →
+//     fase_eliminatoria.<fase>.<match> = { casa, trasferta, vincitore, modalita }.
+
+const _FASI_ELIM = [
+  { key: 'sedicesimi', label: 'Sedicesimi', ids: ['S01','S02','S03','S04','S05','S06','S07','S08','S09','S10','S11','S12','S13','S14','S15','S16'] },
+  { key: 'ottavi',     label: 'Ottavi',     ids: ['O1','O2','O3','O4','O5','O6','O7','O8'] },
+  { key: 'quarti',     label: 'Quarti',     ids: ['Q1','Q2','Q3','Q4'] },
+  { key: 'semifinali', label: 'Semifinali', ids: ['SF1','SF2'] },
+  { key: 'finale',     label: 'Finale',     ids: ['F'] },
+];
+
+const _MOD_OPTS = [
+  { v: '90min',         l: "90'" },
+  { v: 'supplementari', l: 'Supplementari' },
+  { v: 'rigori',        l: 'Rigori' },
+];
+
+// Cache dei risultati ufficiali per questo tab (ricaricata dopo ogni salvataggio).
+let _elimRis = {};
+
+// Classifica reale di un girone calcolata dai risultati ufficiali.
+function _classificaGironeReale(lettera, rGironi) {
+  const girone = DB.gironi[lettera];
+  if (!girone) return [];
+  const stats = {};
+  girone.squadre.forEach(id => { stats[id] = { id, pt:0, g:0, gf:0, gs:0, gd:0 }; });
+  girone.partite.forEach(p => {
+    const r = rGironi?.[p.id];
+    if (r?.gol_casa == null || r?.gol_trasferta == null) return;
+    const gc = r.gol_casa, gt = r.gol_trasferta;
+    stats[p.casa].g++;      stats[p.trasferta].g++;
+    stats[p.casa].gf += gc; stats[p.casa].gs += gt; stats[p.casa].gd += gc - gt;
+    stats[p.trasferta].gf += gt; stats[p.trasferta].gs += gc; stats[p.trasferta].gd += gt - gc;
+    if (gc > gt)      stats[p.casa].pt += 3;
+    else if (gc < gt) stats[p.trasferta].pt += 3;
+    else { stats[p.casa].pt++; stats[p.trasferta].pt++; }
+  });
+  return girone.squadre.map(id => stats[id])
+    .sort((a,b) => b.pt - a.pt || b.gd - a.gd || b.gf - a.gf);
+}
+
+// Standings nel formato richiesto da resolveSlot: { A:[id1,id2,id3,id4], … }.
+// Preferisce le classifiche già congelate; altrimenti le calcola dai risultati.
+function _standingsObj(ris) {
+  const saved = ris?.posizioni_finali_gironi || {};
+  const out = {};
+  Object.keys(DB.gironi).forEach(l => {
+    out[l] = Array.isArray(saved[l]) && saved[l].length
+      ? saved[l]
+      : _classificaGironeReale(l, ris?.gironi || {}).map(t => t.id);
+  });
+  return out;
+}
+
+// Casa/trasferta ufficiali di un match eliminatorio.
+function _elimTeams(fase, matchId, standings, terziSlots, rElim) {
+  if (fase === 'sedicesimi') {
+    const b = SEDICESIMI_BRACKET.find(x => x.id === matchId);
+    if (!b) return { casa:null, trasf:null };
+    return {
+      casa:  resolveSlot(b.casa,  standings, terziSlots),
+      trasf: resolveSlot(b.trasf, standings, terziSlots),
+    };
+  }
+  const feed = BRACKET_FEEDS[matchId];
+  if (!feed) return { casa:null, trasf:null };
+  return {
+    casa:  rElim?.[feed.casa.fase]?.[feed.casa.id]?.vincitore  || null,
+    trasf: rElim?.[feed.trasf.fase]?.[feed.trasf.id]?.vincitore || null,
+  };
+}
+
+async function _initTabEliminatorie() {
+  const container = document.getElementById('admin-eliminatorie-container');
+  if (!container) return;
+  try { _elimRis = await getRisultati(); } catch (e) { _elimRis = {}; }
+  _renderEliminatorie();
+}
+
+function _renderEliminatorie() {
+  const container = document.getElementById('admin-eliminatorie-container');
+  if (!container) return;
+
+  container.innerHTML = `
+    <section class="elim-section">
+      <div class="elim-sec-head">
+        <h3 class="elim-sec-title">1 · Classifiche ufficiali dei gironi</h3>
+        <p class="text-muted">Calcolate automaticamente dai risultati (pt → DR → GF). Riordina con ▲▼ solo in caso di parità da risolvere a mano, poi salva: l'ordine diventa quello ufficiale per la griglia dei sedicesimi.</p>
+      </div>
+      <div id="elim-griglia-grid" class="elim-griglia-grid"></div>
+      <div class="elim-actions">
+        <button type="button" id="btn-elim-ricalcola-griglia" class="btn btn-secondary">↻ Ricalcola dai risultati</button>
+        <button type="button" id="btn-elim-salva-griglia" class="btn btn-primary">💾 Salva classifiche ufficiali</button>
+        <span id="elim-griglia-msg" class="elim-msg"></span>
+      </div>
+    </section>
+
+    <section class="elim-section">
+      <div class="elim-sec-head">
+        <h3 class="elim-sec-title">2 · Risultati fasi eliminatorie</h3>
+        <p class="text-muted">Per ogni partita le due squadre sono determinate in automatico dalla griglia e dai turni precedenti. Scegli chi passa e come (90', supplementari, rigori), poi salva il turno.</p>
+      </div>
+      <div id="elim-fasi"></div>
+    </section>`;
+
+  _renderElimGriglia();
+  _renderElimFasi();
+
+  document.getElementById('btn-elim-ricalcola-griglia')?.addEventListener('click', () => {
+    _renderElimGriglia(true); // forza il ricalcolo ignorando l'ordine salvato
+    const msg = document.getElementById('elim-griglia-msg');
+    if (msg) { msg.textContent = 'Ricalcolato dai risultati — ricordati di salvare.'; msg.className = 'elim-msg'; }
+  });
+  document.getElementById('btn-elim-salva-griglia')?.addEventListener('click', _salvaElimGriglia);
+}
+
+// ── Sezione 1: classifiche gironi ─────────────────────
+function _renderElimGriglia(forceRecalc = false) {
+  const grid = document.getElementById('elim-griglia-grid');
+  if (!grid) return;
+  const sm = _squadreMap();
+  const saved = _elimRis?.posizioni_finali_gironi || {};
+
+  grid.innerHTML = Object.keys(DB.gironi).map(lettera => {
+    const auto = _classificaGironeReale(lettera, _elimRis?.gironi || {});
+    const byId = Object.fromEntries(auto.map(t => [t.id, t]));
+    const completo = auto.every(t => t.g === 3);
+
+    // Ordine: classifica salvata (se presente e non si forza il ricalcolo), altrimenti auto.
+    let ordine = auto.map(t => t.id);
+    if (!forceRecalc && Array.isArray(saved[lettera]) && saved[lettera].length === ordine.length) {
+      const valid = saved[lettera].every(id => byId[id]);
+      if (valid) ordine = saved[lettera];
+    }
+
+    // Parità perfette tra vicini (pt/DR/GF uguali)
+    const key = t => `${t.pt}_${t.gd}_${t.gf}`;
+    const tied = new Set();
+    for (let i = 0; i < ordine.length - 1; i++) {
+      if (key(byId[ordine[i]]) === key(byId[ordine[i+1]])) { tied.add(ordine[i]); tied.add(ordine[i+1]); }
+    }
+
+    const rows = ordine.map((id, i) => {
+      const t = byId[id];
+      const sq = sm[id] || {};
+      const gdStr = (t.gd >= 0 ? '+' : '') + t.gd;
+      const posCls = i < 2 ? 'elim-pos-q' : i === 2 ? 'elim-pos-t' : 'elim-pos-out';
+      return `
+        <div class="elim-grow${tied.has(id) ? ' elim-grow-tied' : ''}" data-team-id="${id}">
+          <span class="elim-grow-pos ${posCls}">${i+1}</span>
+          <span class="elim-grow-team">${sq.flag || ''} ${sq.nome || id}</span>
+          <span class="elim-grow-stats">${t.g === 0 ? '—' : `${t.pt} pt · ${gdStr} · ${t.gf} gf`}</span>
+          <span class="elim-grow-arrows">
+            <button type="button" class="btn-sp btn-elim-up" ${i === 0 ? 'disabled' : ''}>▲</button>
+            <button type="button" class="btn-sp btn-elim-down" ${i === ordine.length-1 ? 'disabled' : ''}>▼</button>
+          </span>
+        </div>`;
+    }).join('');
+
+    return `
+      <div class="elim-gcard${completo ? '' : ' elim-gcard-inc'}" data-girone="${lettera}">
+        <div class="elim-gcard-head">Girone ${lettera} ${completo ? '' : '<span class="elim-badge-inc">incompleto</span>'}</div>
+        <div class="elim-glist">${rows}</div>
+      </div>`;
+  }).join('');
+
+  // Riordino ▲▼ (delegato, una sola volta)
+  if (!grid._elimWired) {
+    grid._elimWired = true;
+    grid.addEventListener('click', e => {
+      const up = e.target.closest('.btn-elim-up');
+      const down = e.target.closest('.btn-elim-down');
+      if (!up && !down) return;
+      const row = (up || down).closest('.elim-grow');
+      const list = row.parentElement;
+      const items = [...list.querySelectorAll('.elim-grow')];
+      const idx = items.indexOf(row);
+      if (up && idx > 0) list.insertBefore(row, items[idx-1]);
+      else if (down && idx < items.length-1) list.insertBefore(items[idx+1], row);
+      // Rinumera posizioni e badge
+      [...list.querySelectorAll('.elim-grow')].forEach((el, i, arr) => {
+        const pos = el.querySelector('.elim-grow-pos');
+        pos.textContent = i+1;
+        pos.className = 'elim-grow-pos ' + (i < 2 ? 'elim-pos-q' : i === 2 ? 'elim-pos-t' : 'elim-pos-out');
+        el.querySelector('.btn-elim-up').disabled = i === 0;
+        el.querySelector('.btn-elim-down').disabled = i === arr.length-1;
+      });
+    });
+  }
+}
+
+async function _salvaElimGriglia() {
+  const grid = document.getElementById('elim-griglia-grid');
+  const msg = document.getElementById('elim-griglia-msg');
+  if (!grid) return;
+
+  const posizioni = {};
+  grid.querySelectorAll('.elim-gcard').forEach(card => {
+    const lettera = card.dataset.girone;
+    posizioni[lettera] = [...card.querySelectorAll('.elim-grow')].map(el => el.dataset.teamId);
+  });
+
+  if (msg) { msg.textContent = '⏳ Salvataggio…'; msg.className = 'elim-msg'; }
+  try {
+    await patchRisultati({ posizioni_finali_gironi: posizioni });
+    _elimRis.posizioni_finali_gironi = posizioni;
+    _renderElimFasi(); // le squadre dei sedicesimi dipendono dalla griglia
+    if (msg) { msg.textContent = '✓ Classifiche ufficiali salvate'; msg.className = 'elim-msg ok'; }
+    showToast('Classifiche ufficiali salvate ✓', 'success');
+    setTimeout(() => { if (msg) { msg.textContent = ''; msg.className = 'elim-msg'; } }, 4000);
+  } catch (e) {
+    if (msg) { msg.textContent = '✗ ' + e.message; msg.className = 'elim-msg err'; }
+    showToast('Errore: ' + e.message, 'error');
+  }
+}
+
+// ── Sezione 2: risultati eliminatorie ─────────────────
+function _renderElimFasi() {
+  const wrap = document.getElementById('elim-fasi');
+  if (!wrap) return;
+  const sm = _squadreMap();
+  const standings = _standingsObj(_elimRis);
+  const terziSlots = calcola3rdiSlots(_elimRis?.gironi || {}, DB, _elimRis?.spareggio_terze || null);
+  const rElim = _elimRis?.fase_eliminatoria || {};
+
+  const teamOpt = (id, selected) => {
+    if (!id) return '';
+    const sq = sm[id] || {};
+    return `<option value="${id}"${id === selected ? ' selected' : ''}>${sq.flag || ''} ${sq.nome || id}</option>`;
+  };
+
+  wrap.innerHTML = _FASI_ELIM.map(fase => {
+    const rFase = rElim[fase.key] || {};
+    let nComplete = 0;
+
+    const matches = fase.ids.map(id => {
+      const { casa, trasf } = _elimTeams(fase.key, id, standings, terziSlots, rElim);
+      const saved = rFase[id] || {};
+      const known = casa && trasf;
+      if (saved.vincitore) nComplete++;
+      const sqCasa = sm[casa] || {}, sqTrasf = sm[trasf] || {};
+
+      const modOpts = ['<option value="">— come —</option>']
+        .concat(_MOD_OPTS.map(m => `<option value="${m.v}"${m.v === saved.modalita ? ' selected' : ''}>${m.l}</option>`))
+        .join('');
+
+      const teamLabel = (id2, sq, isWin) =>
+        id2 ? `<span class="elim-team${isWin ? ' elim-team-win' : ''}">${sq.flag || ''} ${sq.nome || id2}</span>`
+            : `<span class="elim-team elim-team-tbd">?</span>`;
+
+      return `
+        <div class="elim-match${known ? '' : ' elim-match-tbd'}" data-fase="${fase.key}" data-id="${id}"
+             data-casa="${casa || ''}" data-trasf="${trasf || ''}">
+          <span class="elim-mid">${id}</span>
+          <span class="elim-pair">
+            ${teamLabel(casa, sqCasa, saved.vincitore && saved.vincitore === casa)}
+            <span class="elim-vs">–</span>
+            ${teamLabel(trasf, sqTrasf, saved.vincitore && saved.vincitore === trasf)}
+          </span>
+          <span class="elim-ctrls">
+            <select class="elim-vinc field-input"${known ? '' : ' disabled'}>
+              <option value="">— passa il turno —</option>
+              ${teamOpt(casa, saved.vincitore)}
+              ${teamOpt(trasf, saved.vincitore)}
+            </select>
+            <select class="elim-mod field-input"${known ? '' : ' disabled'}>${modOpts}</select>
+          </span>
+        </div>`;
+    }).join('');
+
+    return `
+      <div class="elim-fase-block" data-fase="${fase.key}">
+        <div class="elim-fase-head">
+          <span class="elim-fase-title">${fase.label}</span>
+          <span class="elim-fase-count">${nComplete}/${fase.ids.length}</span>
+          <button type="button" class="btn btn-sm btn-primary btn-elim-salva-fase" data-fase="${fase.key}">💾 Salva ${fase.label.toLowerCase()}</button>
+        </div>
+        <div class="elim-matches">${matches}</div>
+        <span class="elim-msg elim-fase-msg" data-fase="${fase.key}"></span>
+      </div>`;
+  }).join('');
+
+  // Bind salvataggi per fase (delegato, una sola volta)
+  if (!wrap._elimWired) {
+    wrap._elimWired = true;
+    wrap.addEventListener('click', e => {
+      const btn = e.target.closest('.btn-elim-salva-fase');
+      if (btn) _salvaElimFase(btn.dataset.fase);
+    });
+  }
+}
+
+async function _salvaElimFase(faseKey) {
+  const block = document.querySelector(`.elim-fase-block[data-fase="${faseKey}"]`);
+  const msg = document.querySelector(`.elim-fase-msg[data-fase="${faseKey}"]`);
+  if (!block) return;
+
+  const phaseObj = {};
+  let errore = '';
+  block.querySelectorAll('.elim-match').forEach(row => {
+    const id = row.dataset.id;
+    const casa = row.dataset.casa || null;
+    const trasf = row.dataset.trasf || null;
+    const vincitore = row.querySelector('.elim-vinc')?.value || '';
+    const modalita = row.querySelector('.elim-mod')?.value || '';
+    if (!vincitore) return; // partita non ancora decisa → salta
+    if (vincitore && !modalita) errore = `Indica la modalità per ${id}.`;
+    phaseObj[id] = { casa, trasferta: trasf, vincitore, modalita: modalita || null };
+  });
+
+  if (errore) {
+    if (msg) { msg.textContent = '✗ ' + errore; msg.className = 'elim-msg elim-fase-msg err'; msg.dataset.fase = faseKey; }
+    showToast(errore, 'error');
+    return;
+  }
+
+  if (msg) { msg.textContent = '⏳ Salvataggio…'; msg.className = 'elim-msg elim-fase-msg'; msg.dataset.fase = faseKey; }
+  try {
+    await patchRisultati({ [`fase_eliminatoria.${faseKey}`]: phaseObj });
+    _elimRis.fase_eliminatoria = { ...(_elimRis.fase_eliminatoria || {}), [faseKey]: phaseObj };
+    _renderElimFasi(); // i turni successivi dipendono dai vincitori appena salvati
+    const msg2 = document.querySelector(`.elim-fase-msg[data-fase="${faseKey}"]`);
+    if (msg2) { msg2.textContent = `✓ ${Object.keys(phaseObj).length} partite salvate`; msg2.className = 'elim-msg elim-fase-msg ok'; }
+    showToast('Risultati salvati ✓', 'success');
+  } catch (e) {
+    const msg2 = document.querySelector(`.elim-fase-msg[data-fase="${faseKey}"]`) || msg;
+    if (msg2) { msg2.textContent = '✗ ' + e.message; msg2.className = 'elim-msg elim-fase-msg err'; }
+    showToast('Errore: ' + e.message, 'error');
+  }
 }
 
 // ── VALIDAZIONE SCHEDA ───────────────────────────────

@@ -666,7 +666,7 @@ function _renderSchedaPronostici() {
 
 // Mini-classifica di un girone per un dato set di pronostici (stile riepilogo).
 function _miniClassificaTable(lettera, pron) {
-  const cl = getClassificaGirone(lettera, pron?.gironi || {}, DB);
+  const cl = getClassificaGirone(lettera, pron?.gironi || {}, DB, pron?.spareggi?.gironi?.[lettera]);
   const hasData = cl.some(t => t.g > 0);
   let h = '<table class="riepilogo-table"><thead><tr><th>#</th><th>Squadra</th><th>Pt</th><th>GD</th></tr></thead><tbody>';
   cl.forEach((t, i) => {
