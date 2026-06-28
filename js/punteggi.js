@@ -114,6 +114,28 @@ export function calcolaPunteggio(pronostici, risultati) {
         bd.posto_griglia.corretti++;
       }
     });
+
+    // ── QUALIFICAZIONE AI SEDICESIMI ────────────────────
+    // 5pt per ogni squadra che il giocatore ha azzeccato tra le 32 qualificate
+    // dai gironi (a prescindere dallo slot esatto). Le 32 = prime+seconde di
+    // ogni girone + le 8 migliori terze. Si calcola quando le classifiche
+    // ufficiali dei gironi sono complete (round dei sedicesimi determinato).
+    const qualR = new Set();
+    const qualP = new Set();
+    Object.keys(DB.gironi).forEach(l => {
+      if (standingsR[l]?.[0]) qualR.add(standingsR[l][0]);
+      if (standingsR[l]?.[1]) qualR.add(standingsR[l][1]);
+      if (standingsP[l]?.[0]) qualP.add(standingsP[l][0]);
+      if (standingsP[l]?.[1]) qualP.add(standingsP[l][1]);
+    });
+    Object.values(terziSlotsR || {}).forEach(t => { if (t) qualR.add(t); });
+    Object.values(terziSlotsP || {}).forEach(t => { if (t) qualP.add(t); });
+    qualP.forEach(sq => {
+      if (qualR.has(sq)) {
+        bd.sedicesimi.punti += REG.fasi_eliminatorie.sedicesimi;
+        bd.sedicesimi.corretti++;
+      }
+    });
   }
 
   // ── 3. FASI ELIMINATORIE ──────────────────────────────
@@ -134,13 +156,17 @@ export function calcolaPunteggio(pronostici, risultati) {
     );
     const squadreP = Object.values(pFase).map(m => m?.vincitore).filter(Boolean);
 
-    // Punti per squadra avanzata correttamente (tutte le fasi, finale inclusa)
-    squadreP.forEach(sq => {
-      if (squadreR.has(sq)) {
-        field.punti += pti;
-        field.corretti++;
-      }
-    });
+    // Punti per squadra avanzata correttamente (ottavi → finale).
+    // I sedicesimi NON si calcolano qui: i 5pt per le 32 qualificate sono
+    // gestiti nel blocco griglia (insieme delle qualificate dai gironi).
+    if (id !== 'sedicesimi') {
+      squadreP.forEach(sq => {
+        if (squadreR.has(sq)) {
+          field.punti += pti;
+          field.corretti++;
+        }
+      });
+    }
 
     // Modalità passaggio turno
     Object.entries(rFase).forEach(([matchId, rMatch]) => {
