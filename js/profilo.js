@@ -656,11 +656,11 @@ function _renderSchedaPronostici() {
   // Renderizza riepilogo e tabellone nei loro container
   if (cmp) {
     // La classifica di confronto è già HTML inline (_classificaCmpHtml).
-    renderTabellone(document.getElementById('scheda-tabellone-me'),   _mioPronostici, DB);
-    renderTabellone(document.getElementById('scheda-tabellone-them'), _pronostici,    DB);
+    renderTabellone(document.getElementById('scheda-tabellone-me'),   _mioPronostici, DB, _risultati);
+    renderTabellone(document.getElementById('scheda-tabellone-them'), _pronostici,    DB, _risultati);
   } else {
     renderRiepilogoGironi(document.getElementById('scheda-riepilogo-container'), _pronostici, DB);
-    renderTabellone(document.getElementById('scheda-tabellone-container'), _pronostici, DB);
+    renderTabellone(document.getElementById('scheda-tabellone-container'), _pronostici, DB, _risultati);
   }
 }
 

@@ -338,7 +338,7 @@ export function renderRiepilogoGironi(container, pronostici, db) {
 // ══════════════════════════════════════════════════════
 // RENDER TABELLONE (read-only, stessa grafica di pronostici.js)
 // ══════════════════════════════════════════════════════
-export function renderTabellone(container, pronostici, db) {
+export function renderTabellone(container, pronostici, db, risultati = null) {
   if (!container) return;
   const squadre = db.squadre || {};
   const pGironi = pronostici?.gironi || {};
@@ -351,6 +351,37 @@ export function renderTabellone(container, pronostici, db) {
   });
   const terziSlots = calcola3rdiSlots(pGironi, db, pronostici?.spareggi?.terze);
 
+  // ── Evidenziazione esiti sedicesimi (se i risultati ufficiali ci sono) ──
+  // Per ogni squadra pronosticata nella colonna sedicesimi:
+  //   'tb-grid-ok' → posizione esatta in griglia (10pt)
+  //   'tb-sed-ok'  → squadra qualificata ma in slot diverso (5pt)
+  // Attivo solo quando tutte le 12 classifiche ufficiali dei gironi sono note.
+  let evidenziaSlot = null; // (slotDef, predTeamId) => classe
+  if (risultati) {
+    const rGriglia = risultati.posizioni_finali_gironi || {};
+    const actualStand = {};
+    let grigliaPronta = true;
+    Object.keys(db.gironi).forEach(l => {
+      if (rGriglia[l]?.length) actualStand[l] = rGriglia[l]; else grigliaPronta = false;
+    });
+    if (grigliaPronta) {
+      const actualTerzi = calcola3rdiSlots(risultati.gironi || {}, db, risultati.spareggio_terze || null);
+      const qualSet = new Set();
+      Object.keys(db.gironi).forEach(l => {
+        if (actualStand[l][0]) qualSet.add(actualStand[l][0]);
+        if (actualStand[l][1]) qualSet.add(actualStand[l][1]);
+      });
+      Object.values(actualTerzi || {}).forEach(t => { if (t) qualSet.add(t); });
+      evidenziaSlot = (slotDef, predTeamId) => {
+        if (!predTeamId) return '';
+        const actualHere = resolveSlot(slotDef, actualStand, actualTerzi);
+        if (actualHere && predTeamId === actualHere) return 'tb-grid-ok';
+        if (qualSet.has(predTeamId)) return 'tb-sed-ok';
+        return '';
+      };
+    }
+  }
+
   function vinc(fase, matchId) { return getVincitore(fase, matchId, pronostici); }
   function mod(fase, matchId)  { return getModalita(fase, matchId, pronostici); }
 
@@ -360,22 +391,33 @@ export function renderTabellone(container, pronostici, db) {
     return resolveSlot(slotOrFeed, standings, terziSlots) || null;
   }
 
-  function cell(id, rowStart, rowEnd, casaId, trasfId, vincitoreId, faseId, modalita) {
+  function cell(id, rowStart, rowEnd, casaId, trasfId, vincitoreId, faseId, modalita, casaCls = '', trasfCls = '') {
     const casa = casaId ? squadre[casaId] : null;
     const trasf = trasfId ? squadre[trasfId] : null;
     const colOf = { sedicesimi:1, ottavi:2, quarti:3, semifinali:4, finale:5 };
     const badgeLabel = vincitoreId && modalita ? MODALITA_LABEL[modalita] : null;
-    const mkTeam = (tid, sq) => {
+    const mkTeam = (tid, sq, extraCls = '') => {
       if (!tid) return '<div class="tb-team tb-unknown">?</div>';
       const w = vincitoreId === tid ? ' tb-winner' : '';
+      const x = extraCls ? ' ' + extraCls : '';
       const badge = (w && badgeLabel) ? ' <span class="tb-modalita tb-modalita-' + modalita + '">' + badgeLabel + '</span>' : '';
-      return '<div class="tb-team' + w + '">' + (sq?.flag || '') + ' <span>' + (sq?.nome || tid) + '</span>' + badge + '</div>';
+      return '<div class="tb-team' + w + x + '">' + (sq?.flag || '') + ' <span>' + (sq?.nome || tid) + '</span>' + badge + '</div>';
     };
     return '<div class="tb-cell" style="grid-row:' + rowStart + '/' + rowEnd + ';grid-column:' + colOf[faseId] + '">'
-      + mkTeam(casaId, casa) + '<div class="tb-sep"></div>' + mkTeam(trasfId, trasf) + '</div>';
+      + mkTeam(casaId, casa, casaCls) + '<div class="tb-sep"></div>' + mkTeam(trasfId, trasf, trasfCls) + '</div>';
   }
 
-  let html = '<div class="tb-wrapper"><div class="tb-header">';
+  let html = '<div class="tb-wrapper">';
+
+  // Legenda (solo quando l'evidenziazione è attiva)
+  if (evidenziaSlot) {
+    html += '<div class="tb-legend">'
+      + '<span class="tb-legend-item"><span class="tb-legend-swatch tb-grid-ok"></span> Posizione esatta in griglia (10pt)</span>'
+      + '<span class="tb-legend-item"><span class="tb-legend-swatch tb-sed-ok"></span> Qualificata ai sedicesimi (5pt)</span>'
+      + '</div>';
+  }
+
+  html += '<div class="tb-header">';
   ['Sedicesimi','Ottavi','Quarti','Semifinali','Finale'].forEach((l, i) => {
     html += '<div class="tb-col-label" style="grid-column:' + (i+1) + '">' + l + '</div>';
   });
@@ -386,7 +428,9 @@ export function renderTabellone(container, pronostici, db) {
     const row = i + 1;
     const casaId  = teamId(b.casa,  null);
     const trasfId = teamId(b.trasf, null);
-    html += cell(b.id, row, row + 1, casaId, trasfId, vinc('sedicesimi', b.id), 'sedicesimi', mod('sedicesimi', b.id));
+    const casaCls  = evidenziaSlot ? evidenziaSlot(b.casa,  casaId)  : '';
+    const trasfCls = evidenziaSlot ? evidenziaSlot(b.trasf, trasfId) : '';
+    html += cell(b.id, row, row + 1, casaId, trasfId, vinc('sedicesimi', b.id), 'sedicesimi', mod('sedicesimi', b.id), casaCls, trasfCls);
   });
 
   // Ottavi
