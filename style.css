@@ -1041,6 +1041,34 @@ select.field-input option { background: var(--bg-card2); }
 .tb-cell:has(.tb-winner)::before {
   background: var(--oro);
 }
+/* ── Evidenziazione esiti sedicesimi vs risultati ufficiali ── */
+.tb-team.tb-grid-ok,
+.tb-team.tb-sed-ok {
+  border-radius: 4px;
+  padding-right: 4px;
+}
+.tb-team.tb-grid-ok {
+  background: rgba(212, 175, 55, 0.22);          /* oro: posizione griglia esatta */
+  box-shadow: inset 3px 0 0 var(--oro, #d4af37);
+}
+.tb-team.tb-sed-ok {
+  background: rgba(111, 207, 111, 0.18);         /* verde: qualificata, slot diverso */
+  box-shadow: inset 3px 0 0 #6fcf6f;
+}
+.tb-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-bottom: 10px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.tb-legend-item { display: inline-flex; align-items: center; gap: 6px; }
+.tb-legend-swatch {
+  width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; display: inline-block;
+}
+.tb-legend-swatch.tb-grid-ok { background: rgba(212, 175, 55, 0.22); box-shadow: inset 3px 0 0 var(--oro, #d4af37); }
+.tb-legend-swatch.tb-sed-ok  { background: rgba(111, 207, 111, 0.18); box-shadow: inset 3px 0 0 #6fcf6f; }
 .tb-unknown {
   color: var(--text-muted);
   font-style: italic;
