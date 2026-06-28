@@ -84,8 +84,20 @@ export function calcolaPunteggio(pronostici, risultati) {
 
   if (grigliaPronta) {
     const terziSlotsR = calcola3rdiSlots(rGironi, DB, risultati?.spareggio_terze || null);
-    const standingsP  = pPosiz;
-    const terziSlotsP = calcola3rdiSlots(pGironi, DB);
+    // Classifica pronosticata: derivata dai pronostici delle partite (come il
+    // tabellone visualizzato), con fallback al campo salvato posizioni_girone.
+    // NON ci si affida a posizioni_girone, che per quasi tutti i giocatori è
+    // assente: leggerlo direttamente azzererebbe i punti di 1°/2° posto.
+    const standingsP = {};
+    Object.keys(DB.gironi).forEach(l => {
+      const derived = getClassificaGirone(l, pGironi, DB, pronostici?.spareggi?.gironi?.[l]).map(t => t.id);
+      const hasMatchData = derived.length && DB.gironi[l].partite.some(p => {
+        const pr = pGironi[p.id];
+        return pr && pr.gol_casa != null && pr.gol_trasferta != null;
+      });
+      standingsP[l] = hasMatchData ? derived : (pPosiz[l] || []);
+    });
+    const terziSlotsP = calcola3rdiSlots(pGironi, DB, pronostici?.spareggi?.terze || null);
 
     SEDICESIMI_BRACKET.forEach(slot => {
       const actualCasa  = resolveSlot(slot.casa,  standingsR, terziSlotsR);
