@@ -366,6 +366,26 @@ function calcolaPunteggio(pronostici, risultati) {
         bd.posto_griglia.corretti++;
       }
     });
+
+    // ── QUALIFICAZIONE AI SEDICESIMI ────────────────────
+    // 5pt per ogni squadra azzeccata tra le 32 qualificate dai gironi
+    // (prime+seconde di ogni girone + 8 migliori terze), a prescindere dallo slot.
+    const qualR = new Set();
+    const qualP = new Set();
+    Object.keys(DB.gironi).forEach(function (l) {
+      if (standingsR[l] && standingsR[l][0]) qualR.add(standingsR[l][0]);
+      if (standingsR[l] && standingsR[l][1]) qualR.add(standingsR[l][1]);
+      if (standingsP[l] && standingsP[l][0]) qualP.add(standingsP[l][0]);
+      if (standingsP[l] && standingsP[l][1]) qualP.add(standingsP[l][1]);
+    });
+    Object.values(terziSlotsR || {}).forEach(function (t) { if (t) qualR.add(t); });
+    Object.values(terziSlotsP || {}).forEach(function (t) { if (t) qualP.add(t); });
+    qualP.forEach(function (sq) {
+      if (qualR.has(sq)) {
+        bd.sedicesimi.punti += REG.fasi_eliminatorie.sedicesimi;
+        bd.sedicesimi.corretti++;
+      }
+    });
   }
 
   // ── 3. FASI ELIMINATORIE ──────────────────────────────
@@ -385,10 +405,13 @@ function calcolaPunteggio(pronostici, risultati) {
     );
     const squadreP = Object.values(pFase).map(m => m && m.vincitore).filter(Boolean);
 
-    // Punti per squadra avanzata correttamente (tutte le fasi, finale inclusa)
-    squadreP.forEach(sq => {
-      if (squadreR.has(sq)) { field.punti += pti; field.corretti++; }
-    });
+    // Punti per squadra avanzata correttamente (ottavi → finale).
+    // I sedicesimi (5pt per le 32 qualificate) sono gestiti nel blocco griglia.
+    if (key !== 'sedicesimi') {
+      squadreP.forEach(sq => {
+        if (squadreR.has(sq)) { field.punti += pti; field.corretti++; }
+      });
+    }
 
     Object.entries(rFase).forEach(([matchId, rMatch]) => {
       if (!rMatch || !rMatch.modalita) return;
