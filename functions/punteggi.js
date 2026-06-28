@@ -200,9 +200,14 @@ const COMB_3I = {
 };
 const COMB_SLOT_ORDER = ['A','B','D','E','G','I','K','L'];
 
-function _getClassificaGirone(lettera, pronosticiGironi) {
+function _getClassificaGirone(lettera, pronosticiGironi, spareggioOrder) {
   const girone = DB.gironi[lettera];
   if (!girone) return [];
+  // Ordine di spareggio manuale (frecce ▲▼): applicato SOLO come ultimo
+  // criterio a parità di pt/GD/GF, allineato a js/bracket.js.
+  const ord = Array.isArray(spareggioOrder)
+    ? spareggioOrder.reduce((m, id, i) => { m[id] = i; return m; }, {})
+    : null;
   const stats = {};
   girone.squadre.forEach(id => { stats[id] = { pt:0, gf:0, gs:0, gd:0, g:0 }; });
   girone.partite.forEach(p => {
@@ -218,7 +223,9 @@ function _getClassificaGirone(lettera, pronosticiGironi) {
   });
   return girone.squadre
     .map(id => ({ id, ...stats[id] }))
-    .sort((a,b) => (b.pt-a.pt) || (b.gd-a.gd) || (b.gf-a.gf));
+    .sort((a,b) => (b.pt-a.pt) || (b.gd-a.gd) || (b.gf-a.gf) ||
+      (ord ? ((ord[a.id] !== undefined ? ord[a.id] : Infinity) -
+              (ord[b.id] !== undefined ? ord[b.id] : Infinity)) : 0));
 }
 
 function _calcola3rdiSlots(pronosticiGironi, overrideOrder) {
@@ -329,8 +336,20 @@ function calcolaPunteggio(pronostici, risultati) {
 
   if (grigliaPronta) {
     const terziSlotsR = _calcola3rdiSlots(rGironi, (risultati && risultati.spareggio_terze) || null);
-    const standingsP  = pPosiz;
-    const terziSlotsP = _calcola3rdiSlots(pGironi);
+    // Classifica pronosticata derivata dai pronostici delle partite (come il
+    // tabellone), con fallback al campo salvato posizioni_girone. Evita di
+    // azzerare i punti 1°/2° quando posizioni_girone è assente (quasi sempre).
+    const spareggi = (pronostici && pronostici.spareggi) || {};
+    const standingsP = {};
+    Object.keys(DB.gironi).forEach(function (l) {
+      const derived = _getClassificaGirone(l, pGironi, spareggi.gironi && spareggi.gironi[l]).map(function (t) { return t.id; });
+      const hasMatchData = derived.length && DB.gironi[l].partite.some(function (p) {
+        const pr = pGironi[p.id];
+        return pr && pr.gol_casa != null && pr.gol_trasferta != null;
+      });
+      standingsP[l] = hasMatchData ? derived : (pPosiz[l] || []);
+    });
+    const terziSlotsP = _calcola3rdiSlots(pGironi, (spareggi.terze) || null);
 
     SEDICESIMI_BRACKET.forEach(function(slot) {
       const actualCasa  = _resolveSlot(slot.casa,  standingsR, terziSlotsR);
