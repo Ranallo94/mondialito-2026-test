@@ -975,9 +975,20 @@ select.field-input option { background: var(--bg-card2); }
 }
 .sed-center {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-width: 44px;
+  gap: 2px;
+  min-width: 48px;
+}
+.sed-score {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+  white-space: nowrap;
 }
 .sed-mod {
   font-size: 10px;
@@ -2288,10 +2299,14 @@ select.field-input option { background: var(--bg-card2); }
 .elim-team-win { color: var(--oro); font-weight: 800; }
 .elim-team-tbd { color: var(--text-muted); }
 .elim-vs { color: var(--text-muted); font-weight: 700; }
-.elim-ctrls { display: flex; gap: 8px; }
+.elim-ctrls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .elim-ctrls .field-input { padding: 7px 10px; font-size: 13px; }
 .elim-ctrls .elim-vinc { min-width: 150px; }
 .elim-ctrls .elim-mod { min-width: 110px; }
+.elim-score-in, .elim-rig-in { display: inline-flex; align-items: center; gap: 4px; }
+.elim-score-in .field-input, .elim-rig-in .field-input { width: 46px; text-align: center; padding: 7px 4px; }
+.elim-score-sep { color: var(--text-muted); font-weight: 700; }
+.elim-rig-lbl { font-size: 11px; color: var(--text-muted); font-weight: 700; }
 .elim-fase-msg { display: inline-block; margin-top: 8px; }
 
 @media (max-width: 720px) {
