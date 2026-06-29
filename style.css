@@ -964,6 +964,34 @@ select.field-input option { background: var(--bg-card2); }
 .ris-sep { color: var(--text-muted); font-weight: 400; margin: 0 1px; }
 .ris-tbd { color: var(--text-muted); font-weight: 400; font-size: 12px; }
 
+/* ── SEDICESIMI DI FINALE ── */
+.sed-card { max-width: 560px; }
+.sed-mid {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: .5px;
+  white-space: nowrap;
+}
+.sed-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+}
+.sed-mod {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 8px;
+  background: rgba(255,255,255,.06);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.sed-mod-90min        { background: rgba(42,138,71,.18); color: var(--verde-light); }
+.sed-mod-supplementari{ background: #2a4a2a; color: #6fcf6f; }
+.sed-mod-rigori       { background: #4a2a2a; color: #cf6f6f; }
+
 @media (max-width: 600px) {
   .ris-gironi-grid { grid-template-columns: 1fr; }
 }
