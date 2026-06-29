@@ -389,6 +389,17 @@ function calcolaPunteggio(pronostici, risultati) {
   }
 
   // ── 3. FASI ELIMINATORIE ──────────────────────────────
+  // Le squadre che RAGGIUNGONO una fase sono le vincitrici della fase
+  // precedente. I punti "X di finale" si assegnano quindi appena sono noti
+  // i vincitori del turno che vi dà accesso (es. gli ottavi si calcolano dai
+  // vincitori dei sedicesimi), senza attendere che la fase X venga inserita.
+  const FASE_PRECEDENTE = {
+    ottavi:     'sedicesimi',
+    quarti:     'ottavi',
+    semifinali: 'quarti',
+    finale:     'semifinali',
+  };
+
   const fasi = [
     { key: 'sedicesimi', field: bd.sedicesimi, pti: REG.fasi_eliminatorie.sedicesimi },
     { key: 'ottavi',     field: bd.ottavi,     pti: REG.fasi_eliminatorie.ottavi },
@@ -398,21 +409,22 @@ function calcolaPunteggio(pronostici, risultati) {
   ];
 
   fasi.forEach(({ key, field, pti }) => {
-    const rFase = rElim[key] || {};
-    const pFase = pElim[key] || {};
-    const squadreR = new Set(
-      Object.values(rFase).flatMap(m => [m && m.casa, m && m.trasferta, m && m.vincitore]).filter(Boolean)
-    );
-    const squadreP = Object.values(pFase).map(m => m && m.vincitore).filter(Boolean);
-
     // Punti per squadra avanzata correttamente (ottavi → finale).
     // I sedicesimi (5pt per le 32 qualificate) sono gestiti nel blocco griglia.
     if (key !== 'sedicesimi') {
+      const rPrec = rElim[FASE_PRECEDENTE[key]] || {};
+      const pPrec = pElim[FASE_PRECEDENTE[key]] || {};
+      // Squadre che raggiungono la fase = vincitrici dei match del turno prec.
+      const squadreR = new Set(Object.values(rPrec).map(m => m && m.vincitore).filter(Boolean));
+      const squadreP = Object.values(pPrec).map(m => m && m.vincitore).filter(Boolean);
       squadreP.forEach(sq => {
         if (squadreR.has(sq)) { field.punti += pti; field.corretti++; }
       });
     }
 
+    // Modalità passaggio turno: confronto sui match della fase stessa.
+    const rFase = rElim[key] || {};
+    const pFase = pElim[key] || {};
     Object.entries(rFase).forEach(([matchId, rMatch]) => {
       if (!rMatch || !rMatch.modalita) return;
       const pMatch = pFase[matchId];
