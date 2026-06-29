@@ -544,27 +544,33 @@ async function _initTabEliminatorie() {
 }
 
 function _renderEliminatorie() {
-  const container = document.getElementById('admin-eliminatorie-container');
-  if (!container) return;
+  const gContainer = document.getElementById('admin-griglia-container');
+  const eContainer = document.getElementById('admin-eliminatorie-container');
+  if (!eContainer) return;
 
-  container.innerHTML = `
+  // Tab "Classifiche gironi" — congelamento classifiche ufficiali
+  if (gContainer) {
+    gContainer.innerHTML = `
+      <section class="elim-section">
+        <div class="elim-sec-head">
+          <h3 class="elim-sec-title">Classifiche ufficiali dei gironi</h3>
+          <p class="text-muted">Calcolate automaticamente dai risultati (pt → DR → GF). Riordina con ▲▼ solo in caso di parità da risolvere a mano, poi salva: l'ordine diventa quello ufficiale per la griglia dei sedicesimi.</p>
+        </div>
+        <div id="elim-griglia-grid" class="elim-griglia-grid"></div>
+        <div class="elim-actions">
+          <button type="button" id="btn-elim-ricalcola-griglia" class="btn btn-secondary">↻ Ricalcola dai risultati</button>
+          <button type="button" id="btn-elim-salva-griglia" class="btn btn-primary">💾 Salva classifiche ufficiali</button>
+          <span id="elim-griglia-msg" class="elim-msg"></span>
+        </div>
+      </section>`;
+  }
+
+  // Tab "Eliminatorie" — risultati delle fasi a eliminazione diretta
+  eContainer.innerHTML = `
     <section class="elim-section">
       <div class="elim-sec-head">
-        <h3 class="elim-sec-title">1 · Classifiche ufficiali dei gironi</h3>
-        <p class="text-muted">Calcolate automaticamente dai risultati (pt → DR → GF). Riordina con ▲▼ solo in caso di parità da risolvere a mano, poi salva: l'ordine diventa quello ufficiale per la griglia dei sedicesimi.</p>
-      </div>
-      <div id="elim-griglia-grid" class="elim-griglia-grid"></div>
-      <div class="elim-actions">
-        <button type="button" id="btn-elim-ricalcola-griglia" class="btn btn-secondary">↻ Ricalcola dai risultati</button>
-        <button type="button" id="btn-elim-salva-griglia" class="btn btn-primary">💾 Salva classifiche ufficiali</button>
-        <span id="elim-griglia-msg" class="elim-msg"></span>
-      </div>
-    </section>
-
-    <section class="elim-section">
-      <div class="elim-sec-head">
-        <h3 class="elim-sec-title">2 · Risultati fasi eliminatorie</h3>
-        <p class="text-muted">Per ogni partita le due squadre sono determinate in automatico dalla griglia e dai turni precedenti. Scegli chi passa e come (90', supplementari, rigori), poi salva il turno.</p>
+        <h3 class="elim-sec-title">Risultati fasi eliminatorie</h3>
+        <p class="text-muted">Per ogni partita le due squadre sono determinate in automatico dalla griglia dei gironi e dai turni precedenti. Inserisci il punteggio, scegli chi passa e come (90', supplementari, rigori), poi salva il turno.</p>
       </div>
       <div id="elim-fasi"></div>
     </section>`;
