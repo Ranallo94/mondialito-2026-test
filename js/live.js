@@ -7,7 +7,18 @@
 import DB from '../mondialito_db.json' with { type: 'json' };
 import { onLiveSnapshot, onRisultatiSnapshot, onMarcatoriSnapshot } from './db.js';
 import { formatTime, formatDate } from './ui.js';
-import { getClassificaGirone } from './bracket.js';
+import {
+  getClassificaGirone, calcola3rdiSlots, resolveSlot, SEDICESIMI_BRACKET,
+} from './bracket.js';
+
+// Mappa squadre id → { nome, flag }, robusta sia che DB.squadre sia array sia oggetto.
+const SQUADRE = Array.isArray(DB.squadre)
+  ? Object.fromEntries(DB.squadre.map(s => [s.id, s]))
+  : (DB.squadre || {});
+const _sq = (id) => SQUADRE[id] || { nome: id, flag: '' };
+
+// Etichette leggibili per la modalità di passaggio del turno.
+const MODALITA_RIS = { '90min': "90'", 'supplementari': 'd.t.s.', 'rigori': 'rig.' };
 
 let _unsubLive      = null;
 let _unsubRis       = null;
@@ -29,6 +40,7 @@ export async function initLive() {
 
   _unsubRis = onRisultatiSnapshot((data) => {
     _risultati = data || {};
+    _renderSedicesimi();
     _renderGironi();
   });
 
@@ -94,6 +106,84 @@ function _render() {
   }
 }
 
+// ── SEDICESIMI DI FINALE ──────────────────────────────
+// Le 16 partite del primo turno a eliminazione diretta. Le squadre sono
+// risolte dalle classifiche finali ufficiali dei gironi (posizioni_finali_gironi
+// o, in mancanza, calcolate dai risultati se tutti i gironi sono completi) +
+// gli slot delle migliori terze. L'esito (chi passa + modalità) arriva da
+// risultati.fase_eliminatoria.sedicesimi.
+function _renderSedicesimi() {
+  const container = document.getElementById('live-sedicesimi-container');
+  if (!container) return;
+
+  const saved   = _risultati.posizioni_finali_gironi || {};
+  const gironiR = _risultati.gironi || {};
+
+  // Standings nel formato { A:[id1,id2,id3,id4], … }, con gate di completezza.
+  const standings = {};
+  let pronta = true;
+  Object.keys(DB.gironi).forEach(l => {
+    if (Array.isArray(saved[l]) && saved[l].length === 4) {
+      standings[l] = saved[l];
+    } else {
+      const cl = getClassificaGirone(l, gironiR, DB);
+      if (cl.length === 4 && cl.every(t => t.g === 3)) standings[l] = cl.map(t => t.id);
+      else pronta = false;
+    }
+  });
+
+  if (!pronta) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🏆</div>
+        <p>I sedicesimi di finale saranno disponibili al termine della fase a gironi.</p>
+      </div>`;
+    return;
+  }
+
+  const terziSlots = calcola3rdiSlots(gironiR, DB, _risultati.spareggio_terze || null);
+  const rSed = _risultati.fase_eliminatoria?.sedicesimi || {};
+
+  const matches = [...SEDICESIMI_BRACKET].sort((a, b) => a.id.localeCompare(b.id));
+  let played = 0;
+
+  const rows = matches.map(b => {
+    const casaId  = resolveSlot(b.casa,  standings, terziSlots);
+    const trasfId = resolveSlot(b.trasf, standings, terziSlots);
+    const casa = _sq(casaId), trasf = _sq(trasfId);
+    const res  = rSed[b.id] || {};
+    const vinc = res.vincitore || null;
+    if (vinc) played++;
+    const modLabel = vinc && res.modalita ? (MODALITA_RIS[res.modalita] || '') : '';
+    const center = vinc
+      ? `<span class="sed-mod sed-mod-${res.modalita || 'x'}">${modLabel || '✓'}</span>`
+      : '<span class="ris-tbd">—</span>';
+
+    return `
+      <div class="ris-match-row${vinc ? ' ris-done' : ''}">
+        <span class="sed-mid">${b.id}</span>
+        <div class="ris-team ris-team-casa${vinc && vinc === casaId ? ' ris-winner' : ''}">
+          <span>${casaId ? casa.flag : ''}</span>
+          <span class="ris-nome">${casaId ? casa.nome : '—'}</span>
+        </div>
+        <div class="sed-center">${center}</div>
+        <div class="ris-team ris-team-trasf${vinc && vinc === trasfId ? ' ris-winner' : ''}">
+          <span class="ris-nome">${trasfId ? trasf.nome : '—'}</span>
+          <span>${trasfId ? trasf.flag : ''}</span>
+        </div>
+      </div>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="ris-girone-card sed-card">
+      <div class="ris-girone-header">
+        <span>Tabellone sedicesimi</span>
+        <span class="ris-girone-progress">${played}/16</span>
+      </div>
+      <div class="ris-girone-matches">${rows}</div>
+    </div>`;
+}
+
 // ── RISULTATI PER GIRONE ──────────────────────────────
 function _renderGironi() {
   const container = document.getElementById('live-gironi-container');
@@ -107,8 +197,8 @@ function _renderGironi() {
     const girone = DB.gironi[lettera];
     const partiteHtml = girone.partite.map(p => {
       const r    = gironiR[p.id] || {};
-      const casa = DB.squadre[p.casa]      || { nome: p.casa,      flag: '' };
-      const trasf= DB.squadre[p.trasferta] || { nome: p.trasferta, flag: '' };
+      const casa = _sq(p.casa);
+      const trasf= _sq(p.trasferta);
       const hasScore = r.gol_casa != null && r.gol_trasferta != null;
       const gc = r.gol_casa, gt = r.gol_trasferta;
       const winner = hasScore ? (gc > gt ? 'casa' : gc < gt ? 'trasf' : 'pari') : '';
@@ -187,8 +277,8 @@ function _classificaGironeHtml(lettera) {
 
 // ── CARD LIVE (in corso) ──────────────────────────────
 function _cardLive(p) {
-  const casa = DB.squadre[p.casa]      || { nome: p.casa,      flag: '' };
-  const trasf= DB.squadre[p.trasferta] || { nome: p.trasferta, flag: '' };
+  const casa = _sq(p.casa);
+  const trasf= _sq(p.trasferta);
   const minuto = p.minuto ? `<span class="live-badge live-badge-pulse">🔴 ${p.minuto}'</span>` : '<span class="live-badge live-badge-pulse">🔴 LIVE</span>';
   const gc = p.gol_casa ?? '?', gt = p.gol_trasferta ?? '?';
 
@@ -211,8 +301,8 @@ function _cardLive(p) {
 
 // ── CARD OGGI (non ancora iniziata) ──────────────────
 function _cardOggi(p) {
-  const casa = DB.squadre[p.casa]      || { nome: p.casa,      flag: '' };
-  const trasf= DB.squadre[p.trasferta] || { nome: p.trasferta, flag: '' };
+  const casa = _sq(p.casa);
+  const trasf= _sq(p.trasferta);
   const orario = p.orario ? `<span class="match-time">${formatTime(p.orario)}</span>` : '';
   const hasScore = p.gol_casa != null && p.gol_trasferta != null;
   const scoreHtml = hasScore
@@ -238,9 +328,9 @@ function _cardOggi(p) {
 
 // ── CARD PROSSIMA ─────────────────────────────────────
 function _cardProssima(p) {
-  const casa = DB.squadre[p.casa]      || { nome: p.casa,      flag: '' };
-  const trasf= DB.squadre[p.trasferta] || { nome: p.trasferta, flag: '' };
-  const data  = p.orario ? formatDate(p.orario) : '';
+  const casa = _sq(p.casa);
+  const trasf= _sq(p.trasferta);
+  const data = p.orario ? formatDate(p.orario) : '';
 
   return `
     <div class="match-card match-card-upcoming">
