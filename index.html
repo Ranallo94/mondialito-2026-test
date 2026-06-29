@@ -358,17 +358,18 @@
         </div>
 
         <div class="admin-tabs tab-bar">
-          <button class="tab active" data-tab="tab-admin-approvazioni">
+          <button class="tab active" data-tab="tab-admin-eliminatorie">🏆 Eliminatorie</button>
+          <button class="tab" data-tab="tab-admin-griglia">📋 Classifiche gironi</button>
+          <button class="tab" data-tab="tab-admin-approvazioni">
             Approvazioni <span id="approv-badge" class="nav-badge" style="display:none;position:relative;top:-1px;right:auto;margin-left:4px"></span>
           </button>
           <button class="tab" data-tab="tab-admin-risultati">Risultati</button>
-          <button class="tab" data-tab="tab-admin-eliminatorie">🏆 Eliminatorie</button>
           <button class="tab" data-tab="tab-admin-marcatori">⚽ Marcatori</button>
           <button class="tab" data-tab="tab-admin-partecipanti">Partecipanti</button>
           <button class="tab" data-tab="tab-admin-sistema">Sistema</button>
         </div>
 
-        <div id="tab-admin-approvazioni" class="tab-content active">
+        <div id="tab-admin-approvazioni" class="tab-content">
           <div id="admin-approvazioni-container">
             <!-- Generato da admin.js -->
           </div>
@@ -384,12 +385,22 @@
           </div>
         </div>
 
-        <div id="tab-admin-eliminatorie" class="tab-content">
+        <div id="tab-admin-eliminatorie" class="tab-content active">
           <div class="info-banner info-banner--blue">
             <span>🏆</span>
-            <span>A gironi conclusi, congela qui le <strong>classifiche ufficiali</strong> (servono per la griglia dei sedicesimi) e poi inserisci i <strong>risultati delle eliminatorie</strong> turno per turno. Ogni salvataggio aggiorna automaticamente la classifica.</span>
+            <span>Inserisci i <strong>risultati delle eliminatorie</strong> turno per turno: punteggio, chi passa e come (90', supplementari, rigori). Le squadre di ogni partita sono determinate dalle <strong>classifiche dei gironi</strong> (tab dedicato). Ogni salvataggio aggiorna automaticamente la classifica.</span>
           </div>
           <div id="admin-eliminatorie-container">
+            <!-- Generato da admin.js -->
+          </div>
+        </div>
+
+        <div id="tab-admin-griglia" class="tab-content">
+          <div class="info-banner info-banner--blue">
+            <span>📋</span>
+            <span>A gironi conclusi, congela qui le <strong>classifiche ufficiali</strong> dei gironi: l'ordine 1ª–4ª determina la griglia dei sedicesimi. Riordina con ▲▼ solo in caso di parità da risolvere a mano, poi salva.</span>
+          </div>
+          <div id="admin-griglia-container">
             <!-- Generato da admin.js -->
           </div>
         </div>
