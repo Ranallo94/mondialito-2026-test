@@ -724,6 +724,21 @@ function _renderElimFasi() {
             ${teamLabel(trasf, sqTrasf, saved.vincitore && saved.vincitore === trasf)}
           </span>
           <span class="elim-ctrls">
+            <span class="elim-score-in" title="Punteggio (al 90' o dopo i supplementari)">
+              <input type="number" class="elim-gc field-input" min="0" max="99" inputmode="numeric"
+                     value="${saved.gol_casa ?? ''}" placeholder="–"${known ? '' : ' disabled'}>
+              <span class="elim-score-sep">–</span>
+              <input type="number" class="elim-gt field-input" min="0" max="99" inputmode="numeric"
+                     value="${saved.gol_trasferta ?? ''}" placeholder="–"${known ? '' : ' disabled'}>
+            </span>
+            <span class="elim-rig-in" title="Rigori (solo se la gara è decisa ai calci di rigore)">
+              <span class="elim-rig-lbl">rig.</span>
+              <input type="number" class="elim-rc field-input" min="0" max="99" inputmode="numeric"
+                     value="${saved.rig_casa ?? ''}" placeholder="–"${known ? '' : ' disabled'}>
+              <span class="elim-score-sep">–</span>
+              <input type="number" class="elim-rt field-input" min="0" max="99" inputmode="numeric"
+                     value="${saved.rig_trasferta ?? ''}" placeholder="–"${known ? '' : ' disabled'}>
+            </span>
             <select class="elim-vinc field-input"${known ? '' : ' disabled'}>
               <option value="">— passa il turno —</option>
               ${teamOpt(casa, saved.vincitore)}
@@ -763,15 +778,26 @@ async function _salvaElimFase(faseKey) {
 
   const phaseObj = {};
   let errore = '';
+  const numVal = (el) => {
+    const v = el?.value;
+    return (v === '' || v == null) ? null : Number(v);
+  };
   block.querySelectorAll('.elim-match').forEach(row => {
     const id = row.dataset.id;
     const casa = row.dataset.casa || null;
     const trasf = row.dataset.trasf || null;
     const vincitore = row.querySelector('.elim-vinc')?.value || '';
     const modalita = row.querySelector('.elim-mod')?.value || '';
+    const gol_casa      = numVal(row.querySelector('.elim-gc'));
+    const gol_trasferta = numVal(row.querySelector('.elim-gt'));
+    const rig_casa      = numVal(row.querySelector('.elim-rc'));
+    const rig_trasferta = numVal(row.querySelector('.elim-rt'));
     if (!vincitore) return; // partita non ancora decisa → salta
     if (vincitore && !modalita) errore = `Indica la modalità per ${id}.`;
-    phaseObj[id] = { casa, trasferta: trasf, vincitore, modalita: modalita || null };
+    phaseObj[id] = {
+      casa, trasferta: trasf, vincitore, modalita: modalita || null,
+      gol_casa, gol_trasferta, rig_casa, rig_trasferta,
+    };
   });
 
   if (errore) {

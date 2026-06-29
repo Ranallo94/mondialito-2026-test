@@ -154,10 +154,24 @@ function _renderSedicesimi() {
     const res  = rSed[b.id] || {};
     const vinc = res.vincitore || null;
     if (vinc) played++;
-    const modLabel = vinc && res.modalita ? (MODALITA_RIS[res.modalita] || '') : '';
-    const center = vinc
-      ? `<span class="sed-mod sed-mod-${res.modalita || 'x'}">${modLabel || '✓'}</span>`
-      : '<span class="ris-tbd">—</span>';
+
+    const hasScore = res.gol_casa != null && res.gol_trasferta != null;
+    const hasRig   = res.rig_casa != null && res.rig_trasferta != null;
+    let modText = vinc && res.modalita ? (MODALITA_RIS[res.modalita] || '') : '';
+    if (vinc && res.modalita === 'rigori' && hasRig) modText = `${res.rig_casa}-${res.rig_trasferta} rig.`;
+
+    let center;
+    if (vinc) {
+      const scoreHtml = hasScore
+        ? `<span class="sed-score"><strong>${res.gol_casa}</strong><span class="ris-sep">–</span><strong>${res.gol_trasferta}</strong></span>`
+        : '';
+      const badge = modText
+        ? `<span class="sed-mod sed-mod-${res.modalita || 'x'}">${modText}</span>`
+        : (scoreHtml ? '' : '<span class="sed-mod">✓</span>');
+      center = scoreHtml + badge;
+    } else {
+      center = '<span class="ris-tbd">—</span>';
+    }
 
     return `
       <div class="ris-match-row${vinc ? ' ris-done' : ''}">
