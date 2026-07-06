@@ -8,7 +8,7 @@ import DB from '../mondialito_db.json' with { type: 'json' };
 import { onLiveSnapshot, onRisultatiSnapshot, onMarcatoriSnapshot } from './db.js';
 import { formatTime, formatDate } from './ui.js';
 import {
-  getClassificaGirone, calcola3rdiSlots, resolveSlot, SEDICESIMI_BRACKET,
+  getClassificaGirone, calcola3rdiSlots, resolveSlot, SEDICESIMI_BRACKET, BRACKET_FEEDS,
 } from './bracket.js';
 
 // Mappa squadre id → { nome, flag }, robusta sia che DB.squadre sia array sia oggetto.
@@ -40,6 +40,7 @@ export async function initLive() {
 
   _unsubRis = onRisultatiSnapshot((data) => {
     _risultati = data || {};
+    _renderOttavi();
     _renderSedicesimi();
     _renderGironi();
   });
@@ -104,6 +105,83 @@ function _render() {
       elProssime.style.display = 'none';
     }
   }
+}
+
+// ── OTTAVI DI FINALE ──────────────────────────────────
+// Le 8 partite del secondo turno a eliminazione diretta. Le squadre sono i
+// vincitori dei sedicesimi (BRACKET_FEEDS O1-O8). L'esito (chi passa + modalità)
+// arriva da risultati.fase_eliminatoria.ottavi.
+function _renderOttavi() {
+  const container = document.getElementById('live-ottavi-container');
+  if (!container) return;
+
+  const rSed = _risultati.fase_eliminatoria?.sedicesimi || {};
+  const rOtt = _risultati.fase_eliminatoria?.ottavi || {};
+
+  // Nessun sedicesimo ancora deciso → gli ottavi non sono ancora definibili.
+  const qualcunoSed = Object.values(rSed).some(r => r && r.vincitore);
+  if (!qualcunoSed) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🏆</div>
+        <p>Gli ottavi di finale saranno disponibili al termine dei sedicesimi.</p>
+      </div>`;
+    return;
+  }
+
+  const ottaviIds = ['O1', 'O2', 'O3', 'O4', 'O5', 'O6', 'O7', 'O8'];
+  let played = 0;
+
+  const rows = ottaviIds.map(oid => {
+    const feed = BRACKET_FEEDS[oid];
+    const casaId  = rSed[feed.casa.id]?.vincitore  || null;
+    const trasfId = rSed[feed.trasf.id]?.vincitore || null;
+    const casa = _sq(casaId), trasf = _sq(trasfId);
+    const res  = rOtt[oid] || {};
+    const vinc = res.vincitore || null;
+    if (vinc) played++;
+
+    const hasScore = res.gol_casa != null && res.gol_trasferta != null;
+    const hasRig   = res.rig_casa != null && res.rig_trasferta != null;
+    let modText = vinc && res.modalita ? (MODALITA_RIS[res.modalita] || '') : '';
+    if (vinc && res.modalita === 'rigori' && hasRig) modText = `${res.rig_casa}-${res.rig_trasferta} rig.`;
+
+    let center;
+    if (vinc) {
+      const scoreHtml = hasScore
+        ? `<span class="sed-score"><strong>${res.gol_casa}</strong><span class="ris-sep">–</span><strong>${res.gol_trasferta}</strong></span>`
+        : '';
+      const badge = modText
+        ? `<span class="sed-mod sed-mod-${res.modalita || 'x'}">${modText}</span>`
+        : (scoreHtml ? '' : '<span class="sed-mod">✓</span>');
+      center = scoreHtml + badge;
+    } else {
+      center = '<span class="ris-tbd">—</span>';
+    }
+
+    return `
+      <div class="ris-match-row${vinc ? ' ris-done' : ''}">
+        <span class="sed-mid">${oid}</span>
+        <div class="ris-team ris-team-casa${vinc && vinc === casaId ? ' ris-winner' : ''}">
+          <span>${casaId ? casa.flag : ''}</span>
+          <span class="ris-nome">${casaId ? casa.nome : '—'}</span>
+        </div>
+        <div class="sed-center">${center}</div>
+        <div class="ris-team ris-team-trasf${vinc && vinc === trasfId ? ' ris-winner' : ''}">
+          <span class="ris-nome">${trasfId ? trasf.nome : '—'}</span>
+          <span>${trasfId ? trasf.flag : ''}</span>
+        </div>
+      </div>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="ris-girone-card sed-card">
+      <div class="ris-girone-header">
+        <span>Tabellone ottavi</span>
+        <span class="ris-girone-progress">${played}/8</span>
+      </div>
+      <div class="ris-girone-matches">${rows}</div>
+    </div>`;
 }
 
 // ── SEDICESIMI DI FINALE ──────────────────────────────
