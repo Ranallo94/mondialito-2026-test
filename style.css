@@ -2314,3 +2314,110 @@ select.field-input option { background: var(--bg-card2); }
   .elim-ctrls { grid-column: 1 / -1; }
   .elim-ctrls .elim-vinc, .elim-ctrls .elim-mod { flex: 1; min-width: 0; }
 }
+
+/* ══════════════════════════════════════════════════════
+   SIMULATORE (tab "Il mio profilo" — solo simulazione locale)
+══════════════════════════════════════════════════════ */
+.sim-banner { margin-bottom: 16px; }
+.sim-note   { margin-bottom: 12px; }
+
+.sim-matches { display: flex; flex-direction: column; gap: 12px; }
+
+.sim-match-card {
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+.sim-match-card.sim-disabled { opacity: .55; }
+
+.sim-match-title {
+  font-size: 13px; font-weight: 700; color: var(--oro);
+  text-transform: uppercase; letter-spacing: .05em;
+  margin-bottom: 10px;
+}
+
+.sim-teams-row {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.sim-vs { color: var(--text-muted); font-size: 12px; font-weight: 700; }
+
+.sim-team-btn {
+  flex: 1; min-width: 130px;
+  padding: 10px 14px;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 14px; font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color .15s, background .15s, transform .1s;
+}
+.sim-team-btn:hover:not(:disabled):not(.sim-team-tbd) { border-color: var(--verde-light); transform: translateY(-1px); }
+.sim-team-btn.active {
+  background: var(--verde);
+  border-color: var(--oro);
+  box-shadow: 0 0 0 1px var(--oro);
+}
+.sim-team-btn:disabled { cursor: not-allowed; }
+.sim-team-tbd { color: var(--text-muted); cursor: default; }
+
+.sim-mod-row {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-top: 10px;
+}
+.sim-mod-label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; }
+.sim-mod-opt   { font-size: 11px; color: var(--text-muted); }
+.sim-mod-group { display: flex; gap: 6px; }
+
+.sim-mod-btn {
+  padding: 5px 12px;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-size: 12px; font-weight: 600;
+  cursor: pointer;
+  transition: border-color .15s, color .15s;
+}
+.sim-mod-btn:hover:not(:disabled) { border-color: var(--verde-light); color: var(--text); }
+.sim-mod-btn.active { background: var(--verde); border-color: var(--verde-light); color: var(--text); }
+.sim-mod-btn:disabled { cursor: not-allowed; }
+
+.sim-hint { margin-top: 10px; font-size: 12px; color: var(--text-muted); font-style: italic; }
+
+/* Card riepilogo personale della simulazione */
+.sim-io-card {
+  background: linear-gradient(135deg, var(--verde-dark), var(--bg-card));
+  border: 1px solid var(--oro);
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin-bottom: 14px;
+}
+.sim-io-main { display: flex; align-items: center; gap: 16px; }
+.sim-io-pos  { font-size: 34px; font-weight: 900; color: var(--oro); min-width: 56px; text-align: center; }
+.sim-io-label   { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; }
+.sim-io-pts     { font-size: 24px; font-weight: 800; color: var(--text); margin-top: 2px; }
+.sim-io-delta   { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-left: 8px; }
+.sim-io-delta.up   { color: #4ade80; }
+.sim-io-delta.down { color: var(--rosso); }
+.sim-io-posmove { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+.sim-io-posmove strong { color: var(--oro); }
+.sim-io-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
+
+/* Classifica simulata */
+.sim-list { margin-top: 4px; }
+.sim-delta { font-size: 11px; font-weight: 700; margin-right: 8px; }
+.sim-delta.up   { color: #4ade80; }
+.sim-delta.down { color: var(--rosso); }
+.sim-delta.same { color: var(--text-muted); }
+.sim-pts-diff   { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+.sim-pts-diff.up { color: #4ade80; }
+
+@media (max-width: 560px) {
+  .sim-team-btn { min-width: 100px; font-size: 13px; padding: 9px 10px; }
+  .sim-io-main  { gap: 12px; }
+  .sim-io-pos   { font-size: 28px; min-width: 44px; }
+  .sim-io-pts   { font-size: 20px; }
+}

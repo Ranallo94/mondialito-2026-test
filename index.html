@@ -360,10 +360,11 @@
 
         <div id="profilo-score-card" class="score-card"></div>
 
-        <!-- Tab interni: Riepilogo / Scheda pronostici -->
+        <!-- Tab interni: Riepilogo / Scheda pronostici / Simulatore -->
         <div class="inner-tabs" id="profilo-inner-tabs">
           <button class="tab active" data-tab="tab-profilo-riepilogo">Riepilogo</button>
           <button class="tab" data-tab="tab-profilo-scheda">Scheda pronostici</button>
+          <button class="tab" data-tab="tab-profilo-simulatore" id="tab-btn-simulatore">🎲 Simulatore</button>
         </div>
 
         <!-- TAB: Riepilogo (breakdown + partite girone) -->
@@ -376,6 +377,13 @@
         <!-- TAB: Scheda pronostici completa -->
         <div id="tab-profilo-scheda" class="tab-content">
           <div id="profilo-scheda-container">
+            <div class="loading-state"><div class="spinner"></div><p>Caricamento…</p></div>
+          </div>
+        </div>
+
+        <!-- TAB: Simulatore (solo profilo personale — non modifica nessun dato globale) -->
+        <div id="tab-profilo-simulatore" class="tab-content">
+          <div id="profilo-simulatore-container">
             <div class="loading-state"><div class="spinner"></div><p>Caricamento…</p></div>
           </div>
         </div>
