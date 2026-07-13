@@ -40,7 +40,7 @@ export async function initLive() {
 
   _unsubRis = onRisultatiSnapshot((data) => {
     _risultati = data || {};
-    _renderOttavi();
+    _renderFasiEliminatorie();
     _renderSedicesimi();
     _renderGironi();
   });
@@ -107,37 +107,53 @@ function _render() {
   }
 }
 
-// ── OTTAVI DI FINALE ──────────────────────────────────
-// Le 8 partite del secondo turno a eliminazione diretta. Le squadre sono i
-// vincitori dei sedicesimi (BRACKET_FEEDS O1-O8). L'esito (chi passa + modalità)
-// arriva da risultati.fase_eliminatoria.ottavi.
-function _renderOttavi() {
-  const container = document.getElementById('live-ottavi-container');
+// ── FASI A ELIMINAZIONE DIRETTA (ottavi → finale) ─────
+// Renderer unico per i turni successivi ai sedicesimi. Le squadre di ogni
+// partita sono i vincitori del turno precedente (BRACKET_FEEDS); l'esito
+// (punteggio, chi passa + modalità) arriva da risultati.fase_eliminatoria.<fase>,
+// inserito dall'admin nel pannello Eliminatorie.
+const _FASI_ELIM_LIVE = [
+  { key: 'ottavi',     prev: 'sedicesimi', containerId: 'live-ottavi-container',     titolo: 'Tabellone ottavi',     ids: ['O1','O2','O3','O4','O5','O6','O7','O8'],
+    empty: 'Gli ottavi di finale saranno disponibili al termine dei sedicesimi.' },
+  { key: 'quarti',     prev: 'ottavi',     containerId: 'live-quarti-container',     titolo: 'Tabellone quarti',     ids: ['Q1','Q2','Q3','Q4'],
+    empty: 'I quarti di finale saranno disponibili al termine degli ottavi.' },
+  { key: 'semifinali', prev: 'quarti',     containerId: 'live-semifinali-container', titolo: 'Tabellone semifinali', ids: ['SF1','SF2'],
+    empty: 'Le semifinali saranno disponibili al termine dei quarti di finale.' },
+  { key: 'finale',     prev: 'semifinali', containerId: 'live-finale-container',     titolo: 'Finale',               ids: ['F'],
+    empty: 'La finale sarà disponibile al termine delle semifinali.' },
+];
+
+function _renderFasiEliminatorie() {
+  _FASI_ELIM_LIVE.forEach(_renderFaseElim);
+}
+
+function _renderFaseElim(fase) {
+  const container = document.getElementById(fase.containerId);
   if (!container) return;
 
-  const rSed = _risultati.fase_eliminatoria?.sedicesimi || {};
-  const rOtt = _risultati.fase_eliminatoria?.ottavi || {};
+  const fe    = _risultati.fase_eliminatoria || {};
+  const rPrev = fe[fase.prev] || {};
+  const rFase = fe[fase.key]  || {};
 
-  // Nessun sedicesimo ancora deciso → gli ottavi non sono ancora definibili.
-  const qualcunoSed = Object.values(rSed).some(r => r && r.vincitore);
-  if (!qualcunoSed) {
+  // Nessuna partita del turno precedente decisa → il turno non è ancora definibile.
+  const qualcunoPrev = Object.values(rPrev).some(r => r && r.vincitore);
+  if (!qualcunoPrev) {
     container.innerHTML = `
       <div class="empty-state">
         <div class="empty-icon">🏆</div>
-        <p>Gli ottavi di finale saranno disponibili al termine dei sedicesimi.</p>
+        <p>${fase.empty}</p>
       </div>`;
     return;
   }
 
-  const ottaviIds = ['O1', 'O2', 'O3', 'O4', 'O5', 'O6', 'O7', 'O8'];
   let played = 0;
 
-  const rows = ottaviIds.map(oid => {
-    const feed = BRACKET_FEEDS[oid];
-    const casaId  = rSed[feed.casa.id]?.vincitore  || null;
-    const trasfId = rSed[feed.trasf.id]?.vincitore || null;
+  const rows = fase.ids.map(mid => {
+    const feed = BRACKET_FEEDS[mid];
+    const casaId  = rPrev[feed.casa.id]?.vincitore  || null;
+    const trasfId = rPrev[feed.trasf.id]?.vincitore || null;
     const casa = _sq(casaId), trasf = _sq(trasfId);
-    const res  = rOtt[oid] || {};
+    const res  = rFase[mid] || {};
     const vinc = res.vincitore || null;
     if (vinc) played++;
 
@@ -161,7 +177,7 @@ function _renderOttavi() {
 
     return `
       <div class="ris-match-row${vinc ? ' ris-done' : ''}">
-        <span class="sed-mid">${oid}</span>
+        <span class="sed-mid">${mid}</span>
         <div class="ris-team ris-team-casa${vinc && vinc === casaId ? ' ris-winner' : ''}">
           <span>${casaId ? casa.flag : ''}</span>
           <span class="ris-nome">${casaId ? casa.nome : '—'}</span>
@@ -174,13 +190,20 @@ function _renderOttavi() {
       </div>`;
   }).join('');
 
+  // Sotto la finale: vincitore del torneo in evidenza (riusa lo stile del tabellone).
+  const campioneId = fase.key === 'finale' ? (rFase.F?.vincitore || null) : null;
+  const campioneHtml = campioneId
+    ? `<div class="tb-campione">🏆 ${_sq(campioneId).flag} ${_sq(campioneId).nome}</div>`
+    : '';
+
   container.innerHTML = `
     <div class="ris-girone-card sed-card">
       <div class="ris-girone-header">
-        <span>Tabellone ottavi</span>
-        <span class="ris-girone-progress">${played}/8</span>
+        <span>${fase.titolo}</span>
+        <span class="ris-girone-progress">${played}/${fase.ids.length}</span>
       </div>
       <div class="ris-girone-matches">${rows}</div>
+      ${campioneHtml}
     </div>`;
 }
 
