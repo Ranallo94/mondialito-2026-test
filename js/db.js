@@ -24,6 +24,18 @@ export async function getPronostici(uid) {
 }
 
 /**
+ * Carica i pronostici di TUTTI i partecipanti (sola lettura, permessa a
+ * ogni utente approvato). Usato dal simulatore per la classifica simulata.
+ * @returns {Object} mappa uid → pronostici
+ */
+export async function getTuttiPronostici() {
+  const snap = await getDocs(collection(db(), 'pronostici'));
+  const out = {};
+  snap.forEach(d => { out[d.id] = d.data(); });
+  return out;
+}
+
+/**
  * Salva (sovrascrive) i pronostici di un partecipante.
  * @param {string} uid
  * @param {Object} dati

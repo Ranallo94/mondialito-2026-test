@@ -77,18 +77,42 @@ export async function initProfilo() {
     _renderProfilo();
   });
 
-  // Tab interni: Riepilogo / Scheda
-  document.getElementById('profilo-inner-tabs')?.addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-tab]');
-    if (!btn) return;
-    const tabId = btn.dataset.tab;
-    document.querySelectorAll('#profilo-inner-tabs .tab').forEach(b => b.classList.toggle('active', b === btn));
-    document.querySelectorAll('#page-profilo .tab-content').forEach(el => {
-      el.classList.toggle('active', el.id === tabId);
+  // Tab interni: Riepilogo / Scheda / Simulatore
+  // (bind una volta sola: initProfilo viene richiamata a ogni navigazione)
+  const tabsEl = document.getElementById('profilo-inner-tabs');
+  if (tabsEl && !tabsEl.dataset.bound) {
+    tabsEl.dataset.bound = '1';
+    tabsEl.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-tab]');
+      if (!btn) return;
+      const tabId = btn.dataset.tab;
+      document.querySelectorAll('#profilo-inner-tabs .tab').forEach(b => b.classList.toggle('active', b === btn));
+      document.querySelectorAll('#page-profilo .tab-content').forEach(el => {
+        el.classList.toggle('active', el.id === tabId);
+      });
+      // Rendering lazy della scheda al primo accesso
+      if (tabId === 'tab-profilo-scheda') _renderSchedaPronostici();
+      // Simulatore: modulo caricato on-demand (solo profilo personale)
+      if (tabId === 'tab-profilo-simulatore') {
+        import('./simulatore.js').then(m => m.initSimulatore());
+      }
     });
-    // Rendering lazy della scheda al primo accesso
-    if (tabId === 'tab-profilo-scheda') _renderSchedaPronostici();
-  });
+  }
+
+  // Tab Simulatore: visibile SOLO sul proprio profilo
+  const btnSim = document.getElementById('tab-btn-simulatore');
+  if (btnSim) {
+    const nascosto = _isAltrui();
+    btnSim.style.display = nascosto ? 'none' : '';
+    // Se il simulatore era il tab attivo e ora si apre un profilo altrui,
+    // torna al Riepilogo.
+    if (nascosto && btnSim.classList.contains('active')) {
+      document.querySelectorAll('#profilo-inner-tabs .tab').forEach(b =>
+        b.classList.toggle('active', b.dataset.tab === 'tab-profilo-riepilogo'));
+      document.querySelectorAll('#page-profilo .tab-content').forEach(el =>
+        el.classList.toggle('active', el.id === 'tab-profilo-riepilogo'));
+    }
+  }
 
   // Titolo pagina
   const titleEl = document.getElementById('profilo-page-title');

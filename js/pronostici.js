@@ -246,7 +246,7 @@ const BRACKET_FEEDS = {
   'F':   { casa:{fase:'semifinali',id:'SF1'}, trasf:{fase:'semifinali',id:'SF2'} },
 };
 
-const GIOCATORI = [
+export const GIOCATORI = [
   // ARGENTINA
   { cognome: 'Messi', nome: 'Lionel', squadra: 'ARG' },
   { cognome: 'Martínez', nome: 'Lautaro', squadra: 'ARG' },
@@ -609,12 +609,23 @@ function _calcH2H(teamIds, partite) {
   return h2h;
 }
 
-function _sortClassificaFIFA(classifica, partite) {
+// Confronto in base a un ordine manuale scelto dall'utente (array di chiavi).
+// Restituisce 0 se una delle due chiavi non è presente nella lista.
+function _manualOrderCompare(lista, a, b) {
+  if (!Array.isArray(lista)) return 0;
+  const ia = lista.indexOf(a), ib = lista.indexOf(b);
+  if (ia === -1 || ib === -1) return 0;
+  return ia - ib;
+}
+
+function _sortClassificaFIFA(classifica, partite, lettera) {
   // Primo ordinamento per punti generali
+  classifica.forEach(t => { delete t.tie; });
   classifica.sort((a, b) => b.pt - a.pt);
   // Raggruppa le squadre a parità di punti e applica H2H internamente
   const result = [];
   let i = 0;
+  let tieId = 0;
   while (i < classifica.length) {
     let j = i;
     while (j < classifica.length && classifica[j].pt === classifica[i].pt) j++;
@@ -622,13 +633,26 @@ function _sortClassificaFIFA(classifica, partite) {
     if (gruppo.length > 1) {
       const h2h = _calcH2H(gruppo.map(t => t.id), partite);
       // Ordine FIFA 2026: GD generale → GF generale → H2H pt → H2H GD → H2H GF
-      gruppo.sort((a, b) =>
+      const cmpFIFA = (a, b) =>
         (b.gd - a.gd)                    ||
         (b.gf - a.gf)                    ||
         (h2h[b.id].pt  - h2h[a.id].pt)  ||
         (h2h[b.id].gd  - h2h[a.id].gd)  ||
-        (h2h[b.id].gf  - h2h[a.id].gf)
-      );
+        (h2h[b.id].gf  - h2h[a.id].gf);
+      // Parità totale: vale l'ordine manuale scelto dall'utente (spareggio)
+      const manuale = lettera ? _pronostici?.spareggi?.gironi?.[lettera] : null;
+      gruppo.sort((a, b) => cmpFIFA(a, b) || _manualOrderCompare(manuale, a.id, b.id));
+      // Marca i sotto-gruppi ancora in parità totale (per le frecce di spareggio)
+      let k = 0;
+      while (k < gruppo.length) {
+        let m = k;
+        while (m + 1 < gruppo.length && cmpFIFA(gruppo[m], gruppo[m + 1]) === 0) m++;
+        if (m > k && gruppo[k].g > 0) {
+          tieId++;
+          for (let x = k; x <= m; x++) gruppo[x].tie = tieId;
+        }
+        k = m + 1;
+      }
     }
     gruppo.forEach(t => result.push(t));
     i = j;
@@ -654,34 +678,127 @@ function _getClassificaCompleta(lettera) {
     else stats[p.trasferta].pt += 3;
   });
   const classifica = girone.squadre.map(id => ({ id, ...stats[id] }));
-  return _sortClassificaFIFA(classifica, girone.partite);
+  return _sortClassificaFIFA(classifica, girone.partite, lettera);
+}
+
+// ── CLASSIFICA DELLE TERZE (con spareggio manuale e flag parità) ────────
+function _getTerzeClassifica() {
+  const terze = [];
+  Object.keys(DB.gironi).forEach(lettera => {
+    const cl = _getClassificaCompleta(lettera);
+    if (cl.length < 3) return;
+    const t = cl[2];
+    terze.push({ lettera, teamId: t.id, pt: t.pt, gd: t.gd, gf: t.gf, g: t.g });
+  });
+  const cmp = (a, b) => b.pt - a.pt || b.gd - a.gd || b.gf - a.gf;
+  const manuale = _pronostici?.spareggi?.terze;
+  terze.sort((a, b) => cmp(a, b) || _manualOrderCompare(manuale, a.lettera, b.lettera) || a.lettera.localeCompare(b.lettera));
+  // Marca i gruppi adiacenti in parità totale (per le frecce di spareggio)
+  let tieId = 0, k = 0;
+  while (k < terze.length) {
+    let m = k;
+    while (m + 1 < terze.length && cmp(terze[m], terze[m + 1]) === 0) m++;
+    if (m > k && terze[k].g > 0) {
+      tieId++;
+      for (let x = k; x <= m; x++) terze[x].tie = tieId;
+    }
+    k = m + 1;
+  }
+  return terze;
 }
 
 // ── DETERMINA I TERZI IN BASE ALLA TABELLA FIFA ─────────────────────────
 function _calcola3rdiSlots() {
-  // Calcola tutti i 12 terzi classificati e i loro record
-  const terzi = {};
-  Object.keys(DB.gironi).forEach(lettera => {
-    const cl = _getClassificaCompleta(lettera);
-    if (cl.length < 3 || cl[2].g === 0) return; // girone non ancora compilato
-    const t = cl[2];
-    terzi[lettera] = { teamId: t.id, pt: t.pt, gd: t.gd, gf: t.gf };
-  });
-  // Ordina e prendi i migliori 8
-  const sorted = Object.entries(terzi)
-    .sort(([,a],[,b]) => b.pt-a.pt || b.gd-a.gd || b.gf-a.gf);
-  if (sorted.length < 8) return null; // non ancora abbastanza gironi completati
-  const top8 = sorted.slice(0, 8);
-  const qualGroups = top8.map(([l]) => l).sort().join('');
+  // Calcola tutti i terzi classificati (solo gironi compilati), già ordinati
+  const terze = _getTerzeClassifica().filter(t => t.g > 0);
+  if (terze.length < 8) return null; // non ancora abbastanza gironi completati
+  const top8 = terze.slice(0, 8);
+  const qualGroups = top8.map(t => t.lettera).sort().join('');
   const combo = COMB_3I[qualGroups];
   if (!combo) return null;
+  const byLettera = {};
+  terze.forEach(t => { byLettera[t.lettera] = t.teamId; });
   // Mappa: slotLetter → teamId
   const result = {};
   COMB_SLOT_ORDER.forEach((slot, i) => {
     const srcGrp = combo[i];
-    result[slot] = terzi[srcGrp]?.teamId || null;
+    result[slot] = byLettera[srcGrp] || null;
   });
   return result;
+}
+
+// ── SPAREGGIO MANUALE (frecce ▲▼ su parità totale) ─────────────────────
+// HTML delle frecce per una riga in parità totale. `lista` è l'array ordinato
+// (classifica girone o terze), `i` l'indice della riga, `id` la chiave da
+// spostare (teamId per i gironi, lettera del girone per le terze).
+function _tieBtnsHtml(tipo, lettera, id, lista, i) {
+  const t = lista[i];
+  if (!t || !t.tie) return '';
+  const su  = i > 0 && lista[i - 1].tie === t.tie;
+  const giu = i < lista.length - 1 && lista[i + 1].tie === t.tie;
+  const dis = !_pronosticiAperti;
+  const attrs = ' data-tie-tipo="' + tipo + '" data-tie-girone="' + lettera + '" data-tie-id="' + id + '"';
+  return '<span class="tie-btns" title="Parità totale: scegli tu l\'ordine">'
+    + '<button type="button" class="tie-btn"' + attrs + ' data-tie-dir="-1"' + ((su && !dis) ? '' : ' disabled') + '>▲</button>'
+    + '<button type="button" class="tie-btn"' + attrs + ' data-tie-dir="1"' + ((giu && !dis) ? '' : ' disabled') + '>▼</button>'
+    + '</span>';
+}
+
+async function _salvaSpareggi() {
+  try {
+    await savePronostici(STATE.utente.id, _pronostici);
+    showToast('Ordine salvato!', 'success');
+  } catch (e) {
+    showToast('Errore nel salvataggio dell\'ordine', 'error');
+  }
+}
+
+function _spostaTieGirone(lettera, teamId, dir) {
+  const cl = _getClassificaCompleta(lettera);
+  const i = cl.findIndex(t => t.id === teamId);
+  const j = i + dir;
+  if (i < 0 || j < 0 || j >= cl.length) return;
+  if (!cl[i].tie || cl[j].tie !== cl[i].tie) return; // si scambia solo dentro la parità
+  const ordine = cl.map(t => t.id);
+  [ordine[i], ordine[j]] = [ordine[j], ordine[i]];
+  if (!_pronostici.spareggi) _pronostici.spareggi = {};
+  if (!_pronostici.spareggi.gironi) _pronostici.spareggi.gironi = {};
+  _pronostici.spareggi.gironi[lettera] = ordine;
+  _ricalcolaClassificaGirone(lettera); // aggiorna mini, badge, sedicesimi e riepilogo
+  _ricalcolaBracket();
+  _salvaSpareggi();
+}
+
+function _spostaTieTerze(lettera, dir) {
+  const terze = _getTerzeClassifica();
+  const i = terze.findIndex(t => t.lettera === lettera);
+  const j = i + dir;
+  if (i < 0 || j < 0 || j >= terze.length) return;
+  if (!terze[i].tie || terze[j].tie !== terze[i].tie) return;
+  const ordine = terze.map(t => t.lettera);
+  [ordine[i], ordine[j]] = [ordine[j], ordine[i]];
+  if (!_pronostici.spareggi) _pronostici.spareggi = {};
+  _pronostici.spareggi.terze = ordine;
+  _ricalcolaSedicesimi();
+  _ricalcolaBracket();
+  _renderRiepilogoGironi();
+  _salvaSpareggi();
+}
+
+function _bindTieButtons() {
+  ['gironi-container', 'riepilogo-container'].forEach(cid => {
+    const el = document.getElementById(cid);
+    if (!el || el.dataset.tieBound) return;
+    el.dataset.tieBound = '1';
+    el.addEventListener('click', (e) => {
+      const btn = e.target.closest('.tie-btn');
+      if (!btn || btn.disabled) return;
+      if (!_pronosticiAperti) { showToast('I pronostici sono chiusi!', 'error'); return; }
+      const dir = parseInt(btn.dataset.tieDir, 10);
+      if (btn.dataset.tieTipo === 'girone') _spostaTieGirone(btn.dataset.tieGirone, btn.dataset.tieId, dir);
+      else _spostaTieTerze(btn.dataset.tieId, dir);
+    });
+  });
 }
 
 // ── RISOLVE UN SINGOLO SLOT → TEAM ID ──────────────────────────────────
@@ -843,6 +960,7 @@ export async function initPronostici() {
   _renderRiepilogoGironi();
   _renderTabellone();
   _initVisibilitaToggle();
+  _bindTieButtons();
 
   // Applica lo stato aperti/chiusi ai campi ora che il form è renderizzato
   _aggiornaBtnSalva();
@@ -1485,7 +1603,8 @@ function _ricalcolaClassificaGirone(lettera) {
   });
   const cl = _sortClassificaFIFA(
     girone.squadre.map(id => ({ id, ...stats[id] })),
-    girone.partite
+    girone.partite,
+    lettera
   );
   const hasData = cl.some(t => t.g > 0);
   const miniEl = document.getElementById('classifica-girone-' + lettera);
@@ -1498,7 +1617,7 @@ function _ricalcolaClassificaGirone(lettera) {
       const gdCls = t.gd > 0 ? 'gd-pos' : t.gd < 0 ? 'gd-neg' : '';
       rows += '<tr class="' + (i<2?'qualificata':'') + '">'
         + '<td class="mini-pos">' + (i+1) + '</td>'
-        + '<td class="mini-team">' + (sq?.flag||'') + ' ' + (sq?.nome||t.id) + '</td>'
+        + '<td class="mini-team">' + (sq?.flag||'') + ' ' + (sq?.nome||t.id) + _tieBtnsHtml('girone', lettera, t.id, cl, i) + '</td>'
         + '<td class="mini-pt"><strong>' + t.pt + '</strong></td>'
         + '<td>' + t.g + '</td><td>' + t.gf + '</td><td>' + t.gs + '</td>'
         + '<td class="' + gdCls + '">' + gd + '</td></tr>';
@@ -1676,7 +1795,7 @@ function _renderRiepilogoGironi() {
       const gdDisp = hasData ? '<span class="' + gdCls + '">' + gdStr + '</span>' : '—';
       gridHtml += '<tr class="' + rowCls + '">'
         + '<td class="riepilogo-pos">' + (i + 1) + '</td>'
-        + '<td class="riepilogo-team" title="' + (sq?.nome || t.id) + '">' + (sq?.flag || '') + ' ' + t.id + '</td>'
+        + '<td class="riepilogo-team" title="' + (sq?.nome || t.id) + '">' + (sq?.flag || '') + ' ' + t.id + _tieBtnsHtml('girone', lettera, t.id, cl, i) + '</td>'
         + '<td class="riepilogo-pt">' + ptDisp + '</td>'
         + '<td class="riepilogo-gd">' + gdDisp + '</td>'
         + '</tr>';
@@ -1686,18 +1805,13 @@ function _renderRiepilogoGironi() {
   gridHtml += '</div>';
 
   // ── Classifica migliori terze ──
-  const terziData = [];
-  lettere.forEach(lettera => {
-    const cl = allClassifiche[lettera];
-    if (cl.length < 3) return;
-    const t = cl[2];
-    terziData.push({ lettera, teamId: t.id, pt: t.pt, gd: t.gd, gf: t.gf, g: t.g });
-  });
-  terziData.sort((a, b) => b.pt - a.pt || b.gd - a.gd || b.gf - a.gf);
+  const terziData = _getTerzeClassifica();
+  const hasTie = terziData.some(t => t.tie);
 
   let terziHtml = '<div class="riepilogo-terze-wrap">'
     + '<h3 class="riepilogo-terze-title">🏅 Migliori terze classificate</h3>'
     + '<p class="riepilogo-terze-desc">Le 8 migliori terze si qualificano per i sedicesimi. L\'ordine qui determina la loro posizione nel bracket.</p>'
+    + (hasTie ? '<p class="riepilogo-terze-desc tie-hint">⚖️ Alcune squadre sono in parità totale: usa le frecce ▲▼ per scegliere tu l\'ordine.</p>' : '')
     + '<table class="riepilogo-table riepilogo-terze-table">'
     + '<thead><tr><th>#</th><th>Squadra</th><th>Girone</th><th>Pt</th><th>GD</th><th>GF</th></tr></thead>'
     + '<tbody>';
@@ -1712,7 +1826,7 @@ function _renderRiepilogoGironi() {
     const icon = i === 7 && qualif ? '<span class="terza-cutoff" title="Ultimo posto qualificato">✂️ </span>' : '';
     terziHtml += '<tr class="' + rowCls + '">'
       + '<td class="riepilogo-pos">' + icon + (i + 1) + '</td>'
-      + '<td class="riepilogo-team" title="' + (sq?.nome || t.teamId) + '">' + (sq?.flag || '') + ' ' + t.teamId + '</td>'
+      + '<td class="riepilogo-team" title="' + (sq?.nome || t.teamId) + '">' + (sq?.flag || '') + ' ' + t.teamId + _tieBtnsHtml('terze', t.lettera, t.lettera, terziData, i) + '</td>'
       + '<td class="riepilogo-girone">Girone ' + t.lettera + '</td>'
       + '<td class="riepilogo-pt">' + (hasData ? t.pt : '—') + '</td>'
       + '<td class="riepilogo-gd"><span class="' + gdCls + '">' + (hasData ? gdStr : '—') + '</span></td>'
