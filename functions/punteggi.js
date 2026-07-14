@@ -452,14 +452,19 @@ function calcolaPunteggio(pronostici, risultati) {
     const ternaR = [cp1, cp2, cp3].filter(Boolean);
     const ternaP = [pp1, pp2, pp3].filter(Boolean);
 
+    // 10 pt per OGNI giocatore pronosticato presente nella terna reale,
+    // indipendentemente dall'ordine (anche se nel posto esatto).
+    const nellaTerna = ternaP.filter(function(p) { return ternaR.includes(p); });
+    if (nellaTerna.length > 0) {
+      bd.capocannoniere.punti += REG.capocannoniere.nella_terna * nellaTerna.length;
+      bd.capocannoniere.dettaglio += 'terna×' + nellaTerna.length + '✓ ';
+    }
+
+    // Bonus posizione esatta: si SOMMA ai 10 pt della terna
+    // (1° esatto = 10+40 = 50, 2° esatto = 10+20 = 30, 3° esatto = 10+10 = 20).
     if (cp1 && pp1 === cp1) { bd.capocannoniere.punti += REG.capocannoniere.primo_classificato;   bd.capocannoniere.dettaglio += '1°✓ '; }
     if (cp2 && pp2 === cp2) { bd.capocannoniere.punti += REG.capocannoniere.secondo_classificato; bd.capocannoniere.dettaglio += '2°✓ '; }
     if (cp3 && pp3 === cp3) { bd.capocannoniere.punti += REG.capocannoniere.terzo_classificato;   bd.capocannoniere.dettaglio += '3°✓ '; }
-    const nellaTerna = ternaP.filter((p, i) => {
-      const exactMatch = [cp1, cp2, cp3][i];
-      return ternaR.includes(p) && p !== exactMatch;
-    });
-    if (nellaTerna.length > 0) { bd.capocannoniere.punti += REG.capocannoniere.nella_terna; bd.capocannoniere.dettaglio += 'terna✓'; }
   }
 
   // ── TOTALE ────────────────────────────────────────────
