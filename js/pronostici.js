@@ -1438,7 +1438,7 @@ function _renderSpeciali() {
   const container = document.getElementById('speciali-container');
   const pCannon = _pronostici?.capocannoniere || {};
   let html = '<div class="speciali-section"><h3 class="section-title">🥇 Capocannoniere</h3>'
-    + '<p class="section-desc">Pronostica i <strong>3 migliori marcatori</strong> in ordine. 1° → 40pt, 2° → 20pt, 3° → 10pt. Bonus +10 nella terna.</p>'
+    + '<p class="section-desc">Pronostica i <strong>3 migliori marcatori</strong> in ordine. 10 pt per ogni giocatore nella terna (in qualsiasi ordine) + bonus posizione esatta: 1° +40, 2° +20, 3° +10.</p>'
     + '<div class="cannon-inputs">';
   ['primo','secondo','terzo'].forEach((key, i) => {
     const val = pCannon[key] || '';
