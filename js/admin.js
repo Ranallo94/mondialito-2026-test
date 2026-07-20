@@ -20,6 +20,7 @@ import { calcolaPunteggio, calcolaSparegnio } from './punteggi.js';
 import {
   SEDICESIMI_BRACKET, BRACKET_FEEDS, resolveSlot, calcola3rdiSlots,
 } from './bracket.js';
+import { GIOCATORI } from './pronostici.js';
 import { httpsCallable } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js';
 import {
   collection, onSnapshot, doc, getDoc, setDoc, updateDoc, deleteDoc,
@@ -115,6 +116,41 @@ async function _initTabMarcatori() {
     console.warn('[marcatori] lettura iniziale:', e.message);
   }
 
+  // Terna capocannoniere ufficiale + stato finale (per i punti da regolamento)
+  let cannonFin = {};
+  let vincitoreNoto = false;
+  try {
+    const ris = await getRisultati();
+    cannonFin = ris?.capocannoniere_finale || {};
+    vincitoreNoto = !!ris?.fase_eliminatoria?.finale?.F?.vincitore;
+  } catch (e) {
+    console.warn('[marcatori] lettura risultati:', e.message);
+  }
+
+  const cannonFinHtml = [
+    { key: 'primo',   label: '🥇 1° classificato' },
+    { key: 'secondo', label: '🥈 2° classificato' },
+    { key: 'terzo',   label: '🥉 3° classificato' },
+  ].map(({ key, label }) => `
+    <div class="field-group">
+      <label class="field-label">${label}</label>
+      <div class="autocomplete-wrap">
+        <input type="text" class="field-input admin-cannon-input" id="admin-cannon-${key}" data-key="${key}"
+               value="${cannonFin[key] || ''}" placeholder="Digita il cognome..." autocomplete="off">
+        <div class="autocomplete-dropdown" id="admin-ac-drop-${key}"></div>
+      </div>
+    </div>`).join('');
+
+  const cannonBanner = vincitoreNoto
+    ? `<div class="info-banner info-banner--blue" style="margin-bottom:12px">
+         <span>⚡</span>
+         <span>Il vincitore della finale è noto: salvando la terna i punti capocannoniere (10 pt nella terna + bonus 40/20/10 posizione esatta) entrano <strong>subito</strong> in classifica.</span>
+       </div>`
+    : `<div class="info-banner info-banner--yellow" style="margin-bottom:12px">
+         <span>⚠️</span>
+         <span>Il vincitore della finale non è ancora stato inserito: puoi salvare la terna già ora, ma da regolamento i punti capocannoniere verranno conteggiati <strong>solo quando la finale sarà inserita</strong> nel tab Eliminatorie.</span>
+       </div>`;
+
   const righe = (lista.length ? lista : [{}]).map(_marcRigaHtml).join('');
   container.innerHTML = `
     <div class="marc-admin-card">
@@ -133,7 +169,25 @@ async function _initTabMarcatori() {
         <button type="button" class="btn btn-secondary marc-sync">🔄 Sync automatico da API</button>
         <span class="text-muted">Pesca i marcatori da football-data.org. Richiede le Cloud Functions attive.</span>
       </div>
+    </div>
+
+    <div class="marc-admin-card" style="margin-top:16px">
+      <h4 style="margin:0 0 6px">🏆 Terna capocannoniere UFFICIALE</h4>
+      <p class="text-muted" style="margin:0 0 12px;font-size:13px">
+        Questa è la terna finale usata per l'assegnazione dei punti da regolamento.
+        È indipendente dalla classifica marcatori qui sopra (che è solo informativa).
+        I giocatori vanno scelti dall'elenco (stesso formato dei pronostici).
+      </p>
+      ${cannonBanner}
+      <div class="cannon-inputs">${cannonFinHtml}</div>
+      <div class="marc-admin-actions">
+        <button type="button" class="btn btn-primary cannon-fin-save">💾 Salva terna e ricalcola classifica</button>
+        <span class="cannon-fin-msg marc-save-msg"></span>
+      </div>
     </div>`;
+
+  // Autocomplete sui 3 input della terna (elementi ricreati a ogni render)
+  _bindCannonFinInputs();
 
   // Event delegation: registrata una sola volta sul container.
   if (container._marcWired) return;
@@ -156,8 +210,115 @@ async function _initTabMarcatori() {
       await _salvaMarcatori(e.target.closest('.marc-save'));
     } else if (e.target.closest('.marc-sync')) {
       await _syncMarcatoriApi(e.target.closest('.marc-sync'));
+    } else if (e.target.closest('.cannon-fin-save')) {
+      await _salvaCannonFinale(e.target.closest('.cannon-fin-save'));
     }
   });
+}
+
+// ── TERNA CAPOCANNONIERE UFFICIALE ────────────────────
+// Scrive risultati/ufficiali.capocannoniere_finale e ricalcola la classifica.
+// I valori usano lo stesso formato dei pronostici: "Cognome (SQUADRA)".
+
+const _VALIDI_CANNON_ADMIN = new Set(GIOCATORI.map(g => g.cognome + ' (' + g.squadra + ')'));
+
+function _normStrCannon(s) {
+  return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
+
+function _bindCannonFinInputs() {
+  document.querySelectorAll('.admin-cannon-input').forEach(input => {
+    const key  = input.dataset.key;
+    const drop = document.getElementById('admin-ac-drop-' + key);
+    if (!drop) return;
+
+    const chiudi = () => { drop.innerHTML = ''; drop.style.display = 'none'; };
+
+    const validaEChiudi = () => {
+      setTimeout(() => {
+        chiudi();
+        const v = input.value.trim();
+        if (v && !_VALIDI_CANNON_ADMIN.has(v)) {
+          input.value = '';
+          input.classList.add('input-error');
+          setTimeout(() => input.classList.remove('input-error'), 1500);
+          showToast('Seleziona un calciatore dall\'elenco', 'error');
+        }
+      }, 200);
+    };
+
+    const suggerisci = (query) => {
+      const q = _normStrCannon(query.trim());
+      if (q.length < 2) { chiudi(); return; }
+      const matches = GIOCATORI.filter(g =>
+        _normStrCannon(g.cognome).includes(q) || _normStrCannon(g.nome).includes(q)
+      ).slice(0, 8);
+      if (!matches.length) { chiudi(); return; }
+      drop.innerHTML = matches.map(g =>
+        `<div class="ac-item" data-val="${g.cognome} (${g.squadra})">
+           <span class="ac-name">${g.cognome} ${g.nome}</span>
+           <span class="ac-team">(${g.squadra})</span>
+         </div>`).join('');
+      drop.style.display = 'block';
+      drop.querySelectorAll('.ac-item').forEach(item => {
+        item.addEventListener('mousedown', e => {
+          e.preventDefault();
+          input.value = item.dataset.val;
+          input.classList.remove('input-error');
+          chiudi();
+        });
+      });
+    };
+
+    input.addEventListener('input', () => { input.classList.remove('input-error'); suggerisci(input.value); });
+    input.addEventListener('blur',  validaEChiudi);
+    input.addEventListener('focus', () => { if (input.value.length >= 2) suggerisci(input.value); });
+    input.addEventListener('keydown', e => { if (e.key === 'Escape') chiudi(); });
+  });
+}
+
+async function _salvaCannonFinale(btn) {
+  const val = (k) => document.getElementById('admin-cannon-' + k)?.value.trim() || null;
+  const primo = val('primo'), secondo = val('secondo'), terzo = val('terzo');
+
+  // Validazione: solo giocatori dell'elenco (stesso formato dei pronostici)
+  for (const v of [primo, secondo, terzo]) {
+    if (v && !_VALIDI_CANNON_ADMIN.has(v)) {
+      showToast(`"${v}" non è nell'elenco giocatori`, 'error');
+      return;
+    }
+  }
+  // Nessun duplicato nella terna
+  const compilati = [primo, secondo, terzo].filter(Boolean);
+  if (new Set(compilati).size !== compilati.length) {
+    showToast('Lo stesso giocatore compare due volte nella terna', 'error');
+    return;
+  }
+
+  const msg = document.querySelector('.cannon-fin-msg');
+  btn.disabled = true;
+  const labelOrig = btn.textContent;
+  btn.textContent = '⏳ Salvataggio…';
+  if (msg) { msg.textContent = ''; msg.className = 'cannon-fin-msg marc-save-msg'; }
+
+  try {
+    await patchRisultati({ capocannoniere_finale: { primo, secondo, terzo } });
+    btn.textContent = '⏳ Ricalcolo classifica…';
+    await _ricalcolaClassificaClient();
+    showToast('Terna salvata e classifica ricalcolata ✓', 'success');
+    if (msg) {
+      msg.textContent = compilati.length
+        ? `✓ Terna salvata (${compilati.length}/3) — classifica aggiornata`
+        : '✓ Terna svuotata — classifica aggiornata';
+      msg.className = 'cannon-fin-msg marc-save-msg ok';
+    }
+  } catch (e) {
+    if (msg) { msg.textContent = '❌ ' + e.message; msg.className = 'cannon-fin-msg marc-save-msg err'; }
+    showToast('Errore: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = labelOrig;
+  }
 }
 
 async function _salvaMarcatori(btn) {
